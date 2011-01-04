@@ -1,5 +1,5 @@
 def attributesDotString( attr, sep = "," ):
-    return sep.join( k + "=\"" + attr[ k ] + "\"" for k in attr )
+    return sep.join( sorted( k + "=\"" + attr[ k ] + "\"" for k in attr ) )
 
 class Container:
     def __init__( self ):
@@ -16,7 +16,7 @@ class Container:
             return n
 
     def contentDotString( self ):
-        return "".join( n.dotString() for n in self.__nodes )
+        return "".join( sorted( n.dotString() for n in self.__nodes ) )
 
     @staticmethod
     def haveSameNodes( left, right ):
@@ -61,7 +61,7 @@ class Graph( Container ):
             + ";node [" + attributesDotString( self.nodeAttr ) 
             + "];edge [" + attributesDotString( self.edgeAttr ) + "];" 
             + self.contentDotString() 
-            + "".join( l.dotString() for l in self.__links )
+            + "".join( sorted( l.dotString() for l in self.__links ) )
             + "}"
         )
 
