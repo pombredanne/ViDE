@@ -143,10 +143,10 @@ class Link:
     def areSame( left, right, map ):
         leftAttr = dict( left.attr )
         rightAttr = dict( right.attr )
-        leftAttr.pop( "lhead", "don't raise if key is absent" )
-        leftAttr.pop( "ltail", "don't raise if key is absent" )
-        rightAttr.pop( "lhead", "don't raise if key is absent" )
-        rightAttr.pop( "ltail", "don't raise if key is absent" )
+        leftAttr.pop( "lhead", "" ) # Default value given, to avoid an exception when lhead is not in leftAttr
+        leftAttr.pop( "ltail", "" )
+        rightAttr.pop( "lhead", "" )
+        rightAttr.pop( "ltail", "" )
         ### @todo Cover each "return False" in unit tests
         if leftAttr != rightAttr:
             return False
