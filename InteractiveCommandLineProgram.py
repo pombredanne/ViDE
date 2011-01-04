@@ -131,7 +131,7 @@ class OptionContainer:
         return sorted( self.__groups, key = lambda g: g.name )
 
     def hasOptions( self ):
-        return len( self.__options ) != 0
+        return len( self.__options ) != 0 or len( self.__groups )
 
     def getAncestor( self ):
         return self
