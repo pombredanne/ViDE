@@ -169,7 +169,6 @@ class HorizontalMargins( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1
         ctx = cairo.Context( img )
         ctx.set_source_rgb( 1, 1, 1 )
         ctx.paint()
-        ctx.translate( marginSize, marginSize )
         report.draw( ctx, width, height )
         leftMarginIsWhite, rightMarginIsWhite, drawingTouchesLeft, drawingTouchesRight = self.checkHorizontalMargins( img, marginSize, 0xFFFFFFFF )
         reason = ""
