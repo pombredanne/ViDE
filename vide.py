@@ -34,7 +34,7 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
 
         generation = self.createCommandGroup( "Artifact generation", "" )
         generation.addCommand( "make", DummyCommand( "Make" ), "build the project (compile, link, etc.)" )
-        generation.addCommand( "compile", DummyCommand( "Make" ), "compile project sources (no link edition)" )
+        generation.addCommand( "compile", DummyCommand( "Compile" ), "compile project sources (no link edition)" )
 
         self.addHelpCommand()
         self.addExitCommand()
