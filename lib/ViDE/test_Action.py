@@ -7,7 +7,7 @@ import threading
 import random
 import time
 
-from MockMockMock import TestCase
+from Misc.MockMockMock import TestCase
 
 from Action import Action, CompoundException
 

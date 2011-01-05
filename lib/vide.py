@@ -1,6 +1,8 @@
 import sys
 
-import Misc.InteractiveCommandLineProgram as InteractiveCommandLineProgram
+from Misc import InteractiveCommandLineProgram
+
+from ViDE.AutoTest import AutoTest
 
 # Get from ViDE
 defaultToolset = "Toolset1"
@@ -37,6 +39,8 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         generation = self.createCommandGroup( "Artifact generation", "" )
         generation.addCommand( "make", DummyCommand( "Make" ), "build the project (compile, link, etc.)" )
         generation.addCommand( "compile", DummyCommand( "Compile" ), "compile project sources (no link edition)" )
+        
+        self.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
 
         self.addHelpCommand()
         self.addExitCommand()

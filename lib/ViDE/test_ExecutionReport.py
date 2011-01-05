@@ -5,10 +5,11 @@ from __future__ import with_statement
 import unittest
 import struct
 import random
+import sys
 
 import cairo
 
-from MockMockMock import TestCase
+from Misc.MockMockMock import TestCase
 
 from ExecutionReport import ExecutionReport, segmentsIntersect
 
@@ -172,17 +173,18 @@ class HorizontalMargins( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1
         ctx.translate( marginSize, marginSize )
         report.draw( ctx, width, height )
         leftMarginIsWhite, rightMarginIsWhite, drawingTouchesLeft, drawingTouchesRight = self.checkHorizontalMargins( img, marginSize, 0xFFFFFFFF )
-        reason = ""
-        if not leftMarginIsWhite:
-            reason += ".spreads_on_left_margin"
-        if not rightMarginIsWhite:
-            reason += ".spreads_on_right_margin"
-        if not drawingTouchesLeft:
-            reason += ".far_from_left"
-        if not drawingTouchesRight:
-            reason += ".far_from_right"
-        if not reason == "":
-            img.write_to_png( "HorizontalMargins." + testName + reason + ".png" )
+        if len( sys.argv ) > 1:
+            reason = ""
+            if not leftMarginIsWhite:
+                reason += ".spreads_on_left_margin"
+            if not rightMarginIsWhite:
+                reason += ".spreads_on_right_margin"
+            if not drawingTouchesLeft:
+                reason += ".far_from_left"
+            if not drawingTouchesRight:
+                reason += ".far_from_right"
+            if reason != "":
+                img.write_to_png( "HorizontalMargins." + testName + reason + ".png" )
         self.assertTrue( leftMarginIsWhite )
         self.assertTrue( rightMarginIsWhite )
         self.assertTrue( drawingTouchesLeft )

@@ -4,7 +4,7 @@ from __future__ import with_statement
 
 import unittest
 
-from MockMockMock import TestCase
+from Misc.MockMockMock import TestCase
 
 from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact
 from Action import Action, ActionModel
