@@ -1,4 +1,4 @@
-import InteractiveCommandLineProgram
+import Misc.InteractiveCommandLineProgram as InteractiveCommandLineProgram
 
 # Get from ViDE
 defaultToolset = "Toolset1"
