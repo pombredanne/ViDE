@@ -1,3 +1,5 @@
+import sys
+
 import Misc.InteractiveCommandLineProgram as InteractiveCommandLineProgram
 
 # Get from ViDE
@@ -40,4 +42,4 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         self.addExitCommand()
 
 if __name__ == "__main__":
-    Shell().execute()
+    Shell().execute( [ "vide" ] + sys.argv[ 1: ] )
