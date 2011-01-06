@@ -1,6 +1,6 @@
 from Misc import InteractiveCommandLineProgram
 
-from ViDE.AutoTest import AutoTest
+from ViDE.Shell.AutoTest import AutoTest
 
 # Get from ViDE
 defaultToolset = "Toolset1"
