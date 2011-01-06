@@ -6,6 +6,7 @@ from Misc.InteractiveCommandLineProgram import Command
 
 class AutoTest( Command ):
     ### @todo Measure test coverage
+    ### @todo Discover missing test files, base on python files *.py without a test_*.py
     def execute( self, args ):
         self.__listTestFiles()
         self.__selectTestsToRun( args )
