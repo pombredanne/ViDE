@@ -24,8 +24,8 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
 
         self.verbosity = 1
         verbosity = self.createOptionGroup( "Verbosity", "" )
-        verbosity.addOption( "quiet", "verbosity", InteractiveCommandLineProgram.StoreConstant( 0 ), "print as few messages as possible", InteractiveCommandLineProgram.StoreConstant( 1 ), "print normal messages" )
-        verbosity.addOption( "verbose", "verbosity", InteractiveCommandLineProgram.StoreConstant( 2 ), "print information messages", InteractiveCommandLineProgram.StoreConstant( 1 ), "don't print information messages" )
+        verbosity.addOption( [ "q", "quiet" ], "verbosity", InteractiveCommandLineProgram.StoreConstant( 0 ), "print as few messages as possible", InteractiveCommandLineProgram.StoreConstant( 1 ), "print normal messages" )
+        verbosity.addOption( [ "v", "verbose" ], "verbosity", InteractiveCommandLineProgram.StoreConstant( 2 ), "print information messages", InteractiveCommandLineProgram.StoreConstant( 1 ), "don't print information messages" )
         verbosity.addOption( "debug", "verbosity", InteractiveCommandLineProgram.StoreConstant( 3 ), "print debug messages", InteractiveCommandLineProgram.StoreConstant( 1 ), "don't print debug messages" )
 
         toolsChoice = self.createOptionGroup( "Tools choice", "" )
@@ -36,7 +36,7 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         toolsChoice.addOption( "buildkit", "buildkit", InteractiveCommandLineProgram.StoreArgument( "BUILDKIT" ), "use buildkit BUILDKIT", InteractiveCommandLineProgram.StoreConstant( defaultBuildkit ), "use default buildkit" )
 
         generation = self.createCommandGroup( "Artifact generation", "" )
-        generation.addCommand( "make", Make, "build the project (compile, link, etc.)" )
+        generation.addCommand( "make", Make, "build the project" )
         
         self.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
 
