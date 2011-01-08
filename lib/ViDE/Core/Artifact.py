@@ -18,6 +18,14 @@ class CreateDirectoryAction( Action ):
     def doPreview( self ):
         return "mkdir -p " + self.__directory
 
+class SystemAction( Action ):
+    def __init__( self, command ):
+        Action.__init__( self )
+        self.__command = command
+    
+    def doPreview( self ):
+        return self.__command
+        
 class Artifact:
     def __init__( self, name, automatic ):
         self.__name = name
