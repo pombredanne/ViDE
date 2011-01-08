@@ -1,8 +1,8 @@
 from ViDE.Project.Description import *
 
 Executable(
-    name = "I",
-    sources = [ "src/I.cpp" ],
+    name = "hello",
+    sources = [ "main.cpp" ],
     localLibraries = [],
     externalLibraries = []
 )
