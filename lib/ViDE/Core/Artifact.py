@@ -11,7 +11,6 @@ class RemoveFileAction( Action ):
         return "rm -f " + self.__file
         
     def doExecute( self ):
-        print "rm -f " + self.__file
         try:
             os.unlink( self.__file )
         except OSError:
@@ -26,7 +25,6 @@ class CreateDirectoryAction( Action ):
         return "mkdir -p " + self.__directory
         
     def doExecute( self ):
-        print "mkdir -p " + self.__directory
         try:
             os.makedirs( self.__directory )
         except OSError:

@@ -11,5 +11,4 @@ class SystemAction( Action ):
         return self.__command
         
     def doExecute( self ):
-        print self.__command
         os.system( self.__command )
