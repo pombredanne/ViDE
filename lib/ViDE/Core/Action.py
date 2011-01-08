@@ -141,6 +141,7 @@ class Action:
                 a.__executionBegin = time.time()
             try:
                 a.doExecute()
+                time.sleep( 1 )
                 with self.cond:
                     self.__setState( a, Action.__Success() )
             except Exception, e:

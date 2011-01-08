@@ -17,6 +17,14 @@ class RemoveFileAction( Action ):
             pass
 
 class CreateDirectoryAction( Action ):
+    __all = dict()
+
+    @staticmethod
+    def getOrCreate( directory ):
+        if directory not in CreateDirectoryAction.__all:
+            CreateDirectoryAction.__all[ directory ] = CreateDirectoryAction( directory )
+        return CreateDirectoryAction.__all[ directory ]
+
     def __init__( self, directory ):
         Action.__init__( self )
         self.__directory = directory
@@ -86,7 +94,7 @@ class AtomicArtifact( ProduceableArtifact ):
             productionAction = self.doGetProductionAction()
             directories = set( os.path.dirname( f ) for f in self.__files )
             for d in directories:
-                productionAction.addPredecessor( CreateDirectoryAction( d ) )
+                productionAction.addPredecessor( CreateDirectoryAction.getOrCreate( d ) )
             for f in self.__files:
                 productionAction.addPredecessor( RemoveFileAction( f ) )
         else:

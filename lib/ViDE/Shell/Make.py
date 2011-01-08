@@ -1,5 +1,8 @@
+import cairo
+
 from Misc import InteractiveCommandLineProgram
 
+from ViDE.Core.ExecutionReport import ExecutionReport
 from ViDE.Project.Project import Project
 
 class Make( InteractiveCommandLineProgram.Command ):
@@ -19,3 +22,11 @@ class Make( InteractiveCommandLineProgram.Command ):
             print "\n".join( action.preview() )
         else:
             action.execute( self.keepGoing, self.jobs )
+            report = ExecutionReport( action )
+            img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 600 )
+            ctx = cairo.Context( img )
+            ctx.translate( 10, 10 )
+            ctx.set_source_rgb( .9, .9, .9 )
+            ctx.paint()
+            report.draw( ctx, 780, 580 )
+            img.write_to_png( "report.png" )

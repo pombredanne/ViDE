@@ -99,6 +99,7 @@ class ExecutionReport:
             if orderingCost < bestOrderingCost:
                 bestOrderingCost = orderingCost
                 bestOrdering = ordering
+            break
         self.__applyActionOrdering( bestOrdering )
         self.__horizontalAxisOrdinate = 25
 
