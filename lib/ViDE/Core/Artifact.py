@@ -1,4 +1,4 @@
-import os.path
+import os
 
 from Action import Action, NullAction
 
@@ -9,6 +9,13 @@ class RemoveFileAction( Action ):
 
     def doPreview( self ):
         return "rm -f " + self.__file
+        
+    def doExecute( self ):
+        print "rm -f " + self.__file
+        try:
+            os.unlink( self.__file )
+        except OSError:
+            pass
 
 class CreateDirectoryAction( Action ):
     def __init__( self, directory ):
@@ -17,14 +24,13 @@ class CreateDirectoryAction( Action ):
 
     def doPreview( self ):
         return "mkdir -p " + self.__directory
-
-class SystemAction( Action ):
-    def __init__( self, command ):
-        Action.__init__( self )
-        self.__command = command
-    
-    def doPreview( self ):
-        return self.__command
+        
+    def doExecute( self ):
+        print "mkdir -p " + self.__directory
+        try:
+            os.makedirs( self.__directory )
+        except OSError:
+            pass
         
 class Artifact:
     def __init__( self, name, automatic ):
@@ -42,7 +48,18 @@ class Artifact:
         return max( Artifact.getModificationDate( f ) for f in self.getAllFiles() )
 
 class InputArtifact( Artifact ):
-    pass
+    def __init__( self, name, files, automatic ):
+        Artifact.__init__( self, name, automatic )
+        self.__files = files
+
+    def mustBeProduced( self ):
+        return False
+
+    def getProductionAction( self ):
+        return NullAction()
+        
+    def getAllFiles( self ):
+        return self.__files
 
 class ProduceableArtifact( Artifact ):
     def __init__( self, name, automatic ):
