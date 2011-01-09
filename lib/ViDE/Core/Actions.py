@@ -1,4 +1,4 @@
-import os
+import subprocess
 
 from ViDE.Core.Action import Action
 
@@ -12,4 +12,4 @@ class SystemAction( Action ):
         return self.__preview
         
     def doExecute( self ):
-        os.system( self.__command )
+        subprocess.call( self.__command )

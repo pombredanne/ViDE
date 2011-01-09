@@ -15,4 +15,4 @@ class Executable( AtomicArtifact ):
         self.__objects = objects
 
     def doGetProductionAction( self ):
-        return SystemAction( "g++ -o build/bin/" + self.__name + " " + " ".join( [ o.getFileName() for o in self.__objects ] ), "g++ -o build/bin/" + self.__name )
+        return SystemAction( [ "g++", "-obuild/bin/" + self.__name ] + [ o.getFileName() for o in self.__objects ], "g++ -o build/bin/" + self.__name )

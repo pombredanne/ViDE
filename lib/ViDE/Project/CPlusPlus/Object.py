@@ -19,7 +19,7 @@ class Object( Binary.Object ):
         self.__source = source
 
     def doGetProductionAction( self ):
-        return SystemAction( "g++ -c -o " + self.__fileName + " " + self.__source.getFileName(), "g++ -c " + self.__source.getFileName() )
+        return SystemAction( [ "g++", "-c", "-o" + self.__fileName, self.__source.getFileName() ], "g++ -c " + self.__source.getFileName() )
 
     def getFileName( self ):
         return self.__fileName
