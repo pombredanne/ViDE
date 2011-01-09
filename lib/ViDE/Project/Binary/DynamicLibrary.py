@@ -7,7 +7,7 @@ from ViDE.Core.Actions import SystemAction, CopyFileAction
 
 class DynamicLibraryBinary( AtomicArtifact ):
     def __init__( self, name, objects ):
-        self.__fileName = "build/lib/" + name + ".dll"
+        self.__fileName = os.path.join( "build", "lib", name + ".dll" )
         self.__objects = objects
         AtomicArtifact.__init__(
             self,
@@ -24,7 +24,7 @@ class DynamicLibraryBinary( AtomicArtifact ):
 class CopiedHeader( AtomicArtifact ):
     def __init__( self, header ):
         self.__header = header
-        self.__copiedHeader = os.path.join( "build/inc", header.getFileName() )
+        self.__copiedHeader = os.path.join( os.path.join( "build", "inc" ), header.getFileName() )
         AtomicArtifact.__init__(
             self,
             name = self.__copiedHeader,

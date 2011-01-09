@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-
 from __future__ import with_statement
 
+import os.path
 import unittest
 
 from Misc.MockMockMock import TestCase
@@ -22,14 +21,14 @@ class EmptyArtifacts( TestCase ):
 class BasicAtomicArtifact( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
-        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "TestArtefact", [ "/tmp1/file1", "/tmp2/file2" ], [], [], True )
+        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "TestArtefact", [ os.path.join( "tmp1", "file1" ), os.path.join( "tmp2", "file2" ) ], [], [], True )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.productionAction = self.m.createMock( "self.productionAction", Action )
 
     def recordGetProductionAction( self ):
         for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( False )
-            AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp2/file2" ).returns( True )
+            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
         self.artifact.doGetProductionAction().returns( self.productionAction )
 
     def testGetProductionAction( self ):
@@ -41,10 +40,10 @@ class BasicAtomicArtifact( TestCase ):
         action = self.artifact.getProductionAction()
         model = ActionModel.build( {
             "create file1 and file2": {
-                "mkdir -p /tmp1": {},
-                "mkdir -p /tmp2": {},
-                "rm -f /tmp1/file1": {},
-                "rm -f /tmp2/file2": {}
+                "mkdir -p tmp1": {},
+                "mkdir -p tmp2": {},
+                "rm -f " + os.path.join( "tmp1", "file1" ): {},
+                "rm -f " + os.path.join( "tmp2", "file2" ): {}
             }
         } )
         self.assertTrue( Action.areSame( action, model ) )
@@ -61,9 +60,9 @@ class BasicAtomicArtifact( TestCase ):
 class BasicCompoundArtifact( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
-        self.atomicArtifact1 = self.m.createMock( "self.atomicArtifact1", AtomicArtifact, "AtomicArtifact1", [ "/tmp1/file1" ], [], [], True )
+        self.atomicArtifact1 = self.m.createMock( "self.atomicArtifact1", AtomicArtifact, "AtomicArtifact1", [ os.path.join( "tmp1", "file1" ) ], [], [], True )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
-        self.atomicArtifact2 = self.m.createMock( "self.atomicArtifact2", AtomicArtifact, "AtomicArtifact2", [ "/tmp2/file2" ], [], [], True )
+        self.atomicArtifact2 = self.m.createMock( "self.atomicArtifact2", AtomicArtifact, "AtomicArtifact2", [ os.path.join( "tmp2", "file2" ) ], [], [], True )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.artifact = self.m.createMock( "self.artifact", CompoundArtifact, "CompoundArtifact", [ self.atomicArtifact1, self.atomicArtifact2 ], True )
         self.fileProductionAction1 = self.m.createMock( "self.fileProductionAction1", Action )
@@ -74,12 +73,12 @@ class BasicCompoundArtifact( TestCase ):
 
         with self.m.unorderedGroup():
             with self.m.orderedGroup():
-                AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( True )
-                AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( True )
+                AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
+                AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
                 self.atomicArtifact1.doGetProductionAction().returns( self.fileProductionAction1 )
             with self.m.orderedGroup():
-                AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp2/file2" ).returns( True )
-                AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp2/file2" ).returns( True )
+                AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
+                AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
                 self.atomicArtifact2.doGetProductionAction().returns( self.fileProductionAction2 )
 
     def testGetProductionAction( self ):
@@ -94,12 +93,12 @@ class BasicCompoundArtifact( TestCase ):
         model = ActionModel.build( {
             "": {
                 "create file1": {
-                    "mkdir -p /tmp1": {},
-                    "rm -f /tmp1/file1": {},
+                    "mkdir -p tmp1": {},
+                    "rm -f " + os.path.join( "tmp1", "file1" ): {},
                 },
                 "create file2": {
-                    "mkdir -p /tmp2": {},
-                    "rm -f /tmp2/file2": {}
+                    "mkdir -p tmp2": {},
+                    "rm -f " + os.path.join( "tmp2", "file2" ): {}
                 }
             }
         } )
@@ -119,7 +118,7 @@ class ProductionReasons( TestCase ):
         TestCase.setUp( self )
         self.dependency = self.m.createMock( "self.dependency", ProduceableArtifact, "Dependency", True )
         self.orderOnlyDependency = self.m.createMock( "self.orderOnlyDependency", ProduceableArtifact, "Order only dependency", True )
-        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ "/tmp1/file1" ], [ self.dependency ], [ self.orderOnlyDependency ], True )
+        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ os.path.join( "tmp1", "file1" ) ], [ self.dependency ], [ self.orderOnlyDependency ], True )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.productionAction = self.m.createMock( "self.productionAction", Action )
         self.dependencyProductionAction = self.m.createMock( "self.dependencyProductionAction", Action )
@@ -129,7 +128,7 @@ class ProductionReasons( TestCase ):
         self.artifact.getOldestFile = self.m.createMock( "self.artifact.getOldestFile" )
 
     def testGetProductionActionWithNoReasonToProduce( self ):
-        AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( False )
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
         self.dependency.mustBeProduced().returns( False )
         self.artifact.getOldestFile().returns( 1200001 )
         self.dependency.getNewestFile().returns( 1200000 )
@@ -142,7 +141,7 @@ class ProductionReasons( TestCase ):
         self.assertTrue( Action.areSame( action, model ) )
 
     def testGetProductionActionWhenOrderOnlyDependencyIsNewer( self ):
-        AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( False )
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
         self.dependency.mustBeProduced().returns( False )
         self.artifact.getOldestFile().returns( 1200001 )
         self.dependency.getNewestFile().returns( 1200000 )
@@ -157,7 +156,7 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWhenOrderOnlyDependencyMustBeProduced( self ):
         for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( False )
+            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
             self.dependency.mustBeProduced().returns( False )
             self.artifact.getOldestFile().returns( 1200001 )
             self.dependency.getNewestFile().returns( 1200000 )
@@ -190,8 +189,8 @@ class ProductionReasons( TestCase ):
             "create file1": {
                 "create dependency": {},
                 "create orderOnlyDependency": {},
-                "mkdir -p /tmp1": {},
-                "rm -f /tmp1/file1": {}
+                "mkdir -p tmp1": {},
+                "rm -f " + os.path.join( "tmp1", "file1" ): {}
             }
         } )
         self.assertTrue( Action.areSame( action, model ) )
@@ -212,20 +211,20 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWhenFileIsMissing( self ):
         for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( True )
+            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
 
         self.getProductionActionAndPreview()
 
     def testGetProductionActionWhenDependencyMustBeProduced( self ):
         for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( False )
+            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
             self.dependency.mustBeProduced().returns( True )
 
         self.getProductionActionAndPreview()
 
     def testGetProductionActionWhenDependencyIsNewer( self ):
         for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( False )
+            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
             self.dependency.mustBeProduced().returns( False )
             self.artifact.getOldestFile().returns( 1200000 )
             self.dependency.getNewestFile().returns( 1200000 )
@@ -234,12 +233,12 @@ class ProductionReasons( TestCase ):
 
 class DrawGraph( TestCase ):
     def testAtomic( self ):
-        artifact = AtomicArtifact( "TestArtefact", [ "/tmp/file1", "/tmp/file2" ], [], [], True )
+        artifact = AtomicArtifact( "TestArtefact", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], True )
         
         g1 = Graph( "project" )
         cluster = Cluster( "TestArtefact" )
-        cluster.add( Node( "/tmp/file1" ) )
-        cluster.add( Node( "/tmp/file2" ) )
+        cluster.add( Node( os.path.join( "tmp", "file1" ) ) )
+        cluster.add( Node( os.path.join( "tmp", "file2" ) ) )
         g1.add( cluster )
         
         g2 = Graph( "project" )
@@ -248,19 +247,19 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testCompound( self ):
-        atomic1 = AtomicArtifact( "TestArtefact1", [ "/tmp/file1", "/tmp/file2" ], [], [], True )
-        atomic2 = AtomicArtifact( "TestArtefact2", [ "/tmp/file3", "/tmp/file4" ], [], [], True )
+        atomic1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], True )
+        atomic2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [], True )
         artifact = CompoundArtifact( "TestArtefact3", [ atomic1, atomic2 ], True )
         
         g1 = Graph( "project" )
         mainCluster = Cluster( "TestArtefact3" )
         cluster = Cluster( "TestArtefact1" )
-        cluster.add( Node( "/tmp/file1" ) )
-        cluster.add( Node( "/tmp/file2" ) )
+        cluster.add( Node( os.path.join( "tmp", "file1" ) ) )
+        cluster.add( Node( os.path.join( "tmp", "file2" ) ) )
         mainCluster.add( cluster )
         cluster = Cluster( "TestArtefact2" )
-        cluster.add( Node( "/tmp/file3" ) )
-        cluster.add( Node( "/tmp/file4" ) )
+        cluster.add( Node( os.path.join( "tmp", "file3" ) ) )
+        cluster.add( Node( os.path.join( "tmp", "file4" ) ) )
         mainCluster.add( cluster )
         g1.add( mainCluster )
         
@@ -270,20 +269,20 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testStrongDependency( self ):
-        artifact1 = AtomicArtifact( "TestArtefact1", [ "/tmp/file1", "/tmp/file2" ], [], [], True )
+        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], True )
         compound = CompoundArtifact( "TestArtefact3", [ artifact1 ], True )
-        artifact2 = AtomicArtifact( "TestArtefact2", [ "/tmp/file3", "/tmp/file4" ], [ artifact1 ], [], True )
+        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [ artifact1 ], [], True )
         
         g1 = Graph( "project" )
         cluster1 = Cluster( "TestArtefact1" )
-        cluster1.add( Node( "/tmp/file1" ) )
-        cluster1.add( Node( "/tmp/file2" ) )
+        cluster1.add( Node( os.path.join( "tmp", "file1" ) ) )
+        cluster1.add( Node( os.path.join( "tmp", "file2" ) ) )
         cluster = Cluster( "TestArtefact3" )
         cluster.add( cluster1 )
         g1.add( cluster )
         cluster2 = Cluster( "TestArtefact2" )
-        cluster2.add( Node( "/tmp/file3" ) )
-        cluster2.add( Node( "/tmp/file4" ) )
+        cluster2.add( Node( os.path.join( "tmp", "file3" ) ) )
+        cluster2.add( Node( os.path.join( "tmp", "file4" ) ) )
         g1.add( cluster2 )
         link = Link( cluster2, cluster1 )
         g1.add( link )
@@ -299,20 +298,20 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testOrderOnlyDependency( self ):
-        artifact1 = AtomicArtifact( "TestArtefact1", [ "/tmp/file1", "/tmp/file2" ], [], [], True )
+        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], True )
         compound = CompoundArtifact( "TestArtefact3", [ artifact1 ], True )
-        artifact2 = AtomicArtifact( "TestArtefact2", [ "/tmp/file3", "/tmp/file4" ], [], [ artifact1 ], True )
+        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [ artifact1 ], True )
         
         g1 = Graph( "project" )
         cluster1 = Cluster( "TestArtefact1" )
-        cluster1.add( Node( "/tmp/file1" ) )
-        cluster1.add( Node( "/tmp/file2" ) )
+        cluster1.add( Node( os.path.join( "tmp", "file1" ) ) )
+        cluster1.add( Node( os.path.join( "tmp", "file2" ) ) )
         cluster = Cluster( "TestArtefact3" )
         cluster.add( cluster1 )
         g1.add( cluster )
         cluster2 = Cluster( "TestArtefact2" )
-        cluster2.add( Node( "/tmp/file3" ) )
-        cluster2.add( Node( "/tmp/file4" ) )
+        cluster2.add( Node( os.path.join( "tmp", "file3" ) ) )
+        cluster2.add( Node( os.path.join( "tmp", "file4" ) ) )
         g1.add( cluster2 )
         link = Link( cluster2, cluster1 )
         link.attr[ "style" ] = "dashed"
