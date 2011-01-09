@@ -62,7 +62,7 @@ class InputArtifact( Artifact ):
         return False
 
     def getProductionAction( self ):
-        return NullAction()
+        return None
         
     def getAllFiles( self ):
         return self.__files
@@ -100,7 +100,9 @@ class AtomicArtifact( ProduceableArtifact ):
         else:
             productionAction = NullAction()
         for d in self.__strongDependencies + self.__orderOnlyDependencies:
-            productionAction.addPredecessor( d.getProductionAction() )
+            predecessorAction = d.getProductionAction()
+            if predecessorAction is not None:
+                productionAction.addPredecessor( predecessorAction )
         return productionAction
 
     def mustBeProduced( self ):
