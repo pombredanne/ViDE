@@ -10,13 +10,6 @@ availableToolsets = [ "Toolset1", "Toolset2", "Toolset3" ]
 defaultBuildkit = "Buildkit1"
 availableBuildkits = [ "Buildkit1", "Buildkit2", "Buildkit3" ]
 
-# Implement in ViDE
-def DummyCommand( name ):
-    class Dummy( InteractiveCommandLineProgram.Command ):
-        def execute( self, args ):
-            print "called", name
-    return Dummy
-
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
     def __init__( self ):
         InteractiveCommandLineProgram.InteractiveCommandLineProgram.__init__( self )
