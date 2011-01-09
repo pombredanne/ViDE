@@ -1,28 +1,27 @@
 from ViDE.Project.Project import Project
 from ViDE.Project import Binary, CPlusPlus
 
-def Executable( name, sources, localLibraries = [] ):
+def Objects( sources, localLibraries ):
     sourceArtifacts = []
     for source in sources:
-        sourceArtifacts.append( CPlusPlus.Source( source ) )
+        sourceArtifact = CPlusPlus.Source( source )
+        Project.inProgress.addArtifact( sourceArtifact )
+        sourceArtifacts.append( sourceArtifact )
 
     objects = []
     for sourceArtifact in sourceArtifacts:
-        objects.append( CPlusPlus.Object( sourceArtifact ) )
+        object = CPlusPlus.Object( sourceArtifact, localLibraries )
+        Project.inProgress.addArtifact( object )
+        objects.append( object )
 
-    executable = Binary.Executable( name, objects, localLibraries )
+    return objects
+
+def Executable( name, sources, localLibraries = [] ):
+    executable = Binary.Executable( name, Objects( sources, localLibraries ), localLibraries )
     Project.inProgress.addArtifact( executable )
     return executable
 
-def DynamicLibrary( name, sources ):
-    sourceArtifacts = []
-    for source in sources:
-        sourceArtifacts.append( CPlusPlus.Source( source ) )
-
-    objects = []
-    for sourceArtifact in sourceArtifacts:
-        objects.append( CPlusPlus.Object( sourceArtifact ) )
-
-    library = Binary.DynamicLibrary( name, objects )
+def DynamicLibrary( name, sources, localLibraries = [] ):
+    library = Binary.DynamicLibrary( name, Objects( sources, localLibraries ) )
     Project.inProgress.addArtifact( library )
     return library

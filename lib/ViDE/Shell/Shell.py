@@ -3,6 +3,7 @@ from Misc import InteractiveCommandLineProgram
 from ViDE import Log
 from ViDE.Shell.AutoTest import AutoTest
 from ViDE.Shell.Make import Make
+from ViDE.Shell.Draw import Draw
 
 # Get from ViDE
 defaultToolset = "Toolset1"
@@ -31,6 +32,7 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         generation = self.createCommandGroup( "Artifact generation", "" )
         generation.addCommand( "make", Make, "build the project" )
         
+        self.addCommand( "draw", Draw, "print the dot graph of the project" )
         self.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
 
         self.addHelpCommand()

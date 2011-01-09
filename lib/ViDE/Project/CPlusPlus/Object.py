@@ -5,7 +5,7 @@ from ViDE.Core.Actions import SystemAction
 from ViDE.Project import Binary
 
 class Object( Binary.Object ):
-    def __init__( self, source ):
+    def __init__( self, source, localLibraries ):
         fileName = os.path.join( "build", "obj", source.getFileName() + ".o" )
         Binary.Object.__init__(
             self,
