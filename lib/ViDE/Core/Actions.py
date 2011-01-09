@@ -1,6 +1,7 @@
 import subprocess
 
 from ViDE.Core.Action import Action
+from ViDE import Log
 
 class SystemAction( Action ):
     def __init__( self, command, preview ):
@@ -12,4 +13,6 @@ class SystemAction( Action ):
         return self.__preview
         
     def doExecute( self ):
+        Log.info( self.__preview )
         subprocess.call( self.__command )
+        Log.verbose( "End of", self.__preview )
