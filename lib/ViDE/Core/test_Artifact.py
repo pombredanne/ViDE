@@ -6,13 +6,14 @@ import unittest
 
 from Misc.MockMockMock import TestCase
 
-from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact
+from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact, CreateDirectoryAction
 from Action import Action, ActionModel
 
 class EmptyArtifacts( TestCase ):
     def testAtomic( self ):
         AtomicArtifact( "TestArtefact", [ "file" ], [], [], True )
         self.assertRaises( Exception, AtomicArtifact, "TestArtefact", [], [], [], True )
+
     def testCompound( self ):
         CompoundArtifact( "TestArtefact", [ AtomicArtifact( "TestArtefact", [ "file" ], [], [], True ) ], True )
         self.assertRaises( Exception, CompoundArtifact, "TestArtefact", [], True )
@@ -68,6 +69,8 @@ class BasicCompoundArtifact( TestCase ):
         self.fileProductionAction2 = self.m.createMock( "self.fileProductionAction2", Action )
 
     def recordGetProductionAction( self ):
+        CreateDirectoryAction._CreateDirectoryAction__all = dict()
+
         with self.m.unorderedGroup():
             with self.m.orderedGroup():
                 AtomicArtifact._AtomicArtifact__fileIsMissing( "/tmp1/file1" ).returns( True )
@@ -193,6 +196,8 @@ class ProductionReasons( TestCase ):
         self.assertTrue( Action.areSame( action, model ) )
 
     def recordGetProductionActionPreview( self ):
+        CreateDirectoryAction._CreateDirectoryAction__all = dict()
+    
         self.artifact.doGetProductionAction().returns( self.productionAction )
         self.dependency.mustBeProduced().returns( True )
         self.dependency.computeProductionAction().returns( self.dependencyProductionAction )
