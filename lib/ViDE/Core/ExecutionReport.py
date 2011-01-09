@@ -60,11 +60,15 @@ class ExecutionReport:
     def __addAction( self, action ):
         if action not in self.theBigMap:
             a = ExecutionReport.Action( action )
-            self.theBigMap[ action ] = a
-            self.__actions.add( a )
-            for p in action.getPredecessors():
-                self.__addAction( p )
-                a.predecessors.add( self.theBigMap[ p ] )
+            if a.begin is None:
+                for p in action.getPredecessors():
+                    self.__addAction( p )
+            else:
+                self.theBigMap[ action ] = a
+                self.__actions.add( a )
+                for p in action.getPredecessors():
+                    self.__addAction( p )
+                    a.predecessors.add( self.theBigMap[ p ] )
 
     def __computeDuration( self ):
         begin = min( a.begin for a in self.__actions )

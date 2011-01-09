@@ -4,6 +4,8 @@ import cairo
 
 from Misc import InteractiveCommandLineProgram
 
+from ViDE import Log
+from ViDE.Core.Action import CompoundException
 from ViDE.Core.ExecutionReport import ExecutionReport
 from ViDE.Project.Project import Project
 
@@ -18,13 +20,15 @@ class Make( InteractiveCommandLineProgram.Command ):
         self.dryRun = False
         self.addOption( [ "n", "dry-run" ], "dryRun", InteractiveCommandLineProgram.StoreConstant( True ), "print commands instead of executing them" )
         
-
     def execute( self, args ):
         action = Project.load( "videfile.py" ).getBuildAction()
         if self.dryRun:
             print "\n".join( action.preview() )
         else:
-            action.execute( self.keepGoing, self.jobs )
+            try:
+                action.execute( self.keepGoing, self.jobs )
+            except CompoundException:
+                Log.error( "build failed" )
             report = ExecutionReport( action )
             img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 600 )
             ctx = cairo.Context( img )

@@ -14,5 +14,5 @@ class SystemAction( Action ):
         
     def doExecute( self ):
         Log.info( self.__preview )
-        subprocess.call( self.__command )
+        subprocess.check_call( self.__command )
         Log.verbose( "End of", self.__preview )
