@@ -171,6 +171,10 @@ class Action:
         return a
 
     def __getNextPotentialExecutable( self ):
+        ### @todo If more than one action is at the same level, choose the one with the longest likely execution time
+        # When parallelizing, it would avoid to start the longest action after all the short ones,
+        # hence reducing the global compilation time
+        # How to estimate the execution time beforehand? Remember from previous executions? Ask to the action object itself?
         return self.__getLowestPredecessorMatchingCriteria( lambda a: a.isInitial() and all( p.isEnded() for p in a.__predecessors ) )
 
     def __validatePotentialExecutable( self, keepGoing, a ):
