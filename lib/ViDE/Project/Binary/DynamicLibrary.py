@@ -15,6 +15,7 @@ class DynamicLibraryBinary( AtomicArtifact ):
             files = [ self.__fileName ],
             strongDependencies = objects,
             orderOnlyDependencies = [],
+            automaticDependencies = [],
             automatic = False
         )
 
@@ -31,6 +32,7 @@ class CopiedHeader( AtomicArtifact ):
             files = [ self.__copiedHeader ],
             strongDependencies = [ header ],
             orderOnlyDependencies = [],
+            automaticDependencies = [],
             automatic = False
         )
         

@@ -79,13 +79,14 @@ class ProduceableArtifact( Artifact ):
         return self.__productionAction
 
 class AtomicArtifact( ProduceableArtifact ):
-    def __init__( self, name, files, strongDependencies, orderOnlyDependencies, automatic ):
+    def __init__( self, name, files, strongDependencies, orderOnlyDependencies, automaticDependencies, automatic ):
         if len( files ) == 0:
             raise Exception( "Trying to build an empty AtomicArtifact" )
         ProduceableArtifact.__init__( self, name, automatic )
         self.__files = files
         self.__strongDependencies = strongDependencies
         self.__orderOnlyDependencies = orderOnlyDependencies
+        self.__automaticDependencies = automaticDependencies
 
     def computeProductionAction( self ):
         if self.__filesMustBeProduced():
@@ -97,7 +98,7 @@ class AtomicArtifact( ProduceableArtifact ):
                 productionAction.addPredecessor( RemoveFileAction( f ) )
         else:
             productionAction = NullAction()
-        for d in self.__strongDependencies + self.__orderOnlyDependencies:
+        for d in self.__strongDependencies + self.__orderOnlyDependencies + self.__automaticDependencies:
             predecessorAction = d.getProductionAction()
             productionAction.addPredecessor( predecessorAction )
         return productionAction
@@ -120,14 +121,14 @@ class AtomicArtifact( ProduceableArtifact ):
         return not os.path.exists( f )
 
     def __anyStrongDependencyMustBeProduced( self ):
-        return any( d.mustBeProduced() for d in self.__strongDependencies )
+        return any( d.mustBeProduced() for d in self.__strongDependencies + self.__automaticDependencies )
 
     def __anyOrderOnlyDependencyMustBeProduced( self ):
         return any( d.mustBeProduced() for d in self.__orderOnlyDependencies )
 
     def __anyStrongDependencyIsMoreRecent( self ):
         selfOldestModificationDate = self.getOldestFile()
-        for d in self.__strongDependencies:
+        for d in self.__strongDependencies + self.__automaticDependencies:
             depNewestModificationDate = d.getNewestFile()
             if depNewestModificationDate >= selfOldestModificationDate:
                 return True
@@ -149,6 +150,10 @@ class AtomicArtifact( ProduceableArtifact ):
         for d in self.__orderOnlyDependencies:
             link = Graphviz.Link( self.getGraphNode(), d.getGraphNode() )
             link.attr[ "style" ] = "dashed"
+            links.append( link )
+        for d in self.__automaticDependencies:
+            link = Graphviz.Link( self.getGraphNode(), d.getGraphNode() )
+            link.attr[ "color" ] = "grey"
             links.append( link )
         return links
 

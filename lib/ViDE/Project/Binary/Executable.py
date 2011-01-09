@@ -12,6 +12,7 @@ class Executable( AtomicArtifact ):
             files = [ self.__fileName ],
             strongDependencies = objects,
             orderOnlyDependencies = [ lib.getBinary() for lib in localLibraries ],
+            automaticDependencies = [],
             automatic = False
         )
         self.__name = name
