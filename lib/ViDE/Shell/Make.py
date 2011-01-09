@@ -1,3 +1,5 @@
+import os.path
+
 import cairo
 
 from Misc import InteractiveCommandLineProgram
@@ -29,4 +31,4 @@ class Make( InteractiveCommandLineProgram.Command ):
             ctx.set_source_rgb( .9, .9, .9 )
             ctx.paint()
             report.draw( ctx, 780, 580 )
-            img.write_to_png( "report.png" )
+            img.write_to_png( os.path.join( "build", "report.png" ) )
