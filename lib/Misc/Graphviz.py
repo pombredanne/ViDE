@@ -120,7 +120,9 @@ class Node:
 
 class Link:
     def __init__( self, origin, destination, label = None ):
-        self.attr = { "label": label }
+        self.attr = {}
+        if label is not None:
+            self.attr[ "label" ] = label
         if isinstance( origin, Cluster ):
             self.__origin = origin.getOneNode()
             self.__originCluster = origin

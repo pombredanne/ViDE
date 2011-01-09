@@ -24,7 +24,7 @@ class GlobalTest( unittest.TestCase ):
         n4 = Node( "Fourth node" )
         c2.add( n4 )
 
-        g.add( Link( n1, n2, "First link" ) )
+        g.add( Link( n1, n2 ) ) # First link, unnamed
         g.add( Link( n1, n3, "Second link" ) )
         l = Link( n2, c1, "Green link from node to cluster" )
         l.attr[ "color" ] = "green"
@@ -32,7 +32,7 @@ class GlobalTest( unittest.TestCase ):
         g.add( Link( c1, n4, "Link from cluster to node" ) )
         g.add( Link( c1, c2, "Link between clusters" ) )
 
-        self.assertEquals( g.dotString(), """digraph "First graph" {compound="true";node [shape="box"];edge [color="red"];node_0[color="blue",label="Blue node"];node_1[label="Second node"];subgraph cluster_0{label="First cluster";node_2[label="Oval node",shape="oval"];};subgraph cluster_1{label="Second cluster";node_3[label="Fourth node"];};node_0->node_1[label="First link"];node_0->node_2[label="Second link"];node_1->node_2[color="green",label="Green link from node to cluster",lhead="cluster_0"];node_2->node_3[label="Link between clusters",lhead="cluster_1",ltail="cluster_0"];node_2->node_3[label="Link from cluster to node",ltail="cluster_0"];}""" )
+        self.assertEquals( g.dotString(), """digraph "First graph" {compound="true";node [shape="box"];edge [color="red"];node_0[color="blue",label="Blue node"];node_1[label="Second node"];subgraph cluster_0{label="First cluster";node_2[label="Oval node",shape="oval"];};subgraph cluster_1{label="Second cluster";node_3[label="Fourth node"];};node_0->node_1[];node_0->node_2[label="Second link"];node_1->node_2[color="green",label="Green link from node to cluster",lhead="cluster_0"];node_2->node_3[label="Link between clusters",lhead="cluster_1",ltail="cluster_0"];node_2->node_3[label="Link from cluster to node",ltail="cluster_0"];}""" )
 
 class EqualityTestCase:
     def test( self ):

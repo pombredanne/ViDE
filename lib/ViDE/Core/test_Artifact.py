@@ -5,6 +5,7 @@ from __future__ import with_statement
 import unittest
 
 from Misc.MockMockMock import TestCase
+from Misc.Graphviz import Graph, Cluster, Node, Link
 
 from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact, CreateDirectoryAction
 from Action import Action, ActionModel
@@ -230,5 +231,101 @@ class ProductionReasons( TestCase ):
             self.dependency.getNewestFile().returns( 1200000 )
 
         self.getProductionActionAndPreview()
+
+class DrawGraph( TestCase ):
+    def testAtomic( self ):
+        artifact = AtomicArtifact( "TestArtefact", [ "/tmp/file1", "/tmp/file2" ], [], [], True )
+        
+        g1 = Graph( "project" )
+        cluster = Cluster( "TestArtefact" )
+        cluster.add( Node( "/tmp/file1" ) )
+        cluster.add( Node( "/tmp/file2" ) )
+        g1.add( cluster )
+        
+        g2 = Graph( "project" )
+        g2.add( artifact.getGraphNode() )
+        
+        self.assertTrue( Graph.areSame( g1, g2 ) )
+
+    def testCompound( self ):
+        atomic1 = AtomicArtifact( "TestArtefact1", [ "/tmp/file1", "/tmp/file2" ], [], [], True )
+        atomic2 = AtomicArtifact( "TestArtefact2", [ "/tmp/file3", "/tmp/file4" ], [], [], True )
+        artifact = CompoundArtifact( "TestArtefact3", [ atomic1, atomic2 ], True )
+        
+        g1 = Graph( "project" )
+        mainCluster = Cluster( "TestArtefact3" )
+        cluster = Cluster( "TestArtefact1" )
+        cluster.add( Node( "/tmp/file1" ) )
+        cluster.add( Node( "/tmp/file2" ) )
+        mainCluster.add( cluster )
+        cluster = Cluster( "TestArtefact2" )
+        cluster.add( Node( "/tmp/file3" ) )
+        cluster.add( Node( "/tmp/file4" ) )
+        mainCluster.add( cluster )
+        g1.add( mainCluster )
+        
+        g2 = Graph( "project" )
+        g2.add( artifact.getGraphNode() )
+        
+        self.assertTrue( Graph.areSame( g1, g2 ) )
+
+    def testStrongDependency( self ):
+        artifact1 = AtomicArtifact( "TestArtefact1", [ "/tmp/file1", "/tmp/file2" ], [], [], True )
+        compound = CompoundArtifact( "TestArtefact3", [ artifact1 ], True )
+        artifact2 = AtomicArtifact( "TestArtefact2", [ "/tmp/file3", "/tmp/file4" ], [ artifact1 ], [], True )
+        
+        g1 = Graph( "project" )
+        cluster1 = Cluster( "TestArtefact1" )
+        cluster1.add( Node( "/tmp/file1" ) )
+        cluster1.add( Node( "/tmp/file2" ) )
+        cluster = Cluster( "TestArtefact3" )
+        cluster.add( cluster1 )
+        g1.add( cluster )
+        cluster2 = Cluster( "TestArtefact2" )
+        cluster2.add( Node( "/tmp/file3" ) )
+        cluster2.add( Node( "/tmp/file4" ) )
+        g1.add( cluster2 )
+        link = Link( cluster2, cluster1 )
+        g1.add( link )
+        
+        g2 = Graph( "project" )
+        g2.add( artifact2.getGraphNode() )
+        g2.add( compound.getGraphNode() )
+        for l in artifact2.getGraphLinks():
+            g2.add( l )
+        for l in compound.getGraphLinks():
+            g2.add( l )
+
+        self.assertTrue( Graph.areSame( g1, g2 ) )
+
+    def testOrderOnlyDependency( self ):
+        artifact1 = AtomicArtifact( "TestArtefact1", [ "/tmp/file1", "/tmp/file2" ], [], [], True )
+        compound = CompoundArtifact( "TestArtefact3", [ artifact1 ], True )
+        artifact2 = AtomicArtifact( "TestArtefact2", [ "/tmp/file3", "/tmp/file4" ], [], [ artifact1 ], True )
+        
+        g1 = Graph( "project" )
+        cluster1 = Cluster( "TestArtefact1" )
+        cluster1.add( Node( "/tmp/file1" ) )
+        cluster1.add( Node( "/tmp/file2" ) )
+        cluster = Cluster( "TestArtefact3" )
+        cluster.add( cluster1 )
+        g1.add( cluster )
+        cluster2 = Cluster( "TestArtefact2" )
+        cluster2.add( Node( "/tmp/file3" ) )
+        cluster2.add( Node( "/tmp/file4" ) )
+        g1.add( cluster2 )
+        link = Link( cluster2, cluster1 )
+        link.attr[ "style" ] = "dashed"
+        g1.add( link )
+        
+        g2 = Graph( "project" )
+        g2.add( artifact2.getGraphNode() )
+        g2.add( compound.getGraphNode() )
+        for l in artifact2.getGraphLinks():
+            g2.add( l )
+        for l in compound.getGraphLinks():
+            g2.add( l )
+
+        self.assertTrue( Graph.areSame( g1, g2 ) )
 
 unittest.main()

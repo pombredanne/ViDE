@@ -1,11 +1,15 @@
 import os
 
-from Actions import NullAction, CreateDirectoryAction, RemoveFileAction
+from Misc import Graphviz
+
+from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction
 
 class Artifact:
     def __init__( self, name, automatic ):
         self.__name = name
         self.__automatic = automatic
+        self.__graphNode = None
+        self.__graphLinks = None
 
     @staticmethod
     def getModificationDate( file ):
@@ -16,6 +20,19 @@ class Artifact:
 
     def getNewestFile( self ):
         return max( Artifact.getModificationDate( f ) for f in self.getAllFiles() )
+    
+    def getName( self ):
+        return self.__name
+
+    def getGraphNode( self ):
+        if self.__graphNode is None:
+            self.__graphNode = self.computeGraphNode()
+        return self.__graphNode
+
+    def getGraphLinks( self ):
+        if self.__graphLinks is None:
+            self.__graphLinks = self.computeGraphLinks()
+        return self.__graphLinks
 
 class InputArtifact( Artifact ):
     def __init__( self, name, files, automatic ):
@@ -31,6 +48,15 @@ class InputArtifact( Artifact ):
     def getAllFiles( self ):
         return self.__files
 
+    def computeGraphNode( self ):
+        node = Graphviz.Cluster( self.getName() )
+        for f in self.__files:
+            node.add( Graphviz.Node( f ) )
+        return node
+
+    def computeGraphLinks( self ):
+        return []
+        
 class ProduceableArtifact( Artifact ):
     def __init__( self, name, automatic ):
         Artifact.__init__( self, name, automatic )
@@ -102,6 +128,22 @@ class AtomicArtifact( ProduceableArtifact ):
 
     def getAllFiles( self ):
         return self.__files
+        
+    def computeGraphNode( self ):
+        node = Graphviz.Cluster( self.getName() )
+        for f in self.__files:
+            node.add( Graphviz.Node( f ) )
+        return node
+
+    def computeGraphLinks( self ):
+        links = []
+        for d in self.__strongDependencies:
+            links.append( Graphviz.Link( self.getGraphNode(), d.getGraphNode() ) )
+        for d in self.__orderOnlyDependencies:
+            link = Graphviz.Link( self.getGraphNode(), d.getGraphNode() )
+            link.attr[ "style" ] = "dashed"
+            links.append( link )
+        return links
 
 class CompoundArtifact( ProduceableArtifact ):
     def __init__( self, name, componants, automatic ):
@@ -124,3 +166,15 @@ class CompoundArtifact( ProduceableArtifact ):
         for c in self.__componants:
             allFiles += c.getAllFiles()
         return allFiles
+
+    def computeGraphNode( self ):
+        node = Graphviz.Cluster( self.getName() )
+        for c in self.__componants:
+            node.add( c.getGraphNode() )
+        return node
+
+    def computeGraphLinks( self ):
+        links = []
+        for c in self.__componants:
+            links += c.getGraphLinks()
+        return links
