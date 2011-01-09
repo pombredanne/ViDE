@@ -67,6 +67,16 @@ class Action:
         for p in self.__predecessors:
             p.__clearPreviewFlags()
 
+    ###################################################################### dump
+    
+    def dump( self, level = 0 ):
+        for p in self.__predecessors:
+            p.dump( level + 1 )
+        preview = self.doPreview()
+        if preview == "":
+            preview = "none"
+        print " " * level + str( id( self ) ) + "  " + preview
+    
     ###################################################################### execution state
 
     class __ExecutionState:
