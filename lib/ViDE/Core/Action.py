@@ -249,13 +249,3 @@ class ActionModel( Action ):
                 a.addPredecessor( p )
             actions.append( a )
         return actions
-
-class NullAction( Action ):
-    def __init__( self ):
-        Action.__init__( self )
-
-    def doExecute( self ):
-        pass
-
-    def doPreview( self ):
-        return ""

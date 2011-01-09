@@ -27,8 +27,8 @@ class Make( InteractiveCommandLineProgram.Command ):
         else:
             try:
                 action.execute( self.keepGoing, self.jobs )
-            except CompoundException:
-                Log.error( "build failed" )
+            except CompoundException, e:
+                Log.error( "build failed", e )
             report = ExecutionReport( action )
             img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 600 )
             ctx = cairo.Context( img )

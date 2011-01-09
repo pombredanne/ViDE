@@ -1,43 +1,7 @@
 import os
 
-from Action import Action, NullAction
+from Actions import NullAction, CreateDirectoryAction, RemoveFileAction
 
-class RemoveFileAction( Action ):
-    def __init__( self, file ):
-        Action.__init__( self )
-        self.__file = file
-
-    def doPreview( self ):
-        return "rm -f " + self.__file
-        
-    def doExecute( self ):
-        try:
-            os.unlink( self.__file )
-        except OSError:
-            pass
-
-class CreateDirectoryAction( Action ):
-    __all = dict()
-
-    @staticmethod
-    def getOrCreate( directory ):
-        if directory not in CreateDirectoryAction.__all:
-            CreateDirectoryAction.__all[ directory ] = CreateDirectoryAction( directory )
-        return CreateDirectoryAction.__all[ directory ]
-
-    def __init__( self, directory ):
-        Action.__init__( self )
-        self.__directory = directory
-
-    def doPreview( self ):
-        return "mkdir -p " + self.__directory
-        
-    def doExecute( self ):
-        try:
-            os.makedirs( self.__directory )
-        except OSError:
-            pass
-        
 class Artifact:
     def __init__( self, name, automatic ):
         self.__name = name

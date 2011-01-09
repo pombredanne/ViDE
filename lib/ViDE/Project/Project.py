@@ -1,5 +1,5 @@
 from ViDE.Core.Descriptible import Descriptible
-from ViDE.Core.Action import NullAction
+from ViDE.Core.Actions import NullAction
 
 class Project( Descriptible ):
     def beginDescription( self ):
