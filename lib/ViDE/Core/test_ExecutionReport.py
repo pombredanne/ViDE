@@ -173,7 +173,7 @@ class HorizontalMargins( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1
         ctx.translate( marginSize, marginSize )
         report.draw( ctx, width, height )
         leftMarginIsWhite, rightMarginIsWhite, drawingTouchesLeft, drawingTouchesRight = self.checkHorizontalMargins( img, marginSize, 0xFFFFFFFF )
-        if len( sys.argv ) > 1:
+        if len( sys.argv ) > 1 and sys.argv[1] != "-q":
             reason = ""
             if not leftMarginIsWhite:
                 reason += ".spreads_on_left_margin"
