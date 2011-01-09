@@ -1,0 +1,2 @@
+Automatic dependencies (from #include)
+Buildkits: gcc_cygwin msvc gcc_darwin gcc_linux gcc_mingw
