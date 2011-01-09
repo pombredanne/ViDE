@@ -12,14 +12,14 @@ class Object( Binary.Object ):
             name = fileName,
             files = [ fileName ],
             strongDependencies = [ source ],
-            orderOnlyDependencies = [],
+            orderOnlyDependencies = [ lib.getCopiedHeaders() for lib in localLibraries ],
             automatic = False
         )
         self.__fileName = fileName
         self.__source = source
 
     def doGetProductionAction( self ):
-        return SystemAction( [ "g++", "-c", "-o" + self.__fileName, self.__source.getFileName() ], "g++ -c " + self.__source.getFileName() )
+        return SystemAction( [ "g++", "-c", "-Ibuild/inc", "-o" + self.__fileName, self.__source.getFileName() ], "g++ -c " + self.__source.getFileName() )
 
     def getFileName( self ):
         return self.__fileName

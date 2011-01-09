@@ -1,9 +1,8 @@
-from ViDE.Core.Artifact import InputArtifact
+from ViDE.Core.Artifact import MonofileInputArtifact
 
-class Source( InputArtifact ):
-    def __init__( self, fileName ):
-        InputArtifact.__init__( self, name = fileName, files = [ fileName ], automatic = False )
-        self.__fileName = fileName
-        
-    def getFileName( self ):
-        return self.__fileName
+class Header( MonofileInputArtifact ):
+    pass
+
+class Source( MonofileInputArtifact ):
+    pass
+

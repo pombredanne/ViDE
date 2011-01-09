@@ -21,7 +21,8 @@ class Action:
         self.__predecessors = set()
 
     def addPredecessor( self, p ):
-        self.__predecessors.add( p )
+        if p is not None:
+            self.__predecessors.add( p )
 
     def getPredecessors( self ):
         return self.__predecessors

@@ -56,6 +56,14 @@ class InputArtifact( Artifact ):
 
     def computeGraphLinks( self ):
         return []
+
+class MonofileInputArtifact( InputArtifact ):
+    def __init__( self, fileName ):
+        InputArtifact.__init__( self, name = fileName, files = [ fileName ], automatic = False )
+        self.__fileName = fileName
+        
+    def getFileName( self ):
+        return self.__fileName
         
 class ProduceableArtifact( Artifact ):
     def __init__( self, name, automatic ):
@@ -91,8 +99,7 @@ class AtomicArtifact( ProduceableArtifact ):
             productionAction = NullAction()
         for d in self.__strongDependencies + self.__orderOnlyDependencies:
             predecessorAction = d.getProductionAction()
-            if predecessorAction is not None:
-                productionAction.addPredecessor( predecessorAction )
+            productionAction.addPredecessor( predecessorAction )
         return productionAction
 
     def mustBeProduced( self ):

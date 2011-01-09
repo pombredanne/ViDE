@@ -1,2 +1,2 @@
-from Source import Source
+from Source import Header, Source
 from Object import Object

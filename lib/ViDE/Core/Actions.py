@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 
 from ViDE.Core.Action import Action
