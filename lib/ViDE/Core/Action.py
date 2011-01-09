@@ -1,8 +1,11 @@
 from __future__ import with_statement
 
+import multiprocessing
 import threading
 import itertools
 import time
+
+from ViDE import Log
 
 class CompoundException( Exception ):
     def __init__( self, exceptions ):
@@ -108,6 +111,12 @@ class Action:
     ###################################################################### execute
 
     def execute( self, keepGoing, threadNumber ):
+        if threadNumber == -1:
+            try:
+                threadNumber = multiprocessing.cpu_count() + 1
+            except NotImplementedError:
+                threadNumber = 2
+            Log.verbose( "Automatically using", threadNumber, "jobs" )
         self.__prepareExecution()
         self.__executeInThreads( keepGoing, threadNumber )
         self.__checkExecution()
