@@ -13,7 +13,7 @@ class Container:
 
     def getOneNode( self ):
         for n in self.__nodes:
-            return n
+             return n.getOneNode()
 
     def contentDotString( self ):
         return "".join( sorted( n.dotString() for n in self.__nodes ) )
@@ -110,6 +110,9 @@ class Node:
 
     def dotString( self ):
         return self.id() + "[" + attributesDotString( self.attr ) + "];"
+
+    def getOneNode( self ):
+        return self
 
     def id( self ):
         return "node_" + str( self.__id )

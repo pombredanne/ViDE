@@ -8,7 +8,7 @@ class Executable( AtomicArtifact ):
             name = name,
             files = [ "build/bin/" + name ],
             strongDependencies = objects,
-            orderOnlyDependencies = localLibraries,
+            orderOnlyDependencies = [ lib.getBinary() for lib in localLibraries ],
             automatic = False
         )
         self.__name = name
