@@ -1,5 +1,6 @@
 from Misc import InteractiveCommandLineProgram
 
+from ViDE import Log
 from ViDE.Shell.AutoTest import AutoTest
 from ViDE.Shell.Make import Make
 
@@ -15,11 +16,10 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         InteractiveCommandLineProgram.InteractiveCommandLineProgram.__init__( self )
         self.prompt = "ViDE>"
 
-        self.verbosity = 1
         verbosity = self.createOptionGroup( "Verbosity", "" )
-        verbosity.addOption( [ "q", "quiet" ], "verbosity", InteractiveCommandLineProgram.StoreConstant( 0 ), "print as few messages as possible", InteractiveCommandLineProgram.StoreConstant( 1 ), "print normal messages" )
-        verbosity.addOption( [ "v", "verbose" ], "verbosity", InteractiveCommandLineProgram.StoreConstant( 2 ), "print information messages", InteractiveCommandLineProgram.StoreConstant( 1 ), "don't print information messages" )
-        verbosity.addOption( "debug", "verbosity", InteractiveCommandLineProgram.StoreConstant( 3 ), "print debug messages", InteractiveCommandLineProgram.StoreConstant( 1 ), "don't print debug messages" )
+        verbosity.addOption( [ "q", "quiet" ], "setVerbosity", InteractiveCommandLineProgram.CallWithConstant( 0 ), "print as few messages as possible", InteractiveCommandLineProgram.CallWithConstant( 1 ), "print normal messages" )
+        verbosity.addOption( [ "v", "verbose" ], "setVerbosity", InteractiveCommandLineProgram.CallWithConstant( 2 ), "print more information messages", InteractiveCommandLineProgram.CallWithConstant( 1 ), "don't print information messages" )
+        verbosity.addOption( "debug", "setVerbosity", InteractiveCommandLineProgram.CallWithConstant( 3 ), "print debug messages", InteractiveCommandLineProgram.CallWithConstant( 1 ), "don't print debug messages" )
 
         toolsChoice = self.createOptionGroup( "Tools choice", "" )
         self.toolset = defaultToolset
@@ -35,3 +35,6 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
 
         self.addHelpCommand()
         self.addExitCommand()
+    
+    def setVerbosity( self, verbosity ):
+        Log.level = verbosity

@@ -57,6 +57,15 @@ class RemoveArgument:
     def __call__( self, destinationObject, destinationAttribute, value ):
         getattr( destinationObject, destinationAttribute ).remove( value )
 
+class CallWithConstant:
+    def __init__( self, value ):
+        self.__value = value
+        self.arguments = []
+
+    def __call__( self, destinationObject, destinationAttribute ):
+        toBeCalled = getattr( destinationObject, destinationAttribute )
+        toBeCalled( self.__value )
+
 class Option:
     def __init__( self, name, aliases, destinationObject, destinationAttribute, enable, enableHelp, disable, disableHelp ):
         self.name = name
