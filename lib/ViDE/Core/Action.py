@@ -66,6 +66,7 @@ class Action:
         return self.__getLowestPredecessorMatchingCriteria( lambda a: not a.__previewed )
 
     def __clearPreviewFlags( self ):
+        ### @todo Remove? We load the project from scratch in all commands, leading to new Artifacts, hence new Actions, so Actions are not previewed twice
         self.__previewed = False
         for p in self.__predecessors:
             p.__clearPreviewFlags()
@@ -127,6 +128,7 @@ class Action:
         self.__resetExecutionState()
 
     def __resetExecutionState( self ):
+        ### @todo Remove? We load the project from scratch in all commands, leading to new Artifacts, hence new Actions, so Actions are not executed twice
         self.__executionState = Action.__Initial()
         self.__executionBegin = None
         self.__executionEnd = None
