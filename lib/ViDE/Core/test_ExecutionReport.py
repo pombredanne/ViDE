@@ -137,7 +137,7 @@ class GraduationLabels( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1.
             self.assertNotEqual( graduation, previousGraduation )
             previousGraduation = graduation
 
-class HorizontalMargins( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1.0, 1.1, 55, 60, 65, 7000, 7200, 7400 ], range( 230, 800, 25 ) ) ):
+class HorizontalMargins( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1.0, 1.1, 55, 60, 65, 7000, 7200, 7400 ], range( 255, 800, 25 ) ) ):
     """Drawings have exactly the requested width"""
     def setUp( self ):
         TestCase.setUp( self )
@@ -171,18 +171,17 @@ class HorizontalMargins( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1
         ctx.translate( marginSize, marginSize )
         report.draw( ctx, width, height )
         leftMarginIsWhite, rightMarginIsWhite, drawingTouchesLeft, drawingTouchesRight = self.checkHorizontalMargins( img, marginSize, 0xFFFFFFFF )
-        if len( sys.argv ) > 1 and sys.argv[1] != "-q":
-            reason = ""
-            if not leftMarginIsWhite:
-                reason += ".spreads_on_left_margin"
-            if not rightMarginIsWhite:
-                reason += ".spreads_on_right_margin"
-            if not drawingTouchesLeft:
-                reason += ".far_from_left"
-            if not drawingTouchesRight:
-                reason += ".far_from_right"
-            if reason != "":
-                img.write_to_png( "HorizontalMargins." + testName + reason + ".png" )
+        reason = ""
+        if not leftMarginIsWhite:
+            reason += ".spreads_on_left_margin"
+        if not rightMarginIsWhite:
+            reason += ".spreads_on_right_margin"
+        if not drawingTouchesLeft:
+            reason += ".far_from_left"
+        if not drawingTouchesRight:
+            reason += ".far_from_right"
+        if reason != "":
+            img.write_to_png( "HorizontalMargins." + testName + reason + ".png" )
         self.assertTrue( leftMarginIsWhite )
         self.assertTrue( rightMarginIsWhite )
         self.assertTrue( drawingTouchesLeft )
