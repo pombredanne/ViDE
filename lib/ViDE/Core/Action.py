@@ -201,6 +201,7 @@ class Action:
 
     ######################################################################
 
+    ### @todo Implement based on graph comparison as implemented in Misc.Graphviz
     @staticmethod
     def areSame( a, b ):
         return Action.__haveSameStructure( a, b ) and Action.__haveSameModel( a, b )
