@@ -52,16 +52,6 @@ class BasicAction( TestCase ):
         self.assertTrue( self.a.isSuccess() )
         self.assertEquals( self.a.getExecutionTimes(), ( 1, 2 ) )
 
-    def testExecuteTwice( self ):
-        self.a.doExecute()
-        self.a.doExecute().raises( MyException( "Failure" ) )
-
-        self.m.startTest()
-        self.a.execute( keepGoing = False, threadNumber = 1 )
-        self.assertTrue( self.a.isSuccess() )
-        self.assertRaises( CompoundException, self.a.execute, keepGoing = False, threadNumber = 1 )
-        self.assertTrue( self.a.isFailure() )
-
     def testFailure( self ):
         time.time = self.m.createMock( "time.time" )
         time.time().returns( 1 )
@@ -79,14 +69,6 @@ class BasicAction( TestCase ):
         self.m.startTest()
         self.assertRaises( CompoundException, self.a.execute, keepGoing = True, threadNumber = 1 )
         self.assertTrue( self.a.isFailure() )
-
-    def testPreviewTwice( self ):
-        self.a.doPreview().returns( "a's preview" )
-        self.a.doPreview().returns( "a's preview" )
-
-        self.m.startTest()
-        self.assertEquals( self.a.preview(), [ "a's preview" ] )
-        self.assertEquals( self.a.preview(), [ "a's preview" ] )
 
 class DeepAction( TestCase ):
     def setUp( self ):

@@ -22,6 +22,10 @@ class Action:
 
     def __init__( self ):
         self.__predecessors = set()
+        self.__previewed = False
+        self.__executionState = Action.__Initial()
+        self.__executionBegin = None
+        self.__executionEnd = None
 
     def addPredecessor( self, p ):
         if p is not None:
@@ -62,7 +66,6 @@ class Action:
 
     def preview( self ):
         LongAction.loadDurations()
-        self.__clearPreviewFlags()
         return self.__preview()
 
     def __preview( self ):
@@ -79,12 +82,6 @@ class Action:
 
     def __getNextToPreview( self ):
         return self.__getLowestPredecessorMatchingCriteria( lambda a: not a.__previewed )
-
-    def __clearPreviewFlags( self ):
-        ### @todo Remove? We load the project from scratch in all commands, leading to new Artifacts, hence new Actions, so Actions are not previewed twice
-        self.__previewed = False
-        for p in self.__predecessors:
-            p.__clearPreviewFlags()
 
     ###################################################################### dump
     
@@ -140,16 +137,7 @@ class Action:
     def __prepareExecution( self ):
         self.__exceptions = []
         self.cond = threading.Condition()
-        self.__resetExecutionState()
         LongAction.loadDurations()
-
-    def __resetExecutionState( self ):
-        ### @todo Remove? We load the project from scratch in all commands, leading to new Artifacts, hence new Actions, so Actions are not executed twice
-        self.__executionState = Action.__Initial()
-        self.__executionBegin = None
-        self.__executionEnd = None
-        for p in self.__predecessors:
-            p.__resetExecutionState()
 
     def __checkExecution( self ):
         del self.cond
