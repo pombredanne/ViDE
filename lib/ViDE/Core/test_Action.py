@@ -3,11 +3,12 @@ from __future__ import with_statement
 import unittest
 import threading
 import random
+import os
 import time
 
 from Misc.MockMockMock import TestCase
 
-from Action import Action, CompoundException
+from Action import Action, LongAction, CompoundException
 
 class MyException( Exception ):
     pass
@@ -329,6 +330,118 @@ class ExecuteLeavesFirst( TestCase ):
         self.assertEquals( set( preview[2:4] ), set( [ "a3's preview", "a4's preview" ] ) )
         self.assertEquals( preview[4], "a5's preview" )
 
+class ExecuteLongActionsFirst( TestCase ):
+    def setUp( self ):
+        TestCase.setUp( self )
+        self.a11 = self.m.createMock( "self.a11", LongAction )
+        self.a12 = self.m.createMock( "self.a12", LongAction )
+        self.a13 = self.m.createMock( "self.a13", LongAction )
+        self.a14 = self.m.createMock( "self.a14", Action )
+        self.a15 = self.m.createMock( "self.a15", Action )
+        self.a11.getDuration = self.m.createMock( "self.a11.getDuration" )
+        self.a12.getDuration = self.m.createMock( "self.a12.getDuration" )
+        self.a13.getDuration = self.m.createMock( "self.a13.getDuration" )
+        self.a11.doPreview = self.m.createMock( "self.a11.doPreview" )
+        self.a12.doPreview = self.m.createMock( "self.a12.doPreview" )
+        self.a13.doPreview = self.m.createMock( "self.a13.doPreview" )
+        self.a2 = self.m.createMock( "self.a2", Action )
+        self.a2.addPredecessor( self.a11 )
+        self.a2.addPredecessor( self.a12 )
+        self.a2.addPredecessor( self.a13 )
+        self.a2.addPredecessor( self.a14 )
+        self.a2.addPredecessor( self.a15 )
+        
+    def testExecute1( self ):
+        with self.m.unorderedGroup():
+            self.a12.getDuration().returns( 2 )
+            self.a12.getDuration().returns( 2 ).isOptional()
+            self.a11.getDuration().returns( 3 )
+            self.a11.getDuration().returns( 3 ).isOptional()
+            self.a13.getDuration().returns( 1 )
+            self.a13.getDuration().returns( 1 ).isOptional()
+        self.a11.doExecute()
+        self.a11.doPreview().returns( "a11" )
+        with self.m.unorderedGroup():
+            self.a12.getDuration().returns( 2 )
+            self.a12.getDuration().returns( 2 ).isOptional()
+            self.a13.getDuration().returns( 1 )
+            self.a13.getDuration().returns( 1 ).isOptional()
+        self.a12.doExecute()
+        self.a12.doPreview().returns( "a12" )
+        self.a13.getDuration().returns( 1 )
+        self.a13.getDuration().returns( 1 ).isOptional()
+        self.a13.doExecute()
+        self.a13.doPreview().returns( "a13" )
+        with self.m.unorderedGroup():
+            self.a14.doExecute()
+            self.a15.doExecute()
+        self.a2.doExecute()
+
+        self.m.startTest()
+        self.a2.execute( keepGoing = False, threadNumber = 1 )
+        self.assertTrue( self.a11.isSuccess() )
+        self.assertTrue( self.a12.isSuccess() )
+        self.assertTrue( self.a13.isSuccess() )
+        self.assertTrue( self.a14.isSuccess() )
+        self.assertTrue( self.a15.isSuccess() )
+        self.assertTrue( self.a2.isSuccess() )
+
+    def testExecute2( self ):
+        with self.m.unorderedGroup():
+            self.a11.getDuration().returns( 1 )
+            self.a11.getDuration().returns( 1 ).isOptional()
+            self.a12.getDuration().returns( 3 )
+            self.a12.getDuration().returns( 3 ).isOptional()
+            self.a13.getDuration().returns( 2 )
+            self.a13.getDuration().returns( 2 ).isOptional()
+        self.a12.doExecute()
+        self.a12.doPreview().returns( "a12" )
+        with self.m.unorderedGroup():
+            self.a11.getDuration().returns( 1 )
+            self.a11.getDuration().returns( 1 ).isOptional()
+            self.a13.getDuration().returns( 2 )
+            self.a13.getDuration().returns( 2 ).isOptional()
+        self.a13.doExecute()
+        self.a13.doPreview().returns( "a13" )
+        self.a11.getDuration().returns( 1 )
+        self.a11.getDuration().returns( 1 ).isOptional()
+        self.a11.doExecute()
+        self.a11.doPreview().returns( "a11" )
+        with self.m.unorderedGroup():
+            self.a14.doExecute()
+            self.a15.doExecute()
+        self.a2.doExecute()
+
+        self.m.startTest()
+        self.a2.execute( keepGoing = False, threadNumber = 1 )
+        self.assertTrue( self.a11.isSuccess() )
+        self.assertTrue( self.a12.isSuccess() )
+        self.assertTrue( self.a13.isSuccess() )
+        self.assertTrue( self.a14.isSuccess() )
+        self.assertTrue( self.a15.isSuccess() )
+        self.assertTrue( self.a2.isSuccess() )
+
+class DurationPickling( TestCase ):
+    def setUp( self ):
+        TestCase.setUp( self )
+        self.a = self.m.createMock( "self.a", LongAction )
+        self.a.doPreview = self.m.createMock( "self.a.doPreview" )
+
+    def test( self ):
+        self.a.doPreview().returns( "a" )
+    
+        self.m.startTest()
+        LongAction.dumpDurations()
+        self.assertEquals( self.a.getDuration(), 0. )
+        self.a.setDuration( 4. )
+        self.assertEquals( self.a.getDuration(), 4. )
+        self.a.setDuration( 1. )
+        self.assertEquals( self.a.getDuration(), 2. )
+        LongAction.dumpDurations()
+        self.assertEquals( self.a.getDuration(), 0. )
+        LongAction.loadDurations()
+        self.assertEquals( self.a.getDuration(), 2. )
+
 class Multithreading( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
@@ -501,7 +614,7 @@ class Multithreading( TestCase ):
         self.mgr.end( self.a2 )
 
         self.m.startTest()
-        self.a2.execute( keepGoing = False, threadNumber = 16 )
+        self.a2.execute( keepGoing = False, threadNumber = 10 )
         self.assertTrue( self.a11.isSuccess() )
         self.assertTrue( self.a12.isSuccess() )
         self.assertTrue( self.a13.isSuccess() )
@@ -524,7 +637,7 @@ class Multithreading( TestCase ):
             self.mgr.end( self.a15 )
 
         self.m.startTest()
-        self.assertRaises( CompoundException, self.a2.execute, keepGoing = False, threadNumber = 16 )
+        self.assertRaises( CompoundException, self.a2.execute, keepGoing = False, threadNumber = 10 )
         self.assertTrue( self.a11.isSuccess() )
         self.assertTrue( self.a12.isFailure() )
         self.assertTrue( self.a13.isSuccess() )
@@ -547,7 +660,7 @@ class Multithreading( TestCase ):
             self.mgr.end( self.a15 )
 
         self.m.startTest()
-        self.assertRaises( CompoundException, self.a2.execute, keepGoing = True, threadNumber = 16 )
+        self.assertRaises( CompoundException, self.a2.execute, keepGoing = True, threadNumber = 10 )
         self.assertTrue( self.a11.isSuccess() )
         self.assertTrue( self.a12.isFailure() )
         self.assertTrue( self.a13.isSuccess() )

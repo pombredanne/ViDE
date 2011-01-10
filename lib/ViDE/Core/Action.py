@@ -1,9 +1,12 @@
 from __future__ import with_statement
 
+import tempfile
+import os.path
 import multiprocessing
 import threading
 import itertools
 import time
+import pickle
 
 from ViDE import Log
 
@@ -30,15 +33,25 @@ class Action:
     ###################################################################### height-based accessors
 
     def __getLowestPredecessorMatchingCriteria( self, criteria ):
-        next = self
-        for p in self.__predecessors:
-            n = p.__getLowestPredecessorMatchingCriteria( criteria )
-            if n is not None and n.__height() < next.__height():
-                next = n
-        if criteria( next ):
-            return next
+        predecessors = self.__getLowestPredecessorsMatchingCriteria( criteria )
+        longPredecessors = [ p for p in predecessors if isinstance( p, LongAction ) ]
+        if len( longPredecessors ) != 0:
+            return max( longPredecessors, key = lambda a: a.getDuration() )
+        if len( predecessors ) != 0:
+            return predecessors[ 0 ]
         else:
             return None
+    
+    def __getLowestPredecessorsMatchingCriteria( self, criteria ):
+        next = [ self ]
+        for p in self.__predecessors:
+            n = p.__getLowestPredecessorsMatchingCriteria( criteria )
+            if len( n ) != 0:
+                if n[ 0 ].__height() < next[ 0 ].__height():
+                    next = n
+                if n[ 0 ].__height() == next[ 0 ].__height():
+                    next += n
+        return [ n for n in next if criteria( n ) ]
 
     def __height( self ):
         if len( self.__predecessors ) == 0:
@@ -48,6 +61,7 @@ class Action:
     ###################################################################### preview
 
     def preview( self ):
+        LongAction.loadDurations()
         self.__clearPreviewFlags()
         return self.__preview()
 
@@ -127,6 +141,7 @@ class Action:
         self.__exceptions = []
         self.cond = threading.Condition()
         self.__resetExecutionState()
+        LongAction.loadDurations()
 
     def __resetExecutionState( self ):
         ### @todo Remove? We load the project from scratch in all commands, leading to new Artifacts, hence new Actions, so Actions are not executed twice
@@ -138,6 +153,7 @@ class Action:
 
     def __checkExecution( self ):
         del self.cond
+        LongAction.dumpDurations()
         if len( self.__exceptions ) != 0:
             raise CompoundException( self.__exceptions )
 
@@ -171,6 +187,8 @@ class Action:
                     self.__setState( a, Action.__Failure() )
             finally:
                 a.__executionEnd = time.time()
+                if isinstance( a, LongAction ):
+                    a.setDuration( a.__executionEnd - a.__executionBegin )
 
     # Methods to be called within "with self.cond:" blocks
     def __waitUntilNextPotentialExecutable( self ):
@@ -183,10 +201,6 @@ class Action:
         return a
 
     def __getNextPotentialExecutable( self ):
-        ### @todo If more than one action is at the same level, choose the one with the longest likely execution time
-        # When parallelizing, it would avoid to start the longest action after all the short ones,
-        # hence reducing the global compilation time
-        # How to estimate the execution time beforehand? Remember from previous executions? Ask to the action object itself?
         return self.__getLowestPredecessorMatchingCriteria( lambda a: a.isInitial() and all( p.isEnded() for p in a.__predecessors ) )
 
     def __validatePotentialExecutable( self, keepGoing, a ):
@@ -232,6 +246,51 @@ class Action:
             dA[ pp ] = dp
         return pA, dA
 
+class LongAction( Action ):
+    __duration = dict()
+    __durationFile = os.path.join( tempfile.gettempdir(), "ViDE.Core.LongAction.Durations.pickle" )
+    
+    @staticmethod
+    def loadDurations():
+        if os.path.isfile( LongAction.__durationFile ):
+            file = open( LongAction.__durationFile )
+            LongAction.__duration = pickle.load( file )
+            file.close()
+
+    @staticmethod
+    def dumpDurations():
+        file = open( LongAction.__durationFile, "w" )
+        pickle.dump( LongAction.__duration, file )
+        file.close()
+        LongAction.__duration = dict()
+
+    def __init__( self ):
+        Action.__init__( self )
+        self.__preview = None
+
+    def __retrievePreview( self ):
+        if self.__preview is None:
+            self.__preview = self.doPreview()
+
+    def getDuration( self ):
+        self.__retrievePreview()
+        try:
+            ( num, den ) = LongAction.__duration[ self.__preview ]
+            return num / den
+        except KeyError:
+            return 0.
+
+    def setDuration( self, duration ):
+        self.__retrievePreview()
+        try:
+            # Weighted floating average with exponential decreasing weights
+            ( num, den ) = LongAction.__duration[ self.__preview ]
+            num = num / 2. + duration
+            den = den / 2. + 1.
+            LongAction.__duration[ self.__preview ] = ( num, den )
+        except KeyError:
+            LongAction.__duration[ self.__preview ] = ( duration, 1. )
+        
 class ActionModel( Action ):
     def __init__( self, preview ):
         Action.__init__( self )

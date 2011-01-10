@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 
-from ViDE.Core.Action import Action
+from ViDE.Core.Action import Action, LongAction
 from ViDE import Log
 
 class NullAction( Action ):
@@ -63,9 +63,9 @@ class CopyFileAction( Action ):
     def doExecute( self ):
         shutil.copyfile( self.__originFile, self.__destinationFile )
 
-class SystemAction( Action ):
+class SystemAction( LongAction ):
     def __init__( self, command, preview ):
-        Action.__init__( self )
+        LongAction.__init__( self )
         self.__command = command
         self.__preview = preview
     
