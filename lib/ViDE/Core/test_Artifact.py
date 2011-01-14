@@ -11,17 +11,17 @@ from Action import Action, ActionModel
 
 class EmptyArtifacts( TestCase ):
     def testAtomic( self ):
-        AtomicArtifact( "TestArtefact", [ "file" ], [], [], True )
-        self.assertRaises( Exception, AtomicArtifact, "TestArtefact", [], [], [], True )
+        AtomicArtifact( "TestArtefact", [ "file" ], [], [], [], True )
+        self.assertRaises( Exception, AtomicArtifact, "TestArtefact", [], [], [], [], True )
 
     def testCompound( self ):
-        CompoundArtifact( "TestArtefact", [ AtomicArtifact( "TestArtefact", [ "file" ], [], [], True ) ], True )
+        CompoundArtifact( "TestArtefact", [ AtomicArtifact( "TestArtefact", [ "file" ], [], [], [], True ) ], True )
         self.assertRaises( Exception, CompoundArtifact, "TestArtefact", [], True )
 
 class BasicAtomicArtifact( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
-        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "TestArtefact", [ os.path.join( "tmp1", "file1" ), os.path.join( "tmp2", "file2" ) ], [], [], True )
+        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "TestArtefact", [ os.path.join( "tmp1", "file1" ), os.path.join( "tmp2", "file2" ) ], [], [], [], True )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.productionAction = self.m.createMock( "self.productionAction", Action )
 
@@ -60,9 +60,9 @@ class BasicAtomicArtifact( TestCase ):
 class BasicCompoundArtifact( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
-        self.atomicArtifact1 = self.m.createMock( "self.atomicArtifact1", AtomicArtifact, "AtomicArtifact1", [ os.path.join( "tmp1", "file1" ) ], [], [], True )
+        self.atomicArtifact1 = self.m.createMock( "self.atomicArtifact1", AtomicArtifact, "AtomicArtifact1", [ os.path.join( "tmp1", "file1" ) ], [], [], [], True )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
-        self.atomicArtifact2 = self.m.createMock( "self.atomicArtifact2", AtomicArtifact, "AtomicArtifact2", [ os.path.join( "tmp2", "file2" ) ], [], [], True )
+        self.atomicArtifact2 = self.m.createMock( "self.atomicArtifact2", AtomicArtifact, "AtomicArtifact2", [ os.path.join( "tmp2", "file2" ) ], [], [], [], True )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.artifact = self.m.createMock( "self.artifact", CompoundArtifact, "CompoundArtifact", [ self.atomicArtifact1, self.atomicArtifact2 ], True )
         self.fileProductionAction1 = self.m.createMock( "self.fileProductionAction1", Action )
@@ -118,20 +118,24 @@ class ProductionReasons( TestCase ):
         TestCase.setUp( self )
         self.dependency = self.m.createMock( "self.dependency", ProduceableArtifact, "Dependency", True )
         self.orderOnlyDependency = self.m.createMock( "self.orderOnlyDependency", ProduceableArtifact, "Order only dependency", True )
-        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ os.path.join( "tmp1", "file1" ) ], [ self.dependency ], [ self.orderOnlyDependency ], True )
+        self.automaticDependency = self.m.createMock( "self.automaticDependency", ProduceableArtifact, "Automatic dependency", True )
+        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ os.path.join( "tmp1", "file1" ) ], [ self.dependency ], [ self.orderOnlyDependency ], [ self.automaticDependency ], True )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.productionAction = self.m.createMock( "self.productionAction", Action )
         self.dependencyProductionAction = self.m.createMock( "self.dependencyProductionAction", Action )
         self.orderOnlyDependencyProductionAction = self.m.createMock( "self.orderOnlyDependencyProductionAction", Action )
         self.dependency.getNewestFile = self.m.createMock( "self.dependency.getNewestFile" )
         self.orderOnlyDependency.getNewestFile = self.m.createMock( "self.orderOnlyDependency.getNewestFile" )
+        self.automaticDependency.getNewestFile = self.m.createMock( "self.automaticDependency.getNewestFile" )
         self.artifact.getOldestFile = self.m.createMock( "self.artifact.getOldestFile" )
 
     def testGetProductionActionWithNoReasonToProduce( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
         self.dependency.mustBeProduced().returns( False )
+        self.automaticDependency.mustBeProduced().returns( False )
         self.artifact.getOldestFile().returns( 1200001 )
         self.dependency.getNewestFile().returns( 1200000 )
+        self.automaticDependency.getNewestFile().returns( 1200000 )
         self.orderOnlyDependency.mustBeProduced().returns( False )
 
         self.m.startTest()
@@ -143,8 +147,10 @@ class ProductionReasons( TestCase ):
     def testGetProductionActionWhenOrderOnlyDependencyIsNewer( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
         self.dependency.mustBeProduced().returns( False )
+        self.automaticDependency.mustBeProduced().returns( False )
         self.artifact.getOldestFile().returns( 1200001 )
         self.dependency.getNewestFile().returns( 1200000 )
+        self.automaticDependency.getNewestFile().returns( 1200000 )
         self.orderOnlyDependency.mustBeProduced().returns( False )
         self.orderOnlyDependency.getNewestFile().returns( 1200002 ).isOptional() # Never called
 
@@ -158,14 +164,19 @@ class ProductionReasons( TestCase ):
         for i in range( 2 ):
             AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
             self.dependency.mustBeProduced().returns( False )
+            self.automaticDependency.mustBeProduced().returns( False )
             self.artifact.getOldestFile().returns( 1200001 )
             self.dependency.getNewestFile().returns( 1200000 )
+            self.automaticDependency.getNewestFile().returns( 1200000 )
             if i == 0:
                 self.orderOnlyDependency.mustBeProduced().returns( True )
 
         self.dependency.mustBeProduced().returns( False )
         self.orderOnlyDependency.mustBeProduced().returns( True )
         self.orderOnlyDependency.computeProductionAction().returns( self.orderOnlyDependencyProductionAction )
+        self.automaticDependency.mustBeProduced().returns( False )
+        self.orderOnlyDependencyProductionAction.doPreview().returns( "create orderOnlyDependency" )
+        self.orderOnlyDependencyProductionAction.doPreview().returns( "create orderOnlyDependency" )
         self.orderOnlyDependencyProductionAction.doPreview().returns( "create orderOnlyDependency" )
 
         self.m.startTest()
@@ -175,6 +186,7 @@ class ProductionReasons( TestCase ):
             "": {
                 "": {},
                 "create orderOnlyDependency": {},
+                "": {},
             }
         } )
         self.assertTrue( Action.areSame( action, model ) )
@@ -203,6 +215,8 @@ class ProductionReasons( TestCase ):
         self.dependency.computeProductionAction().returns( self.dependencyProductionAction )
         self.orderOnlyDependency.mustBeProduced().returns( True )
         self.orderOnlyDependency.computeProductionAction().returns( self.orderOnlyDependencyProductionAction )
+        self.automaticDependency.mustBeProduced().returns( True )
+        self.automaticDependency.computeProductionAction().returns( self.dependencyProductionAction )
 
         self.productionAction.doPreview().returns( "create file1" )
         with self.m.unorderedGroup():
@@ -226,6 +240,7 @@ class ProductionReasons( TestCase ):
         for i in range( 2 ):
             AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
             self.dependency.mustBeProduced().returns( False )
+            self.automaticDependency.mustBeProduced().returns( False )
             self.artifact.getOldestFile().returns( 1200000 )
             self.dependency.getNewestFile().returns( 1200000 )
 
@@ -233,7 +248,7 @@ class ProductionReasons( TestCase ):
 
 class DrawGraph( TestCase ):
     def testAtomic( self ):
-        artifact = AtomicArtifact( "TestArtefact", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], True )
+        artifact = AtomicArtifact( "TestArtefact", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [], True )
         
         g1 = Graph( "project" )
         cluster = Cluster( "TestArtefact" )
@@ -247,8 +262,8 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testCompound( self ):
-        atomic1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], True )
-        atomic2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [], True )
+        atomic1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [], True )
+        atomic2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [], [], True )
         artifact = CompoundArtifact( "TestArtefact3", [ atomic1, atomic2 ], True )
         
         g1 = Graph( "project" )
@@ -269,9 +284,9 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testStrongDependency( self ):
-        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], True )
+        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [], True )
         compound = CompoundArtifact( "TestArtefact3", [ artifact1 ], True )
-        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [ artifact1 ], [], True )
+        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [ artifact1 ], [], [], True )
         
         g1 = Graph( "project" )
         cluster1 = Cluster( "TestArtefact1" )
@@ -298,9 +313,9 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testOrderOnlyDependency( self ):
-        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], True )
+        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [], True )
         compound = CompoundArtifact( "TestArtefact3", [ artifact1 ], True )
-        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [ artifact1 ], True )
+        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [ artifact1 ], [], True )
         
         g1 = Graph( "project" )
         cluster1 = Cluster( "TestArtefact1" )
