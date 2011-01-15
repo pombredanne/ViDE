@@ -9,6 +9,7 @@ from ViDE.Project import Binary
 from ViDE.Project.Project import Project
 from ViDE.Project.CPlusPlus.Source import Header
 
+# @todo Implement using Boost.Wave, through Boost.Python
 class ParseCppHeadersAction( Action ):
     def __init__( self, source, depFile ):
         Action.__init__( self )
