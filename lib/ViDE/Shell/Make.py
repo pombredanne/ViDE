@@ -19,11 +19,15 @@ class Make( InteractiveCommandLineProgram.Command ):
         self.addOption( [ "k", "keep-going" ], "keepGoing", InteractiveCommandLineProgram.StoreConstant( True ), "keep going in case of failure" )
         self.dryRun = False
         self.addOption( [ "n", "dry-run" ], "dryRun", InteractiveCommandLineProgram.StoreConstant( True ), "print commands instead of executing them" )
+        self.drawGraph = False
+        self.addOption( [ "draw-graph" ], "drawGraph", InteractiveCommandLineProgram.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
         
     def execute( self, args ):
         action = Project.load( "videfile.py" ).getBuildAction()
         if self.dryRun:
             print "\n".join( action.preview() )
+        elif self.drawGraph:
+            print action.getGraph().dotString()
         else:
             try:
                 action.execute( self.keepGoing, self.jobs )
