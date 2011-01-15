@@ -6,14 +6,15 @@ from ViDE.Core.Action import Action, LongAction
 from ViDE import Log
 
 class NullAction( Action ):
-    def __init__( self ):
+    def __init__( self, preview = "" ):
         Action.__init__( self )
+        self.__preview = preview
 
     def doExecute( self ):
         pass
 
     def doPreview( self ):
-        return ""
+        return self.__preview
 
 class RemoveFileAction( Action ):
     def __init__( self, file ):
