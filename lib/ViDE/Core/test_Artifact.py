@@ -7,7 +7,29 @@ from Misc.MockMockMock import TestCase
 from Misc.Graphviz import Graph, Cluster, Node, Link
 
 from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact, CreateDirectoryAction
-from Action import Action, ActionModel
+from Action import Action
+
+class ActionModel( Action ):
+    def __init__( self, preview ):
+        Action.__init__( self )
+        self.__preview = preview
+
+    def doPreview( self ):
+        return self.__preview
+
+    @staticmethod
+    def build( d ):
+        return ActionModel.__build( d )[ 0 ]
+
+    @staticmethod
+    def __build( d ):
+        actions = []
+        for preview in d:
+            a = ActionModel( preview )
+            for p in ActionModel.__build( d[ preview ] ):
+                a.addPredecessor( p )
+            actions.append( a )
+        return actions
 
 class EmptyArtifacts( TestCase ):
     def testAtomic( self ):

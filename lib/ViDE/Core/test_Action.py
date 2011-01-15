@@ -7,6 +7,7 @@ import os
 import time
 
 from Misc.MockMockMock import TestCase
+from Misc.Graphviz import Graph, Cluster, Node, Link
 
 from Action import Action, LongAction, CompoundException
 
@@ -661,7 +662,7 @@ class CompareActions( TestCase ):
         self.b2 = self.m.createMock( "self.b2", Action )
         self.b3 = self.m.createMock( "self.b3", Action )
         self.b4 = self.m.createMock( "self.b4", Action )
-
+        
     def testDiffByPreview( self ):
         self.a4.doPreview().returns( "4" )
         self.b4.doPreview().returns( "four" )
@@ -671,6 +672,10 @@ class CompareActions( TestCase ):
 
     def testDiffByPred( self ):
         self.a4.addPredecessor( self.a3 )
+
+        self.a4.doPreview().returns( "4" ).isOptional()
+        self.a3.doPreview().returns( "3" ).isOptional()
+        self.b4.doPreview().returns( "4" ).isOptional()
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a4, self.b4 ) )
@@ -685,6 +690,7 @@ class CompareActions( TestCase ):
 
     def testDeepEqual( self ):
         self.makeDeep()
+        
         self.a4.doPreview().returns( "4" )
         self.a3.doPreview().returns( "3" )
         self.a2.doPreview().returns( "2" )
@@ -699,6 +705,7 @@ class CompareActions( TestCase ):
 
     def testDeepDiffByPredPreview( self ):
         self.makeDeep()
+        
         self.a4.doPreview().returns( "4" )
         self.a3.doPreview().returns( "3" )
         self.a2.doPreview().returns( "2" )
@@ -721,6 +728,7 @@ class CompareActions( TestCase ):
 
     def testWideEqual( self ):
         self.makeWide()
+        
         self.a4.doPreview().returns( "4" )
         with self.m.unorderedGroup():
             self.a3.doPreview().returns( "3" )
@@ -737,6 +745,7 @@ class CompareActions( TestCase ):
 
     def testWideEqualInDifferentOrder( self ):
         self.makeWide()
+        
         self.a4.doPreview().returns( "4" )
         with self.m.unorderedGroup():
             self.a3.doPreview().returns( "3" )
@@ -753,6 +762,7 @@ class CompareActions( TestCase ):
 
     def testWideDiffByPredPreview( self ):
         self.makeWide()
+        
         self.a4.doPreview().returns( "4" )
         with self.m.unorderedGroup():
             self.a3.doPreview().returns( "3" ).isOptional()
@@ -771,43 +781,32 @@ class CompareActions( TestCase ):
         self.a3.addPredecessor( self.a2 )
         self.a3.addPredecessor( self.a1 )
         self.a2.addPredecessor( self.a1 )
-        ### @todo Exchange next two lines, to show a bug in Action.__haveSameStructure
-        self.b3.addPredecessor( self.b2 )
         self.b3.addPredecessor( self.b1 )
+        self.b3.addPredecessor( self.b2 )
         self.b2.addPredecessor( self.b1 )
 
     def testTwoWayEqual( self ):
         self.makeTwoWay()
+        
         self.a3.doPreview().returns( "3" )
-        with self.m.unorderedGroup():
-            with self.m.orderedGroup():
-                self.a2.doPreview().returns( "2" )
-                self.a1.doPreview().returns( "1" )
-            self.a1.doPreview().returns( "1" )
+        self.a1.doPreview().returns( "1" )
+        self.a2.doPreview().returns( "2" )
         self.b3.doPreview().returns( "3" )
-        with self.m.unorderedGroup():
-            with self.m.orderedGroup():
-                self.b2.doPreview().returns( "2" )
-                self.b1.doPreview().returns( "1" )
-            self.b1.doPreview().returns( "1" )
+        self.b2.doPreview().returns( "2" )
+        self.b1.doPreview().returns( "1" )
 
         self.m.startTest()
         self.assertTrue( Action.areSame( self.a3, self.b3 ) )
 
     def testTwoWayDiffByPredPreview( self ):
         self.makeTwoWay()
+        
         self.a3.doPreview().returns( "3" )
-        with self.m.unorderedGroup():
-            with self.m.orderedGroup():
-                self.a2.doPreview().returns( "2" )
-                self.a1.doPreview().returns( "1" )
-            self.a1.doPreview().returns( "1" )
+        self.a1.doPreview().returns( "1" )
+        self.a2.doPreview().returns( "2" )
         self.b3.doPreview().returns( "3" )
-        with self.m.unorderedGroup():
-            with self.m.orderedGroup():
-                self.b2.doPreview().returns( "2" )
-                self.b1.doPreview().returns( "one" )
-            self.b1.doPreview().returns( "one" )
+        self.b2.doPreview().returns( "2" )
+        self.b1.doPreview().returns( "one" )
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a3, self.b3 ) )
@@ -820,7 +819,82 @@ class CompareActions( TestCase ):
         self.b3.addPredecessor( self.b1 )
         self.b2.addPredecessor( self.b4 )
 
+        self.a3.doPreview().returns( "3" )
+        self.a1.doPreview().returns( "1" )
+        self.a2.doPreview().returns( "2" )
+        self.b3.doPreview().returns( "3" )
+        self.b1.doPreview().returns( "1" )
+        self.b2.doPreview().returns( "2" )
+        self.b4.doPreview().returns( "4" )
+
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a3, self.b3 ) )
+
+class DrawGraph( TestCase ):
+    def setUp( self ):
+        TestCase.setUp( self )
+        self.a1 = self.m.createMock( "self.a1", Action )
+        self.a2 = self.m.createMock( "self.a2", Action )
+        self.a3 = self.m.createMock( "self.a3", Action )
+
+    def testSimple( self ):
+        self.a1.doPreview().returns( "a1's preview" )
+
+        self.m.startTest()
+        
+        g1 = Graph( "action" )
+        g1.add( Node( "a1's preview" ) )
+        
+        g2 = self.a1.getGraph()
+        
+        self.assertTrue( Graph.areSame( g1, g2 ) )
+        
+    def testWide( self ):
+        self.a1.addPredecessor( self.a2 )
+        self.a1.addPredecessor( self.a3 )
+
+        self.a1.doPreview().returns( "a1's preview" )
+        self.a3.doPreview().returns( "a3's preview" )
+        self.a2.doPreview().returns( "a2's preview" )
+        
+        self.m.startTest()
+        
+        g1 = Graph( "action" )
+        n1 = Node( "a1's preview" )
+        g1.add( n1 )
+        n2 = Node( "a2's preview" )
+        g1.add( n2 )
+        n3 = Node( "a3's preview" )
+        g1.add( n3 )
+        g1.add( Link( n1, n2 ) )
+        g1.add( Link( n1, n3 ) )
+        
+        g2 = self.a1.getGraph()
+        
+        self.assertTrue( Graph.areSame( g1, g2 ) )
+
+    def testDeep( self ):
+        self.a1.addPredecessor( self.a2 )
+        self.a2.addPredecessor( self.a3 )
+
+        self.a1.doPreview().returns( "a1's preview" )
+        self.a2.doPreview().returns( "a2's preview" )
+        self.a3.doPreview().returns( "a3's preview" )
+        
+        self.m.startTest()
+        
+        g1 = Graph( "action" )
+        n1 = Node( "a1's preview" )
+        g1.add( n1 )
+        n2 = Node( "a2's preview" )
+        g1.add( n2 )
+        n3 = Node( "a3's preview" )
+        g1.add( n3 )
+        g1.add( Link( n1, n2 ) )
+        g1.add( Link( n2, n3 ) )
+        
+        g2 = self.a1.getGraph()
+        
+        self.assertTrue( Graph.areSame( g1, g2 ) )
 
 unittest.main()

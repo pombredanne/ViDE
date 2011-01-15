@@ -18,6 +18,8 @@ class Container:
     def contentDotString( self ):
         return "".join( sorted( n.dotString() for n in self.__nodes ) )
 
+    ### BUG: if two nodes have the same attributes, they may get inverted in the map, 
+    # and Link.areSame will not work
     @staticmethod
     def haveSameNodes( left, right ):
         if len( left.__nodes ) != len( right.__nodes ):

@@ -8,6 +8,8 @@ import itertools
 import time
 import pickle
 
+from Misc import Graphviz
+
 from ViDE import Log
 
 class CompoundException( Exception ):
@@ -26,6 +28,7 @@ class Action:
         self.__executionState = Action.__Initial()
         self.__executionBegin = None
         self.__executionEnd = None
+        self.__graphNode = None
 
     def addPredecessor( self, p ):
         if p is not None:
@@ -92,6 +95,24 @@ class Action:
         if preview == "":
             preview = "none"
         print " " * level + str( id( self ) ) + "  " + preview
+        
+    def getGraph( self ):
+        g = Graphviz.Graph( "action" )
+        for node in self.__getGraphElements():
+            g.add( node )
+        return g
+    
+    def __getGraphNode( self ):
+        if self.__graphNode is None:
+            self.__graphNode = Graphviz.Node( self.doPreview() )
+        return self.__graphNode
+    
+    def __getGraphElements( self ):
+        elements = [ self.__getGraphNode() ]
+        for predecessor in self.__predecessors:
+            elements += predecessor.__getGraphElements()
+            elements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
+        return elements
     
     ###################################################################### execution state
 
@@ -206,33 +227,7 @@ class Action:
     ### @todo Implement based on graph comparison as implemented in Misc.Graphviz
     @staticmethod
     def areSame( a, b ):
-        return Action.__haveSameStructure( a, b ) and Action.__haveSameModel( a, b )
-
-    @staticmethod
-    def __haveSameStructure( a, b, d = dict() ):
-        if a in d and d[ a ] is not b:
-            return False
-        d[ a ] = b
-        if len( a.__predecessors ) != len( b.__predecessors ):
-            return False
-        ### @todo Bug: nothing guaranties that matching predecessors will be in the same order in both graphs
-        ### But graph matching algorithms are too complex to be implemented right now
-        return all( itertools.imap( lambda ap, bp: Action.__haveSameStructure( ap, bp, d ), a.__predecessors, b.__predecessors ) )
-
-    @staticmethod
-    def __haveSameModel( a, b ):
-        pA, dA = Action.__buildModel( a )
-        pB, dB = Action.__buildModel( b )
-        return pA == pB and dA == dB
-
-    @staticmethod
-    def __buildModel( a ):
-        pA = a.doPreview()
-        dA = {}
-        for p in a.__predecessors:
-            pp, dp = Action.__buildModel( p )
-            dA[ pp ] = dp
-        return pA, dA
+        return Graphviz.Graph.areSame( a.getGraph(), b.getGraph() )
 
 class LongAction( Action ):
     __duration = dict()
@@ -256,6 +251,7 @@ class LongAction( Action ):
         Action.__init__( self )
         self.__preview = None
 
+    ### @todo Use this scheme in Action too
     def __retrievePreview( self ):
         if self.__preview is None:
             self.__preview = self.doPreview()
@@ -278,25 +274,3 @@ class LongAction( Action ):
             LongAction.__duration[ self.__preview ] = ( num, den )
         except KeyError:
             LongAction.__duration[ self.__preview ] = ( duration, 1. )
-        
-class ActionModel( Action ):
-    def __init__( self, preview ):
-        Action.__init__( self )
-        self.__preview = preview
-
-    def doPreview( self ):
-        return self.__preview
-
-    @staticmethod
-    def build( d ):
-        return ActionModel.__build( d )[ 0 ]
-
-    @staticmethod
-    def __build( d ):
-        actions = []
-        for preview in d:
-            a = ActionModel( preview )
-            for p in ActionModel.__build( d[ preview ] ):
-                a.addPredecessor( p )
-            actions.append( a )
-        return actions
