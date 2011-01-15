@@ -198,8 +198,6 @@ class ProductionReasons( TestCase ):
         self.orderOnlyDependency.computeProductionAction().returns( self.orderOnlyDependencyProductionAction )
         self.automaticDependency.mustBeProduced().returns( False )
         self.orderOnlyDependencyProductionAction.doPreview().returns( "create orderOnlyDependency" )
-        self.orderOnlyDependencyProductionAction.doPreview().returns( "create orderOnlyDependency" )
-        self.orderOnlyDependencyProductionAction.doPreview().returns( "create orderOnlyDependency" )
 
         self.m.startTest()
 
@@ -265,6 +263,25 @@ class ProductionReasons( TestCase ):
             self.automaticDependency.mustBeProduced().returns( False )
             self.artifact.getOldestFile().returns( 1200000 )
             self.dependency.getNewestFile().returns( 1200000 )
+
+        self.getProductionActionAndPreview()
+
+    def testGetProductionActionWhenAutomaticDependencyMustBeProduced( self ):
+        for i in range( 2 ):
+            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+            self.dependency.mustBeProduced().returns( False )
+            self.automaticDependency.mustBeProduced().returns( True )
+
+        self.getProductionActionAndPreview()
+
+    def testGetProductionActionWhenAutomaticDependencyIsNewer( self ):
+        for i in range( 2 ):
+            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+            self.dependency.mustBeProduced().returns( False )
+            self.automaticDependency.mustBeProduced().returns( False )
+            self.artifact.getOldestFile().returns( 1200001 )
+            self.dependency.getNewestFile().returns( 1200000 )
+            self.automaticDependency.getNewestFile().returns( 1200001 )
 
         self.getProductionActionAndPreview()
 

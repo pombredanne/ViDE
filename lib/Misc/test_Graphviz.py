@@ -58,19 +58,30 @@ class NodesAndLinksEquality( unittest.TestCase, EqualityTestCase ):
         g.add( Link( n2, n3, "Link 2" ) )
         return g
 
+class NodesWithSameLabelEquality( unittest.TestCase, EqualityTestCase ):
+    def createGraph( self ):
+        g = Graph( "Nodes and links" )
+        n1 = Node( "Node" )
+        g.add( n1 )
+        n2 = Node( "Node" )
+        g.add( n2 )
+        n3 = Node( "Node" )
+        g.add( n3 )
+        return g
+
 # @todo Fix
-# class NodesWithSameLabelAndLinksEquality( unittest.TestCase, EqualityTestCase ):
-    # def createGraph( self ):
-        # g = Graph( "Nodes and links" )
-        # n1 = Node( "Node" )
-        # g.add( n1 )
-        # n2 = Node( "Node" )
-        # g.add( n2 )
-        # n3 = Node( "Node" )
-        # g.add( n3 )
-        # g.add( Link( n1, n2, "Link 1" ) )
-        # g.add( Link( n2, n3, "Link 2" ) )
-        # return g
+class NodesWithSameLabelAndLinksEquality( unittest.TestCase, EqualityTestCase ):
+    def createGraph( self ):
+        g = Graph( "Nodes and links" )
+        n1 = Node( "Node" )
+        g.add( n1 )
+        n2 = Node( "Node" )
+        g.add( n2 )
+        n3 = Node( "Node" )
+        g.add( n3 )
+        g.add( Link( n1, n2, "Link 1" ) )
+        g.add( Link( n2, n3, "Link 2" ) )
+        return g
 
 class ClusterLinkEquality( unittest.TestCase, EqualityTestCase ):
     def createGraph( self ):
