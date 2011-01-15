@@ -1,5 +1,4 @@
 import os.path
-import fileinput
 import re
 
 from ViDE.Core.Artifact import AtomicArtifact
@@ -85,5 +84,5 @@ class Object( Binary.Object ):
     def parseCppHeaders( self, source ):
         depFile = DepFile( source )
         depFile.getProductionAction().execute( False, 1 )
-        return [ header.strip() for header in fileinput.input( [ depFile.getFileName() ] ) ]
+        return [ header.strip() for header in open( depFile.getFileName() ) ]
         
