@@ -843,6 +843,7 @@ class DrawGraph( TestCase ):
         self.m.startTest()
         
         g1 = Graph( "action" )
+        g1.nodeAttr[ "shape" ] = "box"
         g1.add( Node( "a1's preview" ) )
         
         g2 = self.a1.getGraph()
@@ -860,6 +861,7 @@ class DrawGraph( TestCase ):
         self.m.startTest()
         
         g1 = Graph( "action" )
+        g1.nodeAttr[ "shape" ] = "box"
         n1 = Node( "a1's preview" )
         g1.add( n1 )
         n2 = Node( "a2's preview" )
@@ -884,6 +886,7 @@ class DrawGraph( TestCase ):
         self.m.startTest()
         
         g1 = Graph( "action" )
+        g1.nodeAttr[ "shape" ] = "box"
         n1 = Node( "a1's preview" )
         g1.add( n1 )
         n2 = Node( "a2's preview" )

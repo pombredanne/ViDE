@@ -99,6 +99,7 @@ class Action:
         
     def getGraph( self ):
         g = Graphviz.Graph( "action" )
+        g.nodeAttr[ "shape" ] = "box"
         for node in self.__getGraphElements():
             g.add( node )
         return g
