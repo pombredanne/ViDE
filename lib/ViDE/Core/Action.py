@@ -224,7 +224,6 @@ class Action:
 
     ######################################################################
 
-    ### @todo Implement based on graph comparison as implemented in Misc.Graphviz
     @staticmethod
     def areSame( a, b ):
         return Graphviz.Graph.areSame( a.getGraph(), b.getGraph() )
