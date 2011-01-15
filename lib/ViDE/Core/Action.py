@@ -29,6 +29,7 @@ class Action:
         self.__executionBegin = None
         self.__executionEnd = None
         self.__graphNode = None
+        self.__graphElements = None
 
     def addPredecessor( self, p ):
         if p is not None:
@@ -108,11 +109,12 @@ class Action:
         return self.__graphNode
     
     def __getGraphElements( self ):
-        elements = [ self.__getGraphNode() ]
-        for predecessor in self.__predecessors:
-            elements += predecessor.__getGraphElements()
-            elements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
-        return elements
+        if self.__graphElements is None:
+            self.__graphElements = [ self.__getGraphNode() ]
+            for predecessor in self.__predecessors:
+                self.__graphElements += predecessor.__getGraphElements()
+                self.__graphElements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
+        return self.__graphElements
     
     ###################################################################### execution state
 
