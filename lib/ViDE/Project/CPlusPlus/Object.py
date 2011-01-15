@@ -41,13 +41,17 @@ class ParseCppHeadersAction( Action ):
 class DepFile( AtomicArtifact ):
     def __init__( self, source ):
         fileName = os.path.join( "build", "dep", source.getFileName() + ".dep" )
+        if os.path.exists( fileName ):
+            automaticDependencies = [ Header( header.strip() ) for header in open( fileName ) ]
+        else:
+            automaticDependencies = []
         AtomicArtifact.__init__(
             self,
             name = fileName,
             files = [ fileName ],
             strongDependencies = [ source ],
             orderOnlyDependencies = [],
-            automaticDependencies = [],
+            automaticDependencies = automaticDependencies,
             automatic = False
         )
         self.__fileName = fileName
