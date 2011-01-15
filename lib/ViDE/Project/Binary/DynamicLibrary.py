@@ -32,6 +32,7 @@ class CopiedHeader( AtomicArtifact ):
             files = [ self.__copiedHeader ],
             strongDependencies = [ header ],
             orderOnlyDependencies = [],
+            automaticDependencies = [],
             automatic = False
         )
         

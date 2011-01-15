@@ -1,3 +1,5 @@
+#include "lib.hpp"
+
 #include <iostream>
 
 void f() {

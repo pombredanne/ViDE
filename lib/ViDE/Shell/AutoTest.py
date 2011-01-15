@@ -14,7 +14,7 @@ class AutoTest( Command ):
     
     def __listTestFiles( self ):
         self.__testFiles = []
-        for path, dirs, files in os.walk( ViDE.libDirectory ):
+        for path, dirs, files in os.walk( ViDE.rootDirectory ):
             for fileName in fnmatch.filter( files, "test_*.py" ):
                 self.__testFiles.append( os.path.realpath( os.path.join( path, fileName ) ) )
 
