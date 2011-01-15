@@ -9,27 +9,8 @@ from Misc.Graphviz import Graph, Cluster, Node, Link
 from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact, CreateDirectoryAction
 from Action import Action
 
-class ActionModel( Action ):
-    def __init__( self, preview ):
-        Action.__init__( self )
-        self.__preview = preview
-
-    def doPreview( self ):
-        return self.__preview
-
-    @staticmethod
-    def build( d ):
-        return ActionModel.__build( d )[ 0 ]
-
-    @staticmethod
-    def __build( d ):
-        actions = []
-        for preview in d:
-            a = ActionModel( preview )
-            for p in ActionModel.__build( d[ preview ] ):
-                a.addPredecessor( p )
-            actions.append( a )
-        return actions
+def actionHasGraph( a, g ):
+    return Graph.areSame( a.getGraph(), g )
 
 class EmptyArtifacts( TestCase ):
     def testAtomic( self ):
@@ -60,15 +41,25 @@ class BasicAtomicArtifact( TestCase ):
         self.m.startTest()
 
         action = self.artifact.getProductionAction()
-        model = ActionModel.build( {
-            "create file1 and file2": {
-                "mkdir -p tmp1": {},
-                "mkdir -p tmp2": {},
-                "rm -f " + os.path.join( "tmp1", "file1" ): {},
-                "rm -f " + os.path.join( "tmp2", "file2" ): {}
-            }
-        } )
-        self.assertTrue( Action.areSame( action, model ) )
+
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        n0 = Node( "create file1 and file2" )
+        n1 = Node( "mkdir -p tmp1" )
+        n2 = Node( "mkdir -p tmp2" )
+        n3 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
+        n4 = Node( "rm -f " + os.path.join( "tmp2", "file2" ) )
+        model.add( n0 )
+        model.add( n1 )
+        model.add( n2 )
+        model.add( n3 )
+        model.add( n4 )
+        model.add( Link( n0, n1 ) )
+        model.add( Link( n0, n2 ) )
+        model.add( Link( n0, n3 ) )
+        model.add( Link( n0, n4 ) )
+        
+        self.assertTrue( actionHasGraph( action, model ) )
 
     def testGetProductionActionTwice( self ):
         self.recordGetProductionAction()
@@ -112,19 +103,31 @@ class BasicCompoundArtifact( TestCase ):
         self.m.startTest()
 
         action = self.artifact.getProductionAction()
-        model = ActionModel.build( {
-            "": {
-                "create file1": {
-                    "mkdir -p tmp1": {},
-                    "rm -f " + os.path.join( "tmp1", "file1" ): {},
-                },
-                "create file2": {
-                    "mkdir -p tmp2": {},
-                    "rm -f " + os.path.join( "tmp2", "file2" ): {}
-                }
-            }
-        } )
-        self.assertTrue( Action.areSame( action, model ) )
+
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        n0 = Node( "" )
+        n1 = Node( "create file1" )
+        n11 = Node( "mkdir -p tmp1" )
+        n12 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
+        n2 = Node( "create file2" )
+        n21 = Node( "mkdir -p tmp2" )
+        n22 = Node( "rm -f " + os.path.join( "tmp2", "file2" ) )
+        model.add( n0 )
+        model.add( n1 )
+        model.add( n11 )
+        model.add( n12 )
+        model.add( n2 )
+        model.add( n21 )
+        model.add( n22 )
+        model.add( Link( n0, n1 ) )
+        model.add( Link( n0, n2 ) )
+        model.add( Link( n1, n11 ) )
+        model.add( Link( n1, n12 ) )
+        model.add( Link( n2, n21 ) )
+        model.add( Link( n2, n22 ) )
+        
+        self.assertTrue( actionHasGraph( action, model ) )
 
     def testGetProductionActionTwice( self ):
         self.recordGetProductionAction()
@@ -163,8 +166,10 @@ class ProductionReasons( TestCase ):
         self.m.startTest()
 
         action = self.artifact.getProductionAction()
-        model = ActionModel.build( { "": {} } )
-        self.assertTrue( Action.areSame( action, model ) )
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        model.add( Node( "" ) )
+        self.assertTrue( actionHasGraph( action, model ) )
 
     def testGetProductionActionWhenOrderOnlyDependencyIsNewer( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
@@ -179,9 +184,13 @@ class ProductionReasons( TestCase ):
         self.m.startTest()
 
         action = self.artifact.getProductionAction()
-        model = ActionModel.build( { "": {} } )
-        self.assertTrue( Action.areSame( action, model ) )
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        model.add( Node( "" ) )
+        self.assertTrue( actionHasGraph( action, model ) )
 
+    # This test often fails, because several nodes have the same preview,
+    # Which is not handled well by Graphviz.grah.areSame
     def testGetProductionActionWhenOrderOnlyDependencyMustBeProduced( self ):
         for i in range( 2 ):
             AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
@@ -202,14 +211,22 @@ class ProductionReasons( TestCase ):
         self.m.startTest()
 
         action = self.artifact.getProductionAction()
-        model = ActionModel.build( {
-            "": {
-                "": {},
-                "create orderOnlyDependency": {},
-                "": {},
-            }
-        } )
-        self.assertTrue( Action.areSame( action, model ) )
+        
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        n0 = Node( "" )
+        n1 = Node( "" )
+        n2 = Node( "create orderOnlyDependency" )
+        n3 = Node( "" )
+        model.add( n0 )
+        model.add( n1 )
+        model.add( n2 )
+        model.add( n3 )
+        model.add( Link( n0, n1 ) )
+        model.add( Link( n0, n2 ) )
+        model.add( Link( n0, n3 ) )
+        
+        self.assertTrue( actionHasGraph( action, model ) )
 
     def getProductionActionAndPreview( self ):
         self.recordGetProductionActionPreview()
@@ -217,15 +234,25 @@ class ProductionReasons( TestCase ):
         self.m.startTest()
 
         action = self.artifact.getProductionAction()
-        model = ActionModel.build( {
-            "create file1": {
-                "create dependency": {},
-                "create orderOnlyDependency": {},
-                "mkdir -p tmp1": {},
-                "rm -f " + os.path.join( "tmp1", "file1" ): {}
-            }
-        } )
-        self.assertTrue( Action.areSame( action, model ) )
+        
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        n0 = Node( "create file1" )
+        n1 = Node( "create dependency" )
+        n2 = Node( "create orderOnlyDependency" )
+        n3 = Node( "mkdir -p tmp1" )
+        n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
+        model.add( n0 )
+        model.add( n1 )
+        model.add( n2 )
+        model.add( n3 )
+        model.add( n4 )
+        model.add( Link( n0, n1 ) )
+        model.add( Link( n0, n2 ) )
+        model.add( Link( n0, n3 ) )
+        model.add( Link( n0, n4 ) )
+        
+        self.assertTrue( actionHasGraph( action, model ) )
 
     def recordGetProductionActionPreview( self ):
         CreateDirectoryAction._CreateDirectoryAction__all = dict()
