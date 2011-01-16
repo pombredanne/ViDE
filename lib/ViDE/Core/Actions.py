@@ -21,7 +21,7 @@ class RemoveFileAction( Action ):
             pass
 
 class CreateDirectoryAction( Action ):
-    __all = dict()
+    __all = dict() # @todo Remove this static variable. Unicity must be managed at client level
 
     @staticmethod
     def getOrCreate( directory ):
