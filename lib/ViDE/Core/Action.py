@@ -149,7 +149,7 @@ class Action:
     def __getattr__( self, attr ):
         if attr.startswith( "is" ):
             return getattr( self.__executionState, attr )
-        raise AttributeError()
+        raise AttributeError( attr )
 
     def getExecutionTimes( self ):
         return self.__executionBegin, self.__executionEnd
