@@ -41,6 +41,8 @@ class Artifact:
 
 class InputArtifact( Artifact ):
     def __init__( self, name, files, automatic ):
+        if len( files ) == 0:
+            raise Exception( "Trying to build an empty InputArtifact" )
         Artifact.__init__( self, name, automatic )
         self.__files = files
 
@@ -67,8 +69,10 @@ class MonofileInputArtifact( InputArtifact ):
     def computeName( fileName ):
         return fileName
 
-    def __init__( self, fileName ):
-        InputArtifact.__init__( self, name = fileName, files = [ fileName ], automatic = False )
+    def __init__( self, fileName, automatic ):
+        if fileName is None or len( fileName ) == 0:
+            raise Exception( "Trying to build an empty MonofileInputArtifact" )
+        InputArtifact.__init__( self, name = fileName, files = [ fileName ], automatic = automatic )
         self.__fileName = fileName
         
     def getFileName( self ):

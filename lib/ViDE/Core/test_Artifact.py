@@ -6,7 +6,7 @@ import unittest
 from Misc.MockMockMock import TestCase
 from Misc.Graphviz import Graph, Cluster, Node, Link
 
-from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact, CreateDirectoryAction
+from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact, InputArtifact, MonofileInputArtifact, CreateDirectoryAction
 from Action import Action
 
 def actionHasGraph( a, g ):
@@ -20,6 +20,15 @@ class EmptyArtifacts( TestCase ):
     def testCompound( self ):
         CompoundArtifact( "TestArtefact", [ AtomicArtifact( "TestArtefact", [ "file" ], [], [], [], True ) ], True )
         self.assertRaises( Exception, CompoundArtifact, "TestArtefact", [], True )
+
+    def testInput( self ):
+        InputArtifact( "TestArtefact", [ "file" ], True )
+        self.assertRaises( Exception, InputArtifact, "TestArtefact", [], True )
+
+    def testMonofileInput( self ):
+        MonofileInputArtifact( "file", True )
+        self.assertRaises( Exception, MonofileInputArtifact, None, True )
+        self.assertRaises( Exception, MonofileInputArtifact, "", True )
 
 class BasicAtomicArtifact( TestCase ):
     def setUp( self ):
