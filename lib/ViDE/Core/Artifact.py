@@ -9,12 +9,14 @@ class Artifact:
     # computeGraphNode
     # computeGraphLinks
     # getAllFiles
+    # computeProductionAction
+    # mustBeProduced
     
-    def __init__( self, name, automatic ):
+    def __init__( self, name ):
         self.__name = name
-        self.__automatic = automatic
         self.__cachedGraphNode = None
         self.__cachedGraphLinks = None
+        self.__cachedProductionAction = None
 
     @staticmethod
     def getModificationDate( file ):
@@ -39,17 +41,25 @@ class Artifact:
             self.__cachedGraphLinks = self.computeGraphLinks()
         return self.__cachedGraphLinks
 
+    def getProductionAction( self ):
+        if self.__cachedProductionAction is None:
+            if self.mustBeProduced():
+                self.__cachedProductionAction = self.computeProductionAction()
+            else:
+                self.__cachedProductionAction = NullAction()
+        return self.__cachedProductionAction
+
 class InputArtifact( Artifact ):
-    def __init__( self, name, files, automatic ):
+    def __init__( self, name, files ):
         if len( files ) == 0:
             raise Exception( "Trying to build an empty InputArtifact" )
-        Artifact.__init__( self, name, automatic )
+        Artifact.__init__( self, name )
         self.__files = files
 
     def mustBeProduced( self ):
         return False
 
-    def getProductionAction( self ):
+    def computeProductionAction( self ):
         return NullAction()
 
     def getAllFiles( self ):
@@ -69,37 +79,20 @@ class MonofileInputArtifact( InputArtifact ):
     def computeName( fileName ):
         return fileName
 
-    def __init__( self, fileName, automatic ):
+    def __init__( self, fileName ):
         if fileName is None or len( fileName ) == 0:
             raise Exception( "Trying to build an empty MonofileInputArtifact" )
-        InputArtifact.__init__( self, name = fileName, files = [ fileName ], automatic = automatic )
+        InputArtifact.__init__( self, name = fileName, files = [ fileName ] )
         self.__fileName = fileName
         
     def getFileName( self ):
         return self.__fileName
-        
-class ProduceableArtifact( Artifact ):
-    ###################################################################### virtuals to be implemented
-    # computeProductionAction
-    # mustBeProduced
-    
-    def __init__( self, name, automatic ):
-        Artifact.__init__( self, name, automatic )
-        self.__productionAction = None
 
-    def getProductionAction( self ):
-        if self.__productionAction is None:
-            if self.mustBeProduced():
-                self.__productionAction = self.computeProductionAction()
-            else:
-                self.__productionAction = NullAction()
-        return self.__productionAction
-
-class AtomicArtifact( ProduceableArtifact ):
-    def __init__( self, name, files, strongDependencies, orderOnlyDependencies, automaticDependencies, automatic ):
+class AtomicArtifact( Artifact ):
+    def __init__( self, name, files, strongDependencies, orderOnlyDependencies, automaticDependencies ):
         if len( files ) == 0:
             raise Exception( "Trying to build an empty AtomicArtifact" )
-        ProduceableArtifact.__init__( self, name, automatic )
+        Artifact.__init__( self, name )
         self.__files = files
         self.__strongDependencies = strongDependencies
         self.__orderOnlyDependencies = orderOnlyDependencies
@@ -174,11 +167,11 @@ class AtomicArtifact( ProduceableArtifact ):
             links.append( link )
         return links
 
-class CompoundArtifact( ProduceableArtifact ):
-    def __init__( self, name, componants, automatic ):
+class CompoundArtifact( Artifact ):
+    def __init__( self, name, componants ):
         if len( componants ) == 0:
             raise Exception( "Trying to build an empty CompoundArtifact" )
-        ProduceableArtifact.__init__( self, name, automatic )
+        Artifact.__init__( self, name )
         self.__componants = componants
 
     def computeProductionAction( self ):

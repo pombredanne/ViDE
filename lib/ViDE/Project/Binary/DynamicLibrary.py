@@ -15,8 +15,7 @@ class DynamicLibraryBinary( AtomicArtifact ):
             files = [ self.__fileName ],
             strongDependencies = objects,
             orderOnlyDependencies = [],
-            automaticDependencies = [],
-            automatic = False
+            automaticDependencies = []
         )
 
     def doGetProductionAction( self ):
@@ -32,8 +31,7 @@ class CopiedHeader( AtomicArtifact ):
             files = [ self.__copiedHeader ],
             strongDependencies = [ header ],
             orderOnlyDependencies = [],
-            automaticDependencies = [],
-            automatic = False
+            automaticDependencies = []
         )
         
     def doGetProductionAction( self ):
@@ -44,14 +42,14 @@ class CopiedHeaders( CompoundArtifact ):
         copiedHeaders = []
         for header in headers:
             copiedHeaders.append( CopiedHeader( header ) )
-        CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders, automatic = False )
+        CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders )
         
 class DynamicLibrary( CompoundArtifact ):
     def __init__( self, name, headers, objects ):
         self.__libName = name
         self.__binary = DynamicLibraryBinary( name, objects )
         self.__copiedHeaders = CopiedHeaders( name, headers )
-        CompoundArtifact.__init__( self, name = "lib" + name, componants = [ self.__binary, self.__copiedHeaders ], automatic = False )
+        CompoundArtifact.__init__( self, name = "lib" + name, componants = [ self.__binary, self.__copiedHeaders ] )
         
     def getLibName( self ):
         return self.__libName

@@ -52,8 +52,7 @@ class DepFile( AtomicArtifact ):
             files = [ fileName ],
             strongDependencies = [ source ],
             orderOnlyDependencies = [],
-            automaticDependencies = automaticDependencies,
-            automatic = False
+            automaticDependencies = automaticDependencies
         )
         self.__fileName = fileName
         self.__source = source
@@ -74,8 +73,7 @@ class Object( Binary.Object ):
             files = [ fileName ],
             strongDependencies = [ source ],
             orderOnlyDependencies = [ lib.getCopiedHeaders() for lib in localLibraries ],
-            automaticDependencies = [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers ],
-            automatic = False
+            automaticDependencies = [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers ]
         )
         self.__fileName = fileName
         self.__source = source

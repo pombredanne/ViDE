@@ -6,7 +6,7 @@ import unittest
 from Misc.MockMockMock import TestCase
 from Misc.Graphviz import Graph, Cluster, Node, Link
 
-from Artifact import AtomicArtifact, CompoundArtifact, ProduceableArtifact, InputArtifact, MonofileInputArtifact, CreateDirectoryAction
+from Artifact import Artifact, AtomicArtifact, CompoundArtifact, InputArtifact, MonofileInputArtifact, CreateDirectoryAction
 from Action import Action
 
 def actionHasGraph( a, g ):
@@ -14,26 +14,26 @@ def actionHasGraph( a, g ):
 
 class EmptyArtifacts( TestCase ):
     def testAtomic( self ):
-        AtomicArtifact( "TestArtefact", [ "file" ], [], [], [], True )
-        self.assertRaises( Exception, AtomicArtifact, "TestArtefact", [], [], [], [], True )
+        AtomicArtifact( "TestArtefact", [ "file" ], [], [], [] )
+        self.assertRaises( Exception, AtomicArtifact, "TestArtefact", [], [], [], [] )
 
     def testCompound( self ):
-        CompoundArtifact( "TestArtefact", [ AtomicArtifact( "TestArtefact", [ "file" ], [], [], [], True ) ], True )
-        self.assertRaises( Exception, CompoundArtifact, "TestArtefact", [], True )
+        CompoundArtifact( "TestArtefact", [ AtomicArtifact( "TestArtefact", [ "file" ], [], [], [] ) ] )
+        self.assertRaises( Exception, CompoundArtifact, "TestArtefact", [] )
 
     def testInput( self ):
-        InputArtifact( "TestArtefact", [ "file" ], True )
-        self.assertRaises( Exception, InputArtifact, "TestArtefact", [], True )
+        InputArtifact( "TestArtefact", [ "file" ] )
+        self.assertRaises( Exception, InputArtifact, "TestArtefact", [] )
 
     def testMonofileInput( self ):
-        MonofileInputArtifact( "file", True )
-        self.assertRaises( Exception, MonofileInputArtifact, None, True )
-        self.assertRaises( Exception, MonofileInputArtifact, "", True )
+        MonofileInputArtifact( "file" )
+        self.assertRaises( Exception, MonofileInputArtifact, None )
+        self.assertRaises( Exception, MonofileInputArtifact, "" )
 
 class BasicAtomicArtifact( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
-        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "TestArtefact", [ os.path.join( "tmp1", "file1" ), os.path.join( "tmp2", "file2" ) ], [], [], [], True )
+        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "TestArtefact", [ os.path.join( "tmp1", "file1" ), os.path.join( "tmp2", "file2" ) ], [], [], [] )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.productionAction = self.m.createMock( "self.productionAction", Action )
 
@@ -82,11 +82,11 @@ class BasicAtomicArtifact( TestCase ):
 class BasicCompoundArtifact( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
-        self.atomicArtifact1 = self.m.createMock( "self.atomicArtifact1", AtomicArtifact, "AtomicArtifact1", [ os.path.join( "tmp1", "file1" ) ], [], [], [], True )
+        self.atomicArtifact1 = self.m.createMock( "self.atomicArtifact1", AtomicArtifact, "AtomicArtifact1", [ os.path.join( "tmp1", "file1" ) ], [], [], [] )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
-        self.atomicArtifact2 = self.m.createMock( "self.atomicArtifact2", AtomicArtifact, "AtomicArtifact2", [ os.path.join( "tmp2", "file2" ) ], [], [], [], True )
+        self.atomicArtifact2 = self.m.createMock( "self.atomicArtifact2", AtomicArtifact, "AtomicArtifact2", [ os.path.join( "tmp2", "file2" ) ], [], [], [] )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
-        self.artifact = self.m.createMock( "self.artifact", CompoundArtifact, "CompoundArtifact", [ self.atomicArtifact1, self.atomicArtifact2 ], True )
+        self.artifact = self.m.createMock( "self.artifact", CompoundArtifact, "CompoundArtifact", [ self.atomicArtifact1, self.atomicArtifact2 ] )
         self.fileProductionAction1 = self.m.createMock( "self.fileProductionAction1", Action )
         self.fileProductionAction2 = self.m.createMock( "self.fileProductionAction2", Action )
 
@@ -150,10 +150,10 @@ class BasicCompoundArtifact( TestCase ):
 class ProductionReasons( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
-        self.dependency = self.m.createMock( "self.dependency", ProduceableArtifact, "Dependency", True )
-        self.orderOnlyDependency = self.m.createMock( "self.orderOnlyDependency", ProduceableArtifact, "Order only dependency", True )
-        self.automaticDependency = self.m.createMock( "self.automaticDependency", ProduceableArtifact, "Automatic dependency", True )
-        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ os.path.join( "tmp1", "file1" ) ], [ self.dependency ], [ self.orderOnlyDependency ], [ self.automaticDependency ], True )
+        self.dependency = self.m.createMock( "self.dependency", Artifact, "Dependency" )
+        self.orderOnlyDependency = self.m.createMock( "self.orderOnlyDependency", Artifact, "Order only dependency" )
+        self.automaticDependency = self.m.createMock( "self.automaticDependency", Artifact, "Automatic dependency" )
+        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ os.path.join( "tmp1", "file1" ) ], [ self.dependency ], [ self.orderOnlyDependency ], [ self.automaticDependency ] )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.productionAction = self.m.createMock( "self.productionAction", Action )
         self.dependencyProductionAction = self.m.createMock( "self.dependencyProductionAction", Action )
@@ -323,7 +323,7 @@ class ProductionReasons( TestCase ):
 
 class DrawGraph( TestCase ):
     def testAtomic( self ):
-        artifact = AtomicArtifact( "TestArtefact", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [], True )
+        artifact = AtomicArtifact( "TestArtefact", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [] )
         
         g1 = Graph( "project" )
         cluster = Cluster( "TestArtefact" )
@@ -337,9 +337,9 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testCompound( self ):
-        atomic1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [], True )
-        atomic2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [], [], True )
-        artifact = CompoundArtifact( "TestArtefact3", [ atomic1, atomic2 ], True )
+        atomic1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [] )
+        atomic2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [], [] )
+        artifact = CompoundArtifact( "TestArtefact3", [ atomic1, atomic2 ] )
         
         g1 = Graph( "project" )
         mainCluster = Cluster( "TestArtefact3" )
@@ -359,9 +359,9 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testStrongDependency( self ):
-        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [], True )
-        compound = CompoundArtifact( "TestArtefact3", [ artifact1 ], True )
-        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [ artifact1 ], [], [], True )
+        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [] )
+        compound = CompoundArtifact( "TestArtefact3", [ artifact1 ] )
+        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [ artifact1 ], [], [] )
         
         g1 = Graph( "project" )
         cluster1 = Cluster( "TestArtefact1" )
@@ -388,9 +388,9 @@ class DrawGraph( TestCase ):
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
     def testOrderOnlyDependency( self ):
-        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [], True )
-        compound = CompoundArtifact( "TestArtefact3", [ artifact1 ], True )
-        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [ artifact1 ], [], True )
+        artifact1 = AtomicArtifact( "TestArtefact1", [ os.path.join( "tmp", "file1" ), os.path.join( "tmp", "file2" ) ], [], [], [] )
+        compound = CompoundArtifact( "TestArtefact3", [ artifact1 ] )
+        artifact2 = AtomicArtifact( "TestArtefact2", [ os.path.join( "tmp", "file3" ), os.path.join( "tmp", "file4" ) ], [], [ artifact1 ], [] )
         
         g1 = Graph( "project" )
         cluster1 = Cluster( "TestArtefact1" )
