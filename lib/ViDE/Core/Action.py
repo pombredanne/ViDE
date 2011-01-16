@@ -135,6 +135,7 @@ class Action:
     ###################################################################### execution state
 
     class __ExecutionState:
+        # @todo Remove all this smart-smart-smart __getattr__ mechanics
         def __getattr__( self, attr ):
             if attr.startswith( "is" ):
                 return lambda: False
