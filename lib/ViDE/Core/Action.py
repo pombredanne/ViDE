@@ -20,6 +20,10 @@ class CompoundException( Exception ):
         return "CompoundException( " + str( self.__exceptions ) + " )"
 
 class Action:
+    ###################################################################### virtuals to be implemented
+    # doExecute
+    # computePreview
+
     ###################################################################### construction
 
     def __init__( self ):
@@ -30,8 +34,10 @@ class Action:
         self.__executionEnd = None
         self.__graphNode = None
         self.__graphElements = None
+        self.__cachedPreview = None
 
     def addPredecessor( self, p ):
+        # @todo Remove this test
         if p is not None:
             self.__predecessors.add( p )
 
@@ -72,6 +78,11 @@ class Action:
         LongAction.loadDurations()
         return self.__preview()
 
+    def getPreview( self ):
+        if self.__cachedPreview is None:
+            self.__cachedPreview = self.computePreview()
+        return self.__cachedPreview
+        
     def __preview( self ):
         preview = []
         while True:
@@ -79,7 +90,7 @@ class Action:
             if next is None:
                 break
             next.__previewed = True
-            text = next.doPreview()
+            text = next.getPreview()
             if text != "":
                 preview.append( text )
         return preview
@@ -92,7 +103,7 @@ class Action:
     def dump( self, level = 0 ):
         for p in self.__predecessors:
             p.dump( level + 1 )
-        preview = self.doPreview()
+        preview = self.getPreview()
         if preview == "":
             preview = "none"
         print " " * level + str( id( self ) ) + "  " + preview
@@ -106,7 +117,7 @@ class Action:
     
     def __getGraphNode( self ):
         if self.__graphNode is None:
-            self.__graphNode = Graphviz.Node( self.doPreview() )
+            self.__graphNode = Graphviz.Node( self.getPreview() )
         return self.__graphNode
     
     def __getGraphElements( self ):
@@ -251,28 +262,20 @@ class LongAction( Action ):
 
     def __init__( self ):
         Action.__init__( self )
-        self.__preview = None
-
-    ### @todo Use this scheme in Action too
-    def __retrievePreview( self ):
-        if self.__preview is None:
-            self.__preview = self.doPreview()
 
     def getDuration( self ):
-        self.__retrievePreview()
         try:
-            ( num, den ) = LongAction.__duration[ self.__preview ]
+            ( num, den ) = LongAction.__duration[ self.getPreview() ]
             return num / den
         except KeyError:
             return 0.
 
     def setDuration( self, duration ):
-        self.__retrievePreview()
         try:
             # Weighted floating average with exponential decreasing weights
-            ( num, den ) = LongAction.__duration[ self.__preview ]
+            ( num, den ) = LongAction.__duration[ self.getPreview() ]
             num = num / 2. + duration
             den = den / 2. + 1.
-            LongAction.__duration[ self.__preview ] = ( num, den )
+            LongAction.__duration[ self.getPreview() ] = ( num, den )
         except KeyError:
-            LongAction.__duration[ self.__preview ] = ( duration, 1. )
+            LongAction.__duration[ self.getPreview() ] = ( duration, 1. )

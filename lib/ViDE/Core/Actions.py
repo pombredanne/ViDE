@@ -13,15 +13,16 @@ class NullAction( Action ):
     def doExecute( self ):
         pass
 
-    def doPreview( self ):
+    def computePreview( self ):
         return self.__preview
 
 class RemoveFileAction( Action ):
     def __init__( self, file ):
         Action.__init__( self )
+        assert( isinstance( self, Action ) )
         self.__file = file
 
-    def doPreview( self ):
+    def computePreview( self ):
         return "rm -f " + self.__file
         
     def doExecute( self ):
@@ -43,7 +44,7 @@ class CreateDirectoryAction( Action ):
         Action.__init__( self )
         self.__directory = directory
 
-    def doPreview( self ):
+    def computePreview( self ):
         return "mkdir -p " + self.__directory
         
     def doExecute( self ):
@@ -58,7 +59,7 @@ class CopyFileAction( Action ):
         self.__originFile = originFile
         self.__destinationFile = destinationFile
 
-    def doPreview( self ):
+    def computePreview( self ):
         return "cp " + self.__originFile + " " + self.__destinationFile
         
     def doExecute( self ):
@@ -70,7 +71,7 @@ class SystemAction( LongAction ):
         self.__command = command
         self.__preview = preview
     
-    def doPreview( self ):
+    def computePreview( self ):
         return self.__preview
         
     def doExecute( self ):

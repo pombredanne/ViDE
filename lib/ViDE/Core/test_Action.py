@@ -123,10 +123,10 @@ class DeepAction( TestCase ):
         self.assertTrue( self.a4.isFailure() )
 
     def testPreview( self ):
-        self.a1.doPreview().returns( "a1's preview" )
-        self.a2.doPreview().returns( "a2's preview" )
-        self.a3.doPreview().returns( "a3's preview" )
-        self.a4.doPreview().returns( "a4's preview" )
+        self.a1.computePreview().returns( "a1's preview" )
+        self.a2.computePreview().returns( "a2's preview" )
+        self.a3.computePreview().returns( "a3's preview" )
+        self.a4.computePreview().returns( "a4's preview" )
 
         self.m.startTest()
         self.assertEquals( self.a4.preview(), [ "a1's preview", "a2's preview", "a3's preview", "a4's preview" ] )
@@ -184,10 +184,10 @@ class WideAction( TestCase ):
 
     def testPreview( self ):
         with self.m.unorderedGroup():
-            self.a11.doPreview().returns( "a11's preview" )
-            self.a12.doPreview().returns( "a12's preview" )
-            self.a13.doPreview().returns( "a13's preview" )
-        self.a2.doPreview().returns( "a2's preview" )
+            self.a11.computePreview().returns( "a11's preview" )
+            self.a12.computePreview().returns( "a12's preview" )
+            self.a13.computePreview().returns( "a13's preview" )
+        self.a2.computePreview().returns( "a2's preview" )
 
         self.m.startTest()
         preview = self.a2.preview()
@@ -197,10 +197,10 @@ class WideAction( TestCase ):
 
     def testEmptyPreview( self ):
         with self.m.unorderedGroup():
-            self.a11.doPreview().returns( "a11's preview" )
-            self.a12.doPreview().returns( "" )
-            self.a13.doPreview().returns( "a13's preview" )
-        self.a2.doPreview().returns( "a2's preview" )
+            self.a11.computePreview().returns( "a11's preview" )
+            self.a12.computePreview().returns( "" )
+            self.a13.computePreview().returns( "a13's preview" )
+        self.a2.computePreview().returns( "a2's preview" )
 
         self.m.startTest()
         preview = self.a2.preview()
@@ -233,9 +233,9 @@ class SeveralWaysAction( TestCase ):
         self.assertTrue( self.a3.isSuccess() )
 
     def testPreview( self ):
-        self.a1.doPreview().returns( "a1's preview" )
-        self.a2.doPreview().returns( "a2's preview" )
-        self.a3.doPreview().returns( "a3's preview" )
+        self.a1.computePreview().returns( "a1's preview" )
+        self.a2.computePreview().returns( "a2's preview" )
+        self.a3.computePreview().returns( "a3's preview" )
 
         self.m.startTest()
         self.assertEquals( self.a3.preview(), [ "a1's preview", "a2's preview", "a3's preview" ] )
@@ -300,12 +300,12 @@ class ExecuteLeavesFirst( TestCase ):
 
     def testPreview( self ):
         with self.m.unorderedGroup():
-            self.a1.doPreview().returns( "a1's preview" )
-            self.a2.doPreview().returns( "a2's preview" )
+            self.a1.computePreview().returns( "a1's preview" )
+            self.a2.computePreview().returns( "a2's preview" )
         with self.m.unorderedGroup():
-            self.a3.doPreview().returns( "a3's preview" )
-            self.a4.doPreview().returns( "a4's preview" )
-        self.a5.doPreview().returns( "a5's preview" )
+            self.a3.computePreview().returns( "a3's preview" )
+            self.a4.computePreview().returns( "a4's preview" )
+        self.a5.computePreview().returns( "a5's preview" )
 
         self.m.startTest()
         preview = self.a5.preview()
@@ -324,9 +324,9 @@ class ExecuteLongActionsFirst( TestCase ):
         self.a11.getDuration = self.m.createMock( "self.a11.getDuration" )
         self.a12.getDuration = self.m.createMock( "self.a12.getDuration" )
         self.a13.getDuration = self.m.createMock( "self.a13.getDuration" )
-        self.a11.doPreview = self.m.createMock( "self.a11.doPreview" )
-        self.a12.doPreview = self.m.createMock( "self.a12.doPreview" )
-        self.a13.doPreview = self.m.createMock( "self.a13.doPreview" )
+        self.a11.computePreview = self.m.createMock( "self.a11.computePreview" )
+        self.a12.computePreview = self.m.createMock( "self.a12.computePreview" )
+        self.a13.computePreview = self.m.createMock( "self.a13.computePreview" )
         self.a2 = self.m.createMock( "self.a2", Action )
         self.a2.addPredecessor( self.a11 )
         self.a2.addPredecessor( self.a12 )
@@ -343,18 +343,18 @@ class ExecuteLongActionsFirst( TestCase ):
             self.a13.getDuration().returns( 1 )
             self.a13.getDuration().returns( 1 ).isOptional()
         self.a11.doExecute()
-        self.a11.doPreview().returns( "a11" )
+        self.a11.computePreview().returns( "a11" )
         with self.m.unorderedGroup():
             self.a12.getDuration().returns( 2 )
             self.a12.getDuration().returns( 2 ).isOptional()
             self.a13.getDuration().returns( 1 )
             self.a13.getDuration().returns( 1 ).isOptional()
         self.a12.doExecute()
-        self.a12.doPreview().returns( "a12" )
+        self.a12.computePreview().returns( "a12" )
         self.a13.getDuration().returns( 1 )
         self.a13.getDuration().returns( 1 ).isOptional()
         self.a13.doExecute()
-        self.a13.doPreview().returns( "a13" )
+        self.a13.computePreview().returns( "a13" )
         with self.m.unorderedGroup():
             self.a14.doExecute()
             self.a15.doExecute()
@@ -378,18 +378,18 @@ class ExecuteLongActionsFirst( TestCase ):
             self.a13.getDuration().returns( 2 )
             self.a13.getDuration().returns( 2 ).isOptional()
         self.a12.doExecute()
-        self.a12.doPreview().returns( "a12" )
+        self.a12.computePreview().returns( "a12" )
         with self.m.unorderedGroup():
             self.a11.getDuration().returns( 1 )
             self.a11.getDuration().returns( 1 ).isOptional()
             self.a13.getDuration().returns( 2 )
             self.a13.getDuration().returns( 2 ).isOptional()
         self.a13.doExecute()
-        self.a13.doPreview().returns( "a13" )
+        self.a13.computePreview().returns( "a13" )
         self.a11.getDuration().returns( 1 )
         self.a11.getDuration().returns( 1 ).isOptional()
         self.a11.doExecute()
-        self.a11.doPreview().returns( "a11" )
+        self.a11.computePreview().returns( "a11" )
         with self.m.unorderedGroup():
             self.a14.doExecute()
             self.a15.doExecute()
@@ -408,10 +408,10 @@ class DurationPickling( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
         self.a = self.m.createMock( "self.a", LongAction )
-        self.a.doPreview = self.m.createMock( "self.a.doPreview" )
+        self.a.computePreview = self.m.createMock( "self.a.computePreview" )
 
     def test( self ):
-        self.a.doPreview().returns( "a" )
+        self.a.computePreview().returns( "a" )
     
         self.m.startTest()
         LongAction.dumpDurations()
@@ -664,8 +664,8 @@ class CompareActions( TestCase ):
         self.b4 = self.m.createMock( "self.b4", Action )
         
     def testDiffByPreview( self ):
-        self.a4.doPreview().returns( "4" )
-        self.b4.doPreview().returns( "four" )
+        self.a4.computePreview().returns( "4" )
+        self.b4.computePreview().returns( "four" )
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a4, self.b4 ) )
@@ -673,9 +673,9 @@ class CompareActions( TestCase ):
     def testDiffByPred( self ):
         self.a4.addPredecessor( self.a3 )
 
-        self.a4.doPreview().returns( "4" ).isOptional()
-        self.a3.doPreview().returns( "3" ).isOptional()
-        self.b4.doPreview().returns( "4" ).isOptional()
+        self.a4.computePreview().returns( "4" ).isOptional()
+        self.a3.computePreview().returns( "3" ).isOptional()
+        self.b4.computePreview().returns( "4" ).isOptional()
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a4, self.b4 ) )
@@ -691,14 +691,14 @@ class CompareActions( TestCase ):
     def testDeepEqual( self ):
         self.makeDeep()
         
-        self.a4.doPreview().returns( "4" )
-        self.a3.doPreview().returns( "3" )
-        self.a2.doPreview().returns( "2" )
-        self.a1.doPreview().returns( "1" )
-        self.b4.doPreview().returns( "4" )
-        self.b3.doPreview().returns( "3" )
-        self.b2.doPreview().returns( "2" )
-        self.b1.doPreview().returns( "1" )
+        self.a4.computePreview().returns( "4" )
+        self.a3.computePreview().returns( "3" )
+        self.a2.computePreview().returns( "2" )
+        self.a1.computePreview().returns( "1" )
+        self.b4.computePreview().returns( "4" )
+        self.b3.computePreview().returns( "3" )
+        self.b2.computePreview().returns( "2" )
+        self.b1.computePreview().returns( "1" )
 
         self.m.startTest()
         self.assertTrue( Action.areSame( self.a4, self.b4 ) )
@@ -706,14 +706,14 @@ class CompareActions( TestCase ):
     def testDeepDiffByPredPreview( self ):
         self.makeDeep()
         
-        self.a4.doPreview().returns( "4" )
-        self.a3.doPreview().returns( "3" )
-        self.a2.doPreview().returns( "2" )
-        self.a1.doPreview().returns( "1" )
-        self.b4.doPreview().returns( "4" )
-        self.b3.doPreview().returns( "three" )
-        self.b2.doPreview().returns( "2" )
-        self.b1.doPreview().returns( "1" )
+        self.a4.computePreview().returns( "4" )
+        self.a3.computePreview().returns( "3" )
+        self.a2.computePreview().returns( "2" )
+        self.a1.computePreview().returns( "1" )
+        self.b4.computePreview().returns( "4" )
+        self.b3.computePreview().returns( "three" )
+        self.b2.computePreview().returns( "2" )
+        self.b1.computePreview().returns( "1" )
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a4, self.b4 ) )
@@ -729,16 +729,16 @@ class CompareActions( TestCase ):
     def testWideEqual( self ):
         self.makeWide()
         
-        self.a4.doPreview().returns( "4" )
+        self.a4.computePreview().returns( "4" )
         with self.m.unorderedGroup():
-            self.a3.doPreview().returns( "3" )
-            self.a2.doPreview().returns( "2" )
-            self.a1.doPreview().returns( "1" )
-        self.b4.doPreview().returns( "4" )
+            self.a3.computePreview().returns( "3" )
+            self.a2.computePreview().returns( "2" )
+            self.a1.computePreview().returns( "1" )
+        self.b4.computePreview().returns( "4" )
         with self.m.unorderedGroup():
-            self.b3.doPreview().returns( "3" )
-            self.b2.doPreview().returns( "2" )
-            self.b1.doPreview().returns( "1" )
+            self.b3.computePreview().returns( "3" )
+            self.b2.computePreview().returns( "2" )
+            self.b1.computePreview().returns( "1" )
 
         self.m.startTest()
         self.assertTrue( Action.areSame( self.a4, self.b4 ) )
@@ -746,16 +746,16 @@ class CompareActions( TestCase ):
     def testWideEqualInDifferentOrder( self ):
         self.makeWide()
         
-        self.a4.doPreview().returns( "4" )
+        self.a4.computePreview().returns( "4" )
         with self.m.unorderedGroup():
-            self.a3.doPreview().returns( "3" )
-            self.a2.doPreview().returns( "2" )
-            self.a1.doPreview().returns( "1" )
-        self.b4.doPreview().returns( "4" )
+            self.a3.computePreview().returns( "3" )
+            self.a2.computePreview().returns( "2" )
+            self.a1.computePreview().returns( "1" )
+        self.b4.computePreview().returns( "4" )
         with self.m.unorderedGroup():
-            self.b3.doPreview().returns( "2" )
-            self.b2.doPreview().returns( "3" )
-            self.b1.doPreview().returns( "1" )
+            self.b3.computePreview().returns( "2" )
+            self.b2.computePreview().returns( "3" )
+            self.b1.computePreview().returns( "1" )
 
         self.m.startTest()
         self.assertTrue( Action.areSame( self.a4, self.b4 ) )
@@ -763,16 +763,16 @@ class CompareActions( TestCase ):
     def testWideDiffByPredPreview( self ):
         self.makeWide()
         
-        self.a4.doPreview().returns( "4" )
+        self.a4.computePreview().returns( "4" )
         with self.m.unorderedGroup():
-            self.a3.doPreview().returns( "3" ).isOptional()
-            self.a2.doPreview().returns( "2" )
-            self.a1.doPreview().returns( "1" ).isOptional()
-        self.b4.doPreview().returns( "4" )
+            self.a3.computePreview().returns( "3" ).isOptional()
+            self.a2.computePreview().returns( "2" )
+            self.a1.computePreview().returns( "1" ).isOptional()
+        self.b4.computePreview().returns( "4" )
         with self.m.unorderedGroup():
-            self.b3.doPreview().returns( "3" ).isOptional()
-            self.b2.doPreview().returns( "two" )
-            self.b1.doPreview().returns( "1" ).isOptional()
+            self.b3.computePreview().returns( "3" ).isOptional()
+            self.b2.computePreview().returns( "two" )
+            self.b1.computePreview().returns( "1" ).isOptional()
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a4, self.b4 ) )
@@ -788,12 +788,12 @@ class CompareActions( TestCase ):
     def testTwoWayEqual( self ):
         self.makeTwoWay()
         
-        self.a3.doPreview().returns( "3" )
-        self.a1.doPreview().returns( "1" )
-        self.a2.doPreview().returns( "2" )
-        self.b3.doPreview().returns( "3" )
-        self.b2.doPreview().returns( "2" )
-        self.b1.doPreview().returns( "1" )
+        self.a3.computePreview().returns( "3" )
+        self.a1.computePreview().returns( "1" )
+        self.a2.computePreview().returns( "2" )
+        self.b3.computePreview().returns( "3" )
+        self.b2.computePreview().returns( "2" )
+        self.b1.computePreview().returns( "1" )
 
         self.m.startTest()
         self.assertTrue( Action.areSame( self.a3, self.b3 ) )
@@ -801,12 +801,12 @@ class CompareActions( TestCase ):
     def testTwoWayDiffByPredPreview( self ):
         self.makeTwoWay()
         
-        self.a3.doPreview().returns( "3" )
-        self.a1.doPreview().returns( "1" )
-        self.a2.doPreview().returns( "2" )
-        self.b3.doPreview().returns( "3" )
-        self.b2.doPreview().returns( "2" )
-        self.b1.doPreview().returns( "one" )
+        self.a3.computePreview().returns( "3" )
+        self.a1.computePreview().returns( "1" )
+        self.a2.computePreview().returns( "2" )
+        self.b3.computePreview().returns( "3" )
+        self.b2.computePreview().returns( "2" )
+        self.b1.computePreview().returns( "one" )
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a3, self.b3 ) )
@@ -819,13 +819,13 @@ class CompareActions( TestCase ):
         self.b3.addPredecessor( self.b1 )
         self.b2.addPredecessor( self.b4 )
 
-        self.a3.doPreview().returns( "3" )
-        self.a1.doPreview().returns( "1" )
-        self.a2.doPreview().returns( "2" )
-        self.b3.doPreview().returns( "3" )
-        self.b1.doPreview().returns( "1" )
-        self.b2.doPreview().returns( "2" )
-        self.b4.doPreview().returns( "4" )
+        self.a3.computePreview().returns( "3" )
+        self.a1.computePreview().returns( "1" )
+        self.a2.computePreview().returns( "2" )
+        self.b3.computePreview().returns( "3" )
+        self.b1.computePreview().returns( "1" )
+        self.b2.computePreview().returns( "2" )
+        self.b4.computePreview().returns( "4" )
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a3, self.b3 ) )
@@ -838,7 +838,7 @@ class DrawGraph( TestCase ):
         self.a3 = self.m.createMock( "self.a3", Action )
 
     def testSimple( self ):
-        self.a1.doPreview().returns( "a1's preview" )
+        self.a1.computePreview().returns( "a1's preview" )
 
         self.m.startTest()
         
@@ -854,9 +854,9 @@ class DrawGraph( TestCase ):
         self.a1.addPredecessor( self.a2 )
         self.a1.addPredecessor( self.a3 )
 
-        self.a1.doPreview().returns( "a1's preview" )
-        self.a3.doPreview().returns( "a3's preview" )
-        self.a2.doPreview().returns( "a2's preview" )
+        self.a1.computePreview().returns( "a1's preview" )
+        self.a3.computePreview().returns( "a3's preview" )
+        self.a2.computePreview().returns( "a2's preview" )
         
         self.m.startTest()
         
@@ -879,9 +879,9 @@ class DrawGraph( TestCase ):
         self.a1.addPredecessor( self.a2 )
         self.a2.addPredecessor( self.a3 )
 
-        self.a1.doPreview().returns( "a1's preview" )
-        self.a2.doPreview().returns( "a2's preview" )
-        self.a3.doPreview().returns( "a3's preview" )
+        self.a1.computePreview().returns( "a1's preview" )
+        self.a2.computePreview().returns( "a2's preview" )
+        self.a3.computePreview().returns( "a3's preview" )
         
         self.m.startTest()
         

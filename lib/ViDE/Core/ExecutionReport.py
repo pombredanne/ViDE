@@ -45,7 +45,7 @@ class ExecutionReport:
         def __init__( self, action ):
             self.begin, self.end = action.getExecutionTimes()
             self.success = action.isSuccess()
-            self.text = action.doPreview()
+            self.text = action.getPreview()
             self.predecessors = set()
 
     ################################################################################ construction

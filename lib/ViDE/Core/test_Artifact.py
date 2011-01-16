@@ -36,7 +36,7 @@ class BasicAtomicArtifact( TestCase ):
 
     def testGetProductionAction( self ):
         self.recordGetProductionAction()
-        self.productionAction.doPreview().returns( "create file1 and file2" )
+        self.productionAction.computePreview().returns( "create file1 and file2" )
 
         self.m.startTest()
 
@@ -97,8 +97,8 @@ class BasicCompoundArtifact( TestCase ):
     def testGetProductionAction( self ):
         self.recordGetProductionAction()
         with self.m.unorderedGroup():
-            self.fileProductionAction1.doPreview().returns( "create file1" )
-            self.fileProductionAction2.doPreview().returns( "create file2" )
+            self.fileProductionAction1.computePreview().returns( "create file1" )
+            self.fileProductionAction2.computePreview().returns( "create file2" )
 
         self.m.startTest()
 
@@ -189,8 +189,6 @@ class ProductionReasons( TestCase ):
         model.add( Node( "" ) )
         self.assertTrue( actionHasGraph( action, model ) )
 
-    # This test often fails, because several nodes have the same preview,
-    # Which is not handled well by Graphviz.grah.areSame
     def testGetProductionActionWhenOrderOnlyDependencyMustBeProduced( self ):
         for i in range( 2 ):
             AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
@@ -206,7 +204,7 @@ class ProductionReasons( TestCase ):
         self.orderOnlyDependency.mustBeProduced().returns( True )
         self.orderOnlyDependency.computeProductionAction().returns( self.orderOnlyDependencyProductionAction )
         self.automaticDependency.mustBeProduced().returns( False )
-        self.orderOnlyDependencyProductionAction.doPreview().returns( "create orderOnlyDependency" )
+        self.orderOnlyDependencyProductionAction.computePreview().returns( "create orderOnlyDependency" )
 
         self.m.startTest()
 
@@ -226,6 +224,8 @@ class ProductionReasons( TestCase ):
         model.add( Link( n0, n2 ) )
         model.add( Link( n0, n3 ) )
         
+        # This test often fails, because several nodes have the same preview,
+        # Which is not handled well by Graphviz.grah.areSame
         self.assertTrue( actionHasGraph( action, model ) )
 
     def getProductionActionAndPreview( self ):
@@ -265,10 +265,10 @@ class ProductionReasons( TestCase ):
         self.automaticDependency.mustBeProduced().returns( True )
         self.automaticDependency.computeProductionAction().returns( self.dependencyProductionAction )
 
-        self.productionAction.doPreview().returns( "create file1" )
+        self.productionAction.computePreview().returns( "create file1" )
         with self.m.unorderedGroup():
-            self.dependencyProductionAction.doPreview().returns( "create dependency" )
-            self.orderOnlyDependencyProductionAction.doPreview().returns( "create orderOnlyDependency" )
+            self.dependencyProductionAction.computePreview().returns( "create dependency" )
+            self.orderOnlyDependencyProductionAction.computePreview().returns( "create orderOnlyDependency" )
 
     def testGetProductionActionWhenFileIsMissing( self ):
         for i in range( 2 ):

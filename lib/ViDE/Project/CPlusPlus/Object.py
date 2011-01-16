@@ -16,7 +16,7 @@ class ParseCppHeadersAction( Action ):
         self.__source = source
         self.__depFile = depFile
         
-    def doPreview( self ):
+    def computePreview( self ):
         return "blahblah " + self.__source + " " + self.__depFile
         
     def doExecute( self ):
