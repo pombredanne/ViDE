@@ -2,19 +2,8 @@ import os
 import shutil
 import subprocess
 
-from ViDE.Core.Action import Action, LongAction
+from ViDE.Core.Action import Action, LongAction, NullAction
 from ViDE import Log
-
-class NullAction( Action ):
-    def __init__( self, preview = "" ):
-        Action.__init__( self )
-        self.__preview = preview
-
-    def doExecute( self ):
-        pass
-
-    def computePreview( self ):
-        return self.__preview
 
 class RemoveFileAction( Action ):
     def __init__( self, file ):

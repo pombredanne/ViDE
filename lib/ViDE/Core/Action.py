@@ -106,11 +106,13 @@ class Action:
             preview = "none"
         print " " * level + str( id( self ) ) + "  " + preview
         
+    ###################################################################### graph
+
     def getGraph( self ):
         g = Graphviz.Graph( "action" )
         g.nodeAttr[ "shape" ] = "box"
-        for node in self.__getGraphElements():
-            g.add( node )
+        for element in self.__getGraphElements():
+            g.add( element )
         return g
     
     def __getGraphNode( self ):
@@ -120,10 +122,14 @@ class Action:
     
     def __getGraphElements( self ):
         if self.__graphElements is None:
-            self.__graphElements = [ self.__getGraphNode() ]
-            for predecessor in self.__predecessors:
-                self.__graphElements += predecessor.__getGraphElements()
-                self.__graphElements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
+            if self.isFullyNull():
+                self.__graphElements = []
+            else:
+                self.__graphElements = [ self.__getGraphNode() ]
+                for predecessor in self.__predecessors:
+                    if not predecessor.isFullyNull():
+                        self.__graphElements += predecessor.__getGraphElements()
+                        self.__graphElements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
         return self.__graphElements
     
     ###################################################################### execution state
@@ -239,6 +245,20 @@ class Action:
     @staticmethod
     def areSame( a, b ):
         return Graphviz.Graph.areSame( a.getGraph(), b.getGraph() )
+
+    def isFullyNull( self ):
+        return isinstance( self, NullAction ) and all( predecessor.isFullyNull() for predecessor in self.__predecessors )
+        
+class NullAction( Action ):
+    def __init__( self, preview = "" ):
+        Action.__init__( self )
+        self.__preview = preview
+
+    def doExecute( self ):
+        pass
+
+    def computePreview( self ):
+        return self.__preview
 
 class LongAction( Action ):
     __duration = dict()
