@@ -10,7 +10,6 @@ class Artifact:
     # computeGraphLinks
     # getAllFiles
     # computeProductionAction
-    # mustBeProduced
     
     def __init__( self, name ):
         self.__name = name
@@ -43,10 +42,7 @@ class Artifact:
 
     def getProductionAction( self ):
         if self.__cachedProductionAction is None:
-            if self.mustBeProduced():
-                self.__cachedProductionAction = self.computeProductionAction()
-            else:
-                self.__cachedProductionAction = NullAction()
+            self.__cachedProductionAction = self.computeProductionAction()
         return self.__cachedProductionAction
 
 class InputArtifact( Artifact ):
@@ -55,9 +51,6 @@ class InputArtifact( Artifact ):
             raise Exception( "Trying to build an empty InputArtifact" )
         Artifact.__init__( self, name )
         self.__files = files
-
-    def mustBeProduced( self ):
-        return False
 
     def computeProductionAction( self ):
         return NullAction()
@@ -113,13 +106,10 @@ class AtomicArtifact( Artifact ):
             productionAction.addPredecessor( predecessorAction )
         return productionAction
 
-    def mustBeProduced( self ):
-        return self.__filesMustBeProduced() or self.__anyOrderOnlyDependencyMustBeProduced()
-        
     def __filesMustBeProduced( self ):
         return (
             self.__anyFileIsMissing()
-            or self.__anyStrongDependencyMustBeProduced()
+            or self.__anyStrongDependencyWillBeProduced()
             or self.__anyStrongDependencyIsMoreRecent()
         )
 
@@ -130,11 +120,8 @@ class AtomicArtifact( Artifact ):
     def __fileIsMissing( f ):
         return not os.path.exists( f )
 
-    def __anyStrongDependencyMustBeProduced( self ):
-        return any( d.mustBeProduced() for d in self.__strongDependencies + self.__automaticDependencies )
-
-    def __anyOrderOnlyDependencyMustBeProduced( self ):
-        return any( d.mustBeProduced() for d in self.__orderOnlyDependencies )
+    def __anyStrongDependencyWillBeProduced( self ):
+        return not all( d.getProductionAction().isFullyNull() for d in self.__strongDependencies + self.__automaticDependencies )
 
     def __anyStrongDependencyIsMoreRecent( self ):
         selfOldestModificationDate = self.getOldestFile()
@@ -179,9 +166,6 @@ class CompoundArtifact( Artifact ):
         for c in self.__componants:
             productionAction.addPredecessor( c.getProductionAction() )
         return productionAction
-
-    def mustBeProduced( self ):
-        return True
 
     def getAllFiles( self ):
         allFiles = []

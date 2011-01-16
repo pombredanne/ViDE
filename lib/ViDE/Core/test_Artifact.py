@@ -7,7 +7,7 @@ from Misc.MockMockMock import TestCase
 from Misc.Graphviz import Graph, Cluster, Node, Link
 
 from Artifact import Artifact, AtomicArtifact, CompoundArtifact, InputArtifact, MonofileInputArtifact, CreateDirectoryAction
-from Action import Action
+from Action import Action, NullAction
 
 def actionHasGraph( a, g ):
     return Graph.areSame( a.getGraph(), g )
@@ -38,9 +38,8 @@ class BasicAtomicArtifact( TestCase ):
         self.productionAction = self.m.createMock( "self.productionAction", Action )
 
     def recordGetProductionAction( self ):
-        for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
         self.artifact.doGetProductionAction().returns( self.productionAction )
 
     def testGetProductionAction( self ):
@@ -93,15 +92,10 @@ class BasicCompoundArtifact( TestCase ):
     def recordGetProductionAction( self ):
         CreateDirectoryAction._CreateDirectoryAction__all = dict()
 
-        with self.m.unorderedGroup():
-            with self.m.orderedGroup():
-                AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
-                AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
-                self.atomicArtifact1.doGetProductionAction().returns( self.fileProductionAction1 )
-            with self.m.orderedGroup():
-                AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
-                AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
-                self.atomicArtifact2.doGetProductionAction().returns( self.fileProductionAction2 )
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
+        self.atomicArtifact1.doGetProductionAction().returns( self.fileProductionAction1 )
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
+        self.atomicArtifact2.doGetProductionAction().returns( self.fileProductionAction2 )
 
     def testGetProductionAction( self ):
         self.recordGetProductionAction()
@@ -150,44 +144,70 @@ class BasicCompoundArtifact( TestCase ):
 class ProductionReasons( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )
-        self.dependency = self.m.createMock( "self.dependency", Artifact, "Dependency" )
+        self.strongDependency = self.m.createMock( "self.strongDependency", Artifact, "Dependency" )
         self.orderOnlyDependency = self.m.createMock( "self.orderOnlyDependency", Artifact, "Order only dependency" )
         self.automaticDependency = self.m.createMock( "self.automaticDependency", Artifact, "Automatic dependency" )
-        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ os.path.join( "tmp1", "file1" ) ], [ self.dependency ], [ self.orderOnlyDependency ], [ self.automaticDependency ] )
+        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ os.path.join( "tmp1", "file1" ) ], [ self.strongDependency ], [ self.orderOnlyDependency ], [ self.automaticDependency ] )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.productionAction = self.m.createMock( "self.productionAction", Action )
-        self.dependencyProductionAction = self.m.createMock( "self.dependencyProductionAction", Action )
+        self.strongDependencyProductionAction = self.m.createMock( "self.strongDependencyProductionAction", Action )
         self.orderOnlyDependencyProductionAction = self.m.createMock( "self.orderOnlyDependencyProductionAction", Action )
-        self.dependency.getNewestFile = self.m.createMock( "self.dependency.getNewestFile" )
+        self.automaticDependencyProductionAction = self.m.createMock( "self.automaticDependencyProductionAction", Action )
+        self.strongDependency.getNewestFile = self.m.createMock( "self.strongDependency.getNewestFile" )
         self.orderOnlyDependency.getNewestFile = self.m.createMock( "self.orderOnlyDependency.getNewestFile" )
         self.automaticDependency.getNewestFile = self.m.createMock( "self.automaticDependency.getNewestFile" )
         self.artifact.getOldestFile = self.m.createMock( "self.artifact.getOldestFile" )
 
     def testGetProductionActionWithNoReasonToProduce( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.dependency.mustBeProduced().returns( False )
-        self.automaticDependency.mustBeProduced().returns( False )
+        self.strongDependency.computeProductionAction().returns( NullAction() )
+        self.automaticDependency.computeProductionAction().returns( NullAction() )
         self.artifact.getOldestFile().returns( 1200001 )
-        self.dependency.getNewestFile().returns( 1200000 )
+        self.strongDependency.getNewestFile().returns( 1200000 )
         self.automaticDependency.getNewestFile().returns( 1200000 )
-        self.orderOnlyDependency.mustBeProduced().returns( False )
+        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
 
         self.m.startTest()
 
         action = self.artifact.getProductionAction()
         model = Graph( "action" )
         model.nodeAttr[ "shape" ] = "box"
-        model.add( Node( "" ) )
+        self.assertTrue( actionHasGraph( action, model ) )
+
+    def testGetProductionActionWhenFileIsMissing( self ):
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
+        self.artifact.doGetProductionAction().returns( self.productionAction )
+        self.strongDependency.computeProductionAction().returns( NullAction() )
+        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
+        self.automaticDependency.computeProductionAction().returns( NullAction() )
+
+        self.productionAction.computePreview().returns( "create file1" )
+        
+        self.m.startTest()
+
+        action = self.artifact.getProductionAction()
+        
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        n0 = Node( "create file1" )
+        n3 = Node( "mkdir -p tmp1" )
+        n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
+        model.add( n0 )
+        model.add( n3 )
+        model.add( n4 )
+        model.add( Link( n0, n3 ) )
+        model.add( Link( n0, n4 ) )
+        
         self.assertTrue( actionHasGraph( action, model ) )
 
     def testGetProductionActionWhenOrderOnlyDependencyIsNewer( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.dependency.mustBeProduced().returns( False )
-        self.automaticDependency.mustBeProduced().returns( False )
+        self.strongDependency.computeProductionAction().returns( NullAction() )
+        self.automaticDependency.computeProductionAction().returns( NullAction() )
         self.artifact.getOldestFile().returns( 1200001 )
-        self.dependency.getNewestFile().returns( 1200000 )
+        self.strongDependency.getNewestFile().returns( 1200000 )
         self.automaticDependency.getNewestFile().returns( 1200000 )
-        self.orderOnlyDependency.mustBeProduced().returns( False )
+        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
         self.orderOnlyDependency.getNewestFile().returns( 1200002 ).isOptional() # Never called
 
         self.m.startTest()
@@ -195,24 +215,17 @@ class ProductionReasons( TestCase ):
         action = self.artifact.getProductionAction()
         model = Graph( "action" )
         model.nodeAttr[ "shape" ] = "box"
-        model.add( Node( "" ) )
         self.assertTrue( actionHasGraph( action, model ) )
 
     def testGetProductionActionWhenOrderOnlyDependencyMustBeProduced( self ):
-        for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-            self.dependency.mustBeProduced().returns( False )
-            self.automaticDependency.mustBeProduced().returns( False )
-            self.artifact.getOldestFile().returns( 1200001 )
-            self.dependency.getNewestFile().returns( 1200000 )
-            self.automaticDependency.getNewestFile().returns( 1200000 )
-            if i == 0:
-                self.orderOnlyDependency.mustBeProduced().returns( True )
-
-        self.dependency.mustBeProduced().returns( False )
-        self.orderOnlyDependency.mustBeProduced().returns( True )
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+        self.strongDependency.computeProductionAction().returns( NullAction() )
+        self.automaticDependency.computeProductionAction().returns( NullAction() )
+        self.artifact.getOldestFile().returns( 1200001 )
+        self.strongDependency.getNewestFile().returns( 1200000 )
+        self.automaticDependency.getNewestFile().returns( 1200000 )
         self.orderOnlyDependency.computeProductionAction().returns( self.orderOnlyDependencyProductionAction )
-        self.automaticDependency.mustBeProduced().returns( False )
+        
         self.orderOnlyDependencyProductionAction.computePreview().returns( "create orderOnlyDependency" )
 
         self.m.startTest()
@@ -222,23 +235,23 @@ class ProductionReasons( TestCase ):
         model = Graph( "action" )
         model.nodeAttr[ "shape" ] = "box"
         n0 = Node( "" )
-        n1 = Node( "" )
-        n2 = Node( "create orderOnlyDependency" )
-        n3 = Node( "" )
+        n1 = Node( "create orderOnlyDependency" )
         model.add( n0 )
         model.add( n1 )
-        model.add( n2 )
-        model.add( n3 )
         model.add( Link( n0, n1 ) )
-        model.add( Link( n0, n2 ) )
-        model.add( Link( n0, n3 ) )
         
-        # This test often fails, because several nodes have the same preview,
-        # Which is not handled well by Graphviz.grah.areSame
         self.assertTrue( actionHasGraph( action, model ) )
 
-    def getProductionActionAndPreview( self ):
-        self.recordGetProductionActionPreview()
+    def testGetProductionActionWhenStrongDependencyIsNewer( self ):
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+        self.strongDependency.computeProductionAction().returns( NullAction() )
+        self.automaticDependency.computeProductionAction().returns( NullAction() )
+        self.artifact.getOldestFile().returns( 1200000 )
+        self.strongDependency.getNewestFile().returns( 1200000 )
+        self.artifact.doGetProductionAction().returns( self.productionAction )
+        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
+
+        self.productionAction.computePreview().returns( "create file1" )
 
         self.m.startTest()
 
@@ -247,79 +260,104 @@ class ProductionReasons( TestCase ):
         model = Graph( "action" )
         model.nodeAttr[ "shape" ] = "box"
         n0 = Node( "create file1" )
-        n1 = Node( "create dependency" )
-        n2 = Node( "create orderOnlyDependency" )
         n3 = Node( "mkdir -p tmp1" )
         n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
         model.add( n0 )
-        model.add( n1 )
-        model.add( n2 )
         model.add( n3 )
         model.add( n4 )
-        model.add( Link( n0, n1 ) )
-        model.add( Link( n0, n2 ) )
         model.add( Link( n0, n3 ) )
         model.add( Link( n0, n4 ) )
         
         self.assertTrue( actionHasGraph( action, model ) )
 
-    def recordGetProductionActionPreview( self ):
-        CreateDirectoryAction._CreateDirectoryAction__all = dict()
-    
+    def testGetProductionActionWhenStrongDependencyMustBeProduced( self ):
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+        self.strongDependency.computeProductionAction().returns( self.strongDependencyProductionAction )
         self.artifact.doGetProductionAction().returns( self.productionAction )
-        self.dependency.mustBeProduced().returns( True )
-        self.dependency.computeProductionAction().returns( self.dependencyProductionAction )
-        self.orderOnlyDependency.mustBeProduced().returns( True )
-        self.orderOnlyDependency.computeProductionAction().returns( self.orderOnlyDependencyProductionAction )
-        self.automaticDependency.mustBeProduced().returns( True )
-        self.automaticDependency.computeProductionAction().returns( self.dependencyProductionAction )
+        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
+        self.automaticDependency.computeProductionAction().returns( NullAction() )
 
         self.productionAction.computePreview().returns( "create file1" )
-        with self.m.unorderedGroup():
-            self.dependencyProductionAction.computePreview().returns( "create dependency" )
-            self.orderOnlyDependencyProductionAction.computePreview().returns( "create orderOnlyDependency" )
+        self.strongDependencyProductionAction.computePreview().returns( "create strongDependency" )
 
-    def testGetProductionActionWhenFileIsMissing( self ):
-        for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
+        self.m.startTest()
 
-        self.getProductionActionAndPreview()
-
-    def testGetProductionActionWhenDependencyMustBeProduced( self ):
-        for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-            self.dependency.mustBeProduced().returns( True )
-
-        self.getProductionActionAndPreview()
-
-    def testGetProductionActionWhenDependencyIsNewer( self ):
-        for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-            self.dependency.mustBeProduced().returns( False )
-            self.automaticDependency.mustBeProduced().returns( False )
-            self.artifact.getOldestFile().returns( 1200000 )
-            self.dependency.getNewestFile().returns( 1200000 )
-
-        self.getProductionActionAndPreview()
-
-    def testGetProductionActionWhenAutomaticDependencyMustBeProduced( self ):
-        for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-            self.dependency.mustBeProduced().returns( False )
-            self.automaticDependency.mustBeProduced().returns( True )
-
-        self.getProductionActionAndPreview()
+        action = self.artifact.getProductionAction()
+        
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        n0 = Node( "create file1" )
+        n1 = Node( "create strongDependency" )
+        n3 = Node( "mkdir -p tmp1" )
+        n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
+        model.add( n0 )
+        model.add( n1 )
+        model.add( n3 )
+        model.add( n4 )
+        model.add( Link( n0, n1 ) )
+        model.add( Link( n0, n3 ) )
+        model.add( Link( n0, n4 ) )
+        
+        self.assertTrue( actionHasGraph( action, model ) )
 
     def testGetProductionActionWhenAutomaticDependencyIsNewer( self ):
-        for i in range( 2 ):
-            AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-            self.dependency.mustBeProduced().returns( False )
-            self.automaticDependency.mustBeProduced().returns( False )
-            self.artifact.getOldestFile().returns( 1200001 )
-            self.dependency.getNewestFile().returns( 1200000 )
-            self.automaticDependency.getNewestFile().returns( 1200001 )
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+        self.strongDependency.computeProductionAction().returns( NullAction() )
+        self.automaticDependency.computeProductionAction().returns( NullAction() )
+        self.artifact.getOldestFile().returns( 1200001 )
+        self.strongDependency.getNewestFile().returns( 1200000 )
+        self.automaticDependency.getNewestFile().returns( 1200001 )
+        self.artifact.doGetProductionAction().returns( self.productionAction )
+        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
 
-        self.getProductionActionAndPreview()
+        self.productionAction.computePreview().returns( "create file1" )
+
+        self.m.startTest()
+
+        action = self.artifact.getProductionAction()
+        
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        n0 = Node( "create file1" )
+        n3 = Node( "mkdir -p tmp1" )
+        n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
+        model.add( n0 )
+        model.add( n3 )
+        model.add( n4 )
+        model.add( Link( n0, n3 ) )
+        model.add( Link( n0, n4 ) )
+        
+        self.assertTrue( actionHasGraph( action, model ) )
+
+    def testGetProductionActionWhenAutomaticDependencyMustBeProduced( self ):
+        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
+        self.strongDependency.computeProductionAction().returns( NullAction() )
+        self.automaticDependency.computeProductionAction().returns( self.automaticDependencyProductionAction )
+        self.artifact.doGetProductionAction().returns( self.productionAction )
+        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
+
+        self.productionAction.computePreview().returns( "create file1" )
+        self.automaticDependencyProductionAction.computePreview().returns( "create automaticDependency" )
+
+        self.m.startTest()
+
+        action = self.artifact.getProductionAction()
+        
+        model = Graph( "action" )
+        model.nodeAttr[ "shape" ] = "box"
+        n0 = Node( "create file1" )
+        n2 = Node( "create automaticDependency" )
+        n3 = Node( "mkdir -p tmp1" )
+        n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
+        model.add( n0 )
+        model.add( n2 )
+        model.add( n3 )
+        model.add( n4 )
+        model.add( Link( n0, n2 ) )
+        model.add( Link( n0, n3 ) )
+        model.add( Link( n0, n4 ) )
+        
+        self.assertTrue( actionHasGraph( action, model ) )
 
 class DrawGraph( TestCase ):
     def testAtomic( self ):
