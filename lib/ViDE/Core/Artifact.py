@@ -5,11 +5,16 @@ from Misc import Graphviz
 from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction
 
 class Artifact:
+    ###################################################################### virtuals to be implemented
+    # computeGraphNode
+    # computeGraphLinks
+    # getAllFiles
+    
     def __init__( self, name, automatic ):
         self.__name = name
         self.__automatic = automatic
-        self.__graphNode = None
-        self.__graphLinks = None
+        self.__cachedGraphNode = None
+        self.__cachedGraphLinks = None
 
     @staticmethod
     def getModificationDate( file ):
@@ -25,14 +30,14 @@ class Artifact:
         return self.__name
 
     def getGraphNode( self ):
-        if self.__graphNode is None:
-            self.__graphNode = self.computeGraphNode()
-        return self.__graphNode
+        if self.__cachedGraphNode is None:
+            self.__cachedGraphNode = self.computeGraphNode()
+        return self.__cachedGraphNode
 
     def getGraphLinks( self ):
-        if self.__graphLinks is None:
-            self.__graphLinks = self.computeGraphLinks()
-        return self.__graphLinks
+        if self.__cachedGraphLinks is None:
+            self.__cachedGraphLinks = self.computeGraphLinks()
+        return self.__cachedGraphLinks
 
 class InputArtifact( Artifact ):
     def __init__( self, name, files, automatic ):
@@ -43,8 +48,8 @@ class InputArtifact( Artifact ):
         return False
 
     def getProductionAction( self ):
-        return None
-        
+        return NullAction()
+
     def getAllFiles( self ):
         return self.__files
 
@@ -70,6 +75,10 @@ class MonofileInputArtifact( InputArtifact ):
         return self.__fileName
         
 class ProduceableArtifact( Artifact ):
+    ###################################################################### virtuals to be implemented
+    # computeProductionAction
+    # mustBeProduced
+    
     def __init__( self, name, automatic ):
         Artifact.__init__( self, name, automatic )
         self.__productionAction = None

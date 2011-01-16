@@ -37,9 +37,7 @@ class Action:
         self.__cachedPreview = None
 
     def addPredecessor( self, p ):
-        # @todo Remove this test
-        if p is not None:
-            self.__predecessors.add( p )
+        self.__predecessors.add( p )
 
     def getPredecessors( self ):
         return self.__predecessors
