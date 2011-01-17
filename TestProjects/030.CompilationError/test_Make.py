@@ -2,7 +2,7 @@ import os.path
 import shutil
 import unittest
 
-import ViDE.Core.Action
+from ViDE.Core.Action import CompoundException
 from ViDE.Shell.Make import Make
 
 class TestMake( unittest.TestCase ):
@@ -11,7 +11,7 @@ class TestMake( unittest.TestCase ):
         shutil.rmtree( "build", True )
         make = Make( None )
         make.keepGoing = True
-        make.execute( [] )
+        self.assertRaises( CompoundException, make.execute, [] )
         self.assertFalse( os.path.exists( os.path.join( "build", "obj", "a.cpp.o" ) ) )
         self.assertTrue( os.path.exists( os.path.join( "build", "obj", "b.cpp.o" ) ) )
         self.assertTrue( os.path.exists( os.path.join( "build", "obj", "c.cpp.o" ) ) )
