@@ -13,5 +13,4 @@ class TestMake( unittest.TestCase ):
         self.assertTrue( os.path.exists( os.path.join( "build", "bin", "hello" ) ) )
         shutil.rmtree( "build", True )
 
-if __name__ == "__main__":
-    unittest.main()
+unittest.main()
