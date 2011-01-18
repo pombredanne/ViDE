@@ -135,11 +135,11 @@ class Action:
     ###################################################################### execution state
 
     class __ExecutionState:
-        # @todo Remove all this smart-smart-smart __getattr__ mechanics
-        def __getattr__( self, attr ):
-            if attr.startswith( "is" ):
-                return lambda: False
-            raise AttributeError()
+        def isInitial( self ): return False
+        def isEnded( self ): return False
+        def isSuccess( self ): return False
+        def isFailure( self ): return False
+        def isCanceled( self ): return False
     class __Initial( __ExecutionState ):
         def isInitial( self ): return True
     class __Executing( __ExecutionState ):
@@ -153,10 +153,11 @@ class Action:
     class __Canceled( __Ended ):
         def isCanceled( self ): return True
 
-    def __getattr__( self, attr ):
-        if attr.startswith( "is" ):
-            return getattr( self.__executionState, attr )
-        raise AttributeError( attr )
+    def isInitial( self ): return self.__executionState.isInitial()
+    def isEnded( self ): return self.__executionState.isEnded()
+    def isSuccess( self ): return self.__executionState.isSuccess()
+    def isFailure( self ): return self.__executionState.isFailure()
+    def isCanceled( self ): return self.__executionState.isCanceled()
 
     def getExecutionTimes( self ):
         return self.__executionBegin, self.__executionEnd
