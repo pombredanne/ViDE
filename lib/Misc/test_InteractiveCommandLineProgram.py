@@ -69,7 +69,12 @@ class TestCase( MockMockMock.TestCase ):
     def readline( self, line ):
         self.output.write( ">" )
         self.output.flush()
-        self.input.readline().returns( line )
+        self.input.readline().returns( line + "\n" )
+        
+    def readeof( self ):
+        self.output.write( ">" )
+        self.output.flush()
+        self.input.readline().returns( "" )
 
 class CommandLine( TestCase ):
     def testSimplestUse( self ):
@@ -196,35 +201,47 @@ class InteractiveShellCommands( TestCase ):
     def testSimplestUse( self ):
         self.readline( "command" )
         self.executionMock.doShortCommand( [] )
+        self.readeof()
+        self.m.startTest()
+        self.p.execute( [ "test" ] )
+
+    def testEmptyLine( self ):
         self.readline( "" )
+        self.readeof()
+        self.m.startTest()
+        self.p.execute( [ "test" ] )
+
+    def testLineWithSpaces( self ):
+        self.readline( "         " )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
     def testArgumentsForwarding( self ):
         self.readline( "command arg1 arg2" )
         self.executionMock.doShortCommand( [ "arg1", "arg2" ] )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
     def testQuotedArgumentsForwarding( self ):
         self.readline( "command \"arg1 arg2\"" )
         self.executionMock.doShortCommand( [ "arg1 arg2" ] )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
     def testCommandDefaultOption( self ):
         self.readline( "long-command" )
         self.executionMock.doLongCommand( "aaa", [] )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
     def testCommandOption( self ):
         self.readline( "long-command --aaa xxx" )
         self.executionMock.doLongCommand( "xxx", [] )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -232,12 +249,12 @@ class InteractiveShellCommands( TestCase ):
         self.readline( "unknown" )
         self.output.write( "Unknown command 'unknown'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
     def testTerminationWithEof( self ):
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -250,14 +267,14 @@ class InteractiveShellCommands( TestCase ):
         self.readline( "comm" )
         self.output.write( "Unknown command 'comm'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
     # def testCommandCompletion( self ):
         # self.readline( "commi" )
         # self.executionMock.doFunnyCommand()
-        # self.readline( "" )
+        # self.readeof()
         # self.m.startTest()
         # self.p.execute( [ "test" ] )
 
@@ -265,35 +282,35 @@ class InteractiveShellCommands( TestCase ):
         self.readline( "commu" )
         self.output.write( "Unknown command 'commu'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
 class InteractiveShellOptionEnable( TestCase ):
     def testEnableOptionWithoutArgument( self ):
         self.readline( "+stringB" )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
         self.assertEquals( self.p.stringScalar, "B" )
 
     def testEnableOptionWithArgument( self ):
         self.readline( "+string C" )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
         self.assertEquals( self.p.stringScalar, "C" )
 
     def testEnableOptionAlias( self ):
         self.readline( "+integer 42" )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
         self.assertEquals( self.p.intScalar, 42 )
 
     def testEnableOptionWithQuotedArgument( self ):
         self.readline( "+string \"C C\"" )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
         self.assertEquals( self.p.stringScalar, "C C" )
@@ -302,7 +319,7 @@ class InteractiveShellOptionEnable( TestCase ):
         self.readline( "+string C D E" )
         self.output.write( "Too much arguments for option 'string'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -310,7 +327,7 @@ class InteractiveShellOptionEnable( TestCase ):
         self.readline( "+string" )
         self.output.write( "Missing arguments for option 'string'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -318,21 +335,21 @@ class InteractiveShellOptionEnable( TestCase ):
         self.readline( "+unknown" )
         self.output.write( "Unknown option 'unknown'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
 class InteractiveShellOptionDisable( TestCase ):
     def testDisableOptionWithoutArgument( self ):
         self.readline( "-stringB" )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test", "--string", "C" ] )
         self.assertEquals( self.p.stringScalar, "A" )
 
     def testDisableOptionWithArguments( self ):
         self.readline( "-add B" )
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
         self.assertEquals( self.p.stringList, [ "A", "C" ] )
@@ -341,7 +358,7 @@ class InteractiveShellOptionDisable( TestCase ):
         self.readline( "-stringB C D E" )
         self.output.write( "Too much arguments for option 'stringB'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -349,7 +366,7 @@ class InteractiveShellOptionDisable( TestCase ):
         self.readline( "-add" )
         self.output.write( "Missing arguments for option 'add'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -357,7 +374,7 @@ class InteractiveShellOptionDisable( TestCase ):
         self.readline( "-int" )
         self.output.write( "Impossible to disable option 'int'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -365,7 +382,7 @@ class InteractiveShellOptionDisable( TestCase ):
         self.readline( "-unknown" )
         self.output.write( "Unknown option 'unknown'\n" )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -484,7 +501,7 @@ class Help( TestCase ):
                               blah blah blah blah blah blah blah
             """ ) )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 
@@ -512,7 +529,7 @@ class Help( TestCase ):
               --aaa AAA  set aaa to AAA
             """ ) )
         self.output.flush()
-        self.readline( "" )
+        self.readeof()
         self.m.startTest()
         self.p.execute( [ "test" ] )
 

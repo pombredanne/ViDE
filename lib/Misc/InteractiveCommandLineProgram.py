@@ -331,16 +331,17 @@ class InteractiveCommandLineProgram( OptionContainer, CommandContainer ):
 
     def __processLine( self, line ):
         words = shlex.split( line )
-        try:
-            if words[ 0 ][ 0 ] == '+':
-                self.__processOption( self.enableOption, words )
-            elif words[ 0 ][ 0 ] == '-':
-                self.__processOption( self.disableOption, words )
-            else:
-                self.processInteractiveCommand( words )
-        except ICLPException, e:
-            self.output.write( str( e ) + "\n" )
-            self.output.flush()
+        if len( words ) != 0:
+            try:
+                if words[ 0 ][ 0 ] == '+':
+                    self.__processOption( self.enableOption, words )
+                elif words[ 0 ][ 0 ] == '-':
+                    self.__processOption( self.disableOption, words )
+                else:
+                    self.processInteractiveCommand( words )
+            except ICLPException, e:
+                self.output.write( str( e ) + "\n" )
+                self.output.flush()
 
     def __processOption( self, f, words ):
         optionName = words[ 0 ][ 1: ]
