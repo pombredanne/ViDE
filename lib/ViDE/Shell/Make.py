@@ -12,9 +12,8 @@ from ViDE.Project.Project import Project
 class Make( InteractiveCommandLineProgram.Command ):
     def __init__( self, program ):
         InteractiveCommandLineProgram.Command.__init__( self, program )
-        self.jobs = 1
+        self.jobs = -1
         self.addOption( [ "j", "jobs" ], "jobs", InteractiveCommandLineProgram.StoreArgument( "JOBS" ), "use JOBS parallel jobs" )
-        self.addOption( [ "auto-jobs" ], "jobs", InteractiveCommandLineProgram.StoreConstant( -1 ), "use the optimal number of parallel jobs" )
         self.keepGoing = False
         self.addOption( [ "k", "keep-going" ], "keepGoing", InteractiveCommandLineProgram.StoreConstant( True ), "keep going in case of failure" )
         self.dryRun = False
