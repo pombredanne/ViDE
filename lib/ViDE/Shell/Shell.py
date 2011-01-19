@@ -9,7 +9,7 @@ from ViDE.Shell.Draw import Draw
 defaultToolset = "Toolset1"
 availableToolsets = [ "Toolset1", "Toolset2", "Toolset3" ]
 
-defaultBuildkit = "Buildkit1"
+defaultBuildkit = "gcc"
 availableBuildkits = [ "Buildkit1", "Buildkit2", "Buildkit3" ]
 
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):

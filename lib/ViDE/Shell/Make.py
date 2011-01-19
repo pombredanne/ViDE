@@ -2,27 +2,30 @@ import os.path
 
 import cairo
 
-from Misc import InteractiveCommandLineProgram
+from Misc import InteractiveCommandLineProgram as ICLP
 
+import ViDE
 from ViDE import Log
 from ViDE.Core.Action import CompoundException
 from ViDE.Core.ExecutionReport import ExecutionReport
 from ViDE.Project.Project import Project
+from ViDE.BuildKit.BuildKit import BuildKit
 
-class Make( InteractiveCommandLineProgram.Command ):
+class Make( ICLP.Command ):
     def __init__( self, program ):
-        InteractiveCommandLineProgram.Command.__init__( self, program )
+        ICLP.Command.__init__( self, program )
         self.jobs = -1
-        self.addOption( [ "j", "jobs" ], "jobs", InteractiveCommandLineProgram.StoreArgument( "JOBS" ), "use JOBS parallel jobs" )
+        self.addOption( [ "j", "jobs" ], "jobs", ICLP.StoreArgument( "JOBS" ), "use JOBS parallel jobs" )
         self.keepGoing = False
-        self.addOption( [ "k", "keep-going" ], "keepGoing", InteractiveCommandLineProgram.StoreConstant( True ), "keep going in case of failure" )
+        self.addOption( [ "k", "keep-going" ], "keepGoing", ICLP.StoreConstant( True ), "keep going in case of failure" )
         self.dryRun = False
-        self.addOption( [ "n", "dry-run" ], "dryRun", InteractiveCommandLineProgram.StoreConstant( True ), "print commands instead of executing them" )
+        self.addOption( [ "n", "dry-run" ], "dryRun", ICLP.StoreConstant( True ), "print commands instead of executing them" )
         self.drawGraph = False
-        self.addOption( [ "draw-graph" ], "drawGraph", InteractiveCommandLineProgram.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
+        self.addOption( [ "draw-graph" ], "drawGraph", ICLP.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
         
     def execute( self, args ):
-        action = Project.load( "videfile.py" ).getBuildAction()
+        buildKit = BuildKit.load( os.path.join( ViDE.buildKitsDirectory, self.program.buildkit + ".py" ) )
+        action = Project.load( "videfile.py", buildKit ).getBuildAction()
         if self.dryRun:
             print "\n".join( action.preview() )
         elif self.drawGraph:

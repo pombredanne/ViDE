@@ -1,16 +1,17 @@
 import imp
 
 class Descriptible:
+    def __init__( self ):
+        pass
+
     @classmethod
-    def load( cls, descriptionFile ):
-        instance = cls()
+    def load( cls, descriptionFile, *args, **kwargs ):
+        instance = cls( *args, **kwargs )
 
         #print "Loading", cls.__name__, "from", descriptionFile
 
         cls.inProgress = instance
-        instance.beginDescription()
         imp.load_source( "description", descriptionFile )
-        instance.endDescription()
         del cls.inProgress
 
         return instance

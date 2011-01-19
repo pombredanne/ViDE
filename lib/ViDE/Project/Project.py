@@ -4,7 +4,9 @@ from ViDE.Core.Descriptible import Descriptible
 from ViDE.Core.Actions import NullAction
 
 class Project( Descriptible ):
-    def beginDescription( self ):
+    def __init__( self, buildKit ):
+        Descriptible.__init__( self )
+        self.__buildKit = buildKit
         self.__artifacts = []
         
     def addArtifact( self, artifact ):
@@ -15,12 +17,9 @@ class Project( Descriptible ):
         for artifact in self.__artifacts:
             if artifact.getName() == name:
                 return artifact
-        artifact = artifactClass( *args )
+        artifact = artifactClass( self.__buildKit, *args )
         self.addArtifact( artifact )
         return artifact
-
-    def endDescription( self ):
-        pass
 
     def getBuildAction( self ):
         action = NullAction()
