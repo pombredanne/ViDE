@@ -75,11 +75,12 @@ class Object( Binary.Object ):
             orderOnlyDependencies = [ lib.getCopiedHeaders() for lib in localLibraries ],
             automaticDependencies = [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers ]
         )
+        self.__buildkit = buildkit
         self.__fileName = files[ 0 ]
         self.__source = source
 
     def doGetProductionAction( self ):
-        return SystemAction( [ "g++", "-c", "-I" + os.path.join( "build", "inc" ), "-o" + self.__fileName, self.__source.getFileName() ], "g++ -c " + self.__source.getFileName() )
+        return SystemAction( self.__buildkit.getCompiler().getSystem( self.__source.getFileName() ), "g++ -c " + self.__source.getFileName() )
 
     def getFileName( self ):
         return self.__fileName
