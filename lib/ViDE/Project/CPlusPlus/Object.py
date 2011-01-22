@@ -64,8 +64,7 @@ class DepFile( AtomicArtifact ):
         return self.__fileName
 
 class Object( Binary.Object ):
-    def __init__( self, compiler, source, localLibraries ):
-        files = compiler.getFiles( source.getFileName() )
+    def __init__( self, files, source, localLibraries ):
         headers = self.parseCppHeaders( source )
         Binary.Object.__init__(
             self,
@@ -75,15 +74,10 @@ class Object( Binary.Object ):
             orderOnlyDependencies = [ lib.getCopiedHeaders() for lib in localLibraries ],
             automaticDependencies = [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers ]
         )
-        self.__compiler = compiler
-        self.__fileName = files[ 0 ]
         self.__source = source
 
-    def doGetProductionAction( self ):
-        return SystemAction( self.__compiler.getSystem( self.__source.getFileName() ), "g++ -c " + self.__source.getFileName() )
-
-    def getFileName( self ):
-        return self.__fileName
+    def getSource( self ):
+        return self.__source
 
     def parseCppHeaders( self, source ):
         depFile = DepFile( source )
