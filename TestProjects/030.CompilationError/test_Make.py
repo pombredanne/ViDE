@@ -3,15 +3,14 @@ import shutil
 import unittest
 
 from ViDE.Core.Action import CompoundException
-from ViDE.Shell.Make import Make
+from ViDE.Shell.Shell import Shell
 
 class TestMake( unittest.TestCase ):
     def test( self ):
         os.chdir( os.path.dirname( __file__ ) )
         shutil.rmtree( "build", True )
-        make = Make( None )
-        make.keepGoing = True
-        self.assertRaises( CompoundException, make.execute, [] )
+        shell = Shell()
+        self.assertRaises( CompoundException, shell.execute, [ "test", "make", "-k" ] )
         self.assertFalse( os.path.exists( os.path.join( "build", "obj", "a.cpp.o" ) ) )
         self.assertTrue( os.path.exists( os.path.join( "build", "obj", "b.cpp.o" ) ) )
         self.assertTrue( os.path.exists( os.path.join( "build", "obj", "c.cpp.o" ) ) )

@@ -17,7 +17,7 @@ class Project( Descriptible ):
         for artifact in self.__artifacts:
             if artifact.getName() == name:
                 return artifact
-        artifact = artifactClass( self.__buildKit, *args )
+        artifact = artifactClass( *args )
         self.addArtifact( artifact )
         return artifact
 
