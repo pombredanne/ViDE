@@ -13,9 +13,8 @@ class CPlusPlus:
         def doGetProductionAction( self ):
             sourceName = self.getSource().getFileName()
             return SystemAction(
-                [ "cl", "/c", sourceName ]
-                + [ "/I" + os.path.join( "build", "inc" ), "/Fo" + self.__fileName ],
-                "cl " + sourceName
+                [ "cl", "/c", sourceName ],
+                [ "/I" + os.path.join( "build", "inc" ), "/Fo" + self.__fileName ]
             )
     
         def getFileName( self ):
@@ -31,9 +30,8 @@ class Binary:
         
         def doGetProductionAction( self ):
             return SystemAction(
-                [ "link", "/OUT:" + self.__fileName ]
-                + [ o.getFileName() for o in self.__objects ]
+                [ "link", "/OUT:" + self.__fileName ],
+                [ o.getFileName() for o in self.__objects ]
                 + [ "/LIBPATH:" + os.path.join( "build", "lib" ) ]
-                + [ lib.getLibName() + ".lib" for lib in self.__localLibraries ],
-                "link /OUT:" + self.__fileName
+                + [ lib.getLibName() + ".lib" for lib in self.__localLibraries ]
             )

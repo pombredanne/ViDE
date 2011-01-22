@@ -1,7 +1,7 @@
 import os.path
 
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
-from ViDE.Core.Actions import SystemAction, CopyFileAction
+from ViDE.Core.Actions import CopyFileAction
 
 class DynamicLibraryBinary( AtomicArtifact ):
     pass

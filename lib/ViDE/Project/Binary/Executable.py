@@ -1,7 +1,6 @@
 import os.path
 
 from ViDE.Core.Artifact import AtomicArtifact
-from ViDE.Core.Actions import SystemAction
 
 class Executable( AtomicArtifact ):
     def __init__( self, name, files, objects, localLibraries ):

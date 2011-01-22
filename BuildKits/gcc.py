@@ -12,7 +12,10 @@ class CPlusPlus:
     
         def doGetProductionAction( self ):
             sourceName = self.getSource().getFileName()
-            return SystemAction( [ "g++", "-c", "-I" + os.path.join( "build", "inc" ), "-o" + self.__fileName, sourceName ], "g++ -c " + sourceName )
+            return SystemAction(
+                [ "g++", "-c", sourceName ],
+                [ "-I" + os.path.join( "build", "inc" ), "-o" + self.__fileName ]
+            )
     
         def getFileName( self ):
             return self.__fileName
@@ -26,7 +29,12 @@ class Binary:
             self.__objects = objects
         
         def doGetProductionAction( self ):
-            return SystemAction( [ "g++", "-o" + self.__fileName ] + [ o.getFileName() for o in self.__objects ] + [ "-L" + os.path.join( "build", "lib" ) ] + [ "-l" + lib.getLibName() for lib in self.__localLibraries ], "g++ -o " + self.__fileName )
+            return SystemAction(
+                [ "g++", "-o" + self.__fileName ],
+                [ o.getFileName() for o in self.__objects ]
+                + [ "-L" + os.path.join( "build", "lib" ) ]
+                + [ "-l" + lib.getLibName() for lib in self.__localLibraries ]
+            )
 
     class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
         def __init__( self, name, objects ):
@@ -43,4 +51,7 @@ class Binary:
 
         def doGetProductionAction( self ):
             # Build commands taken from http://www.cygwin.com/cygwin-ug-net/dll.html
-            return SystemAction( [ "g++", "-shared", "-o" + self.__fileName ] + [ o.getFileName() for o in self.__objects ], "g++ -o " + self.__fileName )
+            return SystemAction(
+                [ "g++", "-shared", "-o" + self.__fileName ],
+                [ o.getFileName() for o in self.__objects ]
+            )

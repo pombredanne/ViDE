@@ -3,7 +3,6 @@ import re
 
 from ViDE.Core.Artifact import AtomicArtifact
 from ViDE.Core.Action import Action
-from ViDE.Core.Actions import SystemAction
 
 from ViDE.Project import Binary
 from ViDE.Project.Project import Project

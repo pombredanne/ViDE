@@ -55,16 +55,16 @@ class CopyFileAction( Action ):
         shutil.copyfile( self.__originFile, self.__destinationFile )
 
 class SystemAction( LongAction ):
-    def __init__( self, command, preview ):
+    def __init__( self, base, options = [] ):
         LongAction.__init__( self )
-        self.__command = command
-        self.__preview = preview
+        self.__base = base
+        self.__options = options
     
     def computePreview( self ):
-        return self.__preview
+        return " ".join( self.__base )
         
     def doExecute( self ):
-        Log.info( self.__preview )
-        Log.debug( " ".join( self.__command ) )
-        subprocess.check_call( self.__command )
-        Log.verbose( "End of", self.__preview )
+        Log.info( self.computePreview() )
+        Log.debug( " ".join( self.__base + self.__options ) )
+        subprocess.check_call( self.__base + self.__options )
+        Log.verbose( "End of", self.computePreview() )
