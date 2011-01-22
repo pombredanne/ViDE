@@ -6,7 +6,7 @@ from ViDE.Core.Actions import NullAction
 class Project( Descriptible ):
     def __init__( self, buildKit ):
         Descriptible.__init__( self )
-        self.__buildKit = buildKit
+        self.buildKit = buildKit
         self.__artifacts = []
         
     def addArtifact( self, artifact ):

@@ -20,7 +20,7 @@ def Sources( sources ):
 def Objects( sources, localLibraries ):
     objects = []
     for source in sources:
-        object = CPlusPlus.Object( source, localLibraries )
+        object = CPlusPlus.Object( Project.inProgress.buildKit, source, localLibraries )
         Project.inProgress.addArtifact( object )
         objects.append( object )
     return objects

@@ -64,18 +64,18 @@ class DepFile( AtomicArtifact ):
         return self.__fileName
 
 class Object( Binary.Object ):
-    def __init__( self, source, localLibraries ):
-        fileName = os.path.join( "build", "obj", source.getFileName() + ".o" )
+    def __init__( self, buildkit, source, localLibraries ):
+        files = buildkit.getCompiler().getFiles( source.getFileName() )
         headers = self.parseCppHeaders( source )
         Binary.Object.__init__(
             self,
-            name = fileName,
-            files = [ fileName ],
+            name = files[ 0 ],
+            files = files,
             strongDependencies = [ source ],
             orderOnlyDependencies = [ lib.getCopiedHeaders() for lib in localLibraries ],
             automaticDependencies = [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers ]
         )
-        self.__fileName = fileName
+        self.__fileName = files[ 0 ]
         self.__source = source
 
     def doGetProductionAction( self ):

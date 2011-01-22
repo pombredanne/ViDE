@@ -2,11 +2,10 @@ from ViDE.Core.Descriptible import Descriptible
 
 class BuildKit( Descriptible ):
     def __init__( self ):
-        self.__cppCompiler = None
-        self.__dynamicLibraryLinker = None
+        self.__compiler = None
 
-    def getCppCompiler( self ):
-        return self.__cppCompiler
-    
-    def getDynamicLibraryLinker( self ):
-        return self.__dynamicLibraryLinker
+    def setCompiler( self, compiler ):
+        self.__compiler = compiler
+
+    def getCompiler( self ):
+        return self.__compiler
