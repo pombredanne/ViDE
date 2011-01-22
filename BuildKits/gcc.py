@@ -1,6 +1,8 @@
 import os
 
 import ViDE.Project.CPlusPlus.Object
+import ViDE.Project.Binary.Executable
+import ViDE.Project.Binary.DynamicLibrary
 from ViDE.Core.Actions import SystemAction
 
 class CPlusPlus:
@@ -15,3 +17,14 @@ class CPlusPlus:
     
         def getFileName( self ):
             return self.__fileName
+
+class Binary:
+    class Executable( ViDE.Project.Binary.Executable ):
+        def __init__( self, name, objects, localLibraries ):
+            self.__fileName = os.path.join( "build", "bin", name )
+            ViDE.Project.Binary.Executable.__init__( self, name, [ self.__fileName ], objects, localLibraries )
+            self.__localLibraries = localLibraries
+            self.__objects = objects
+        
+        def doGetProductionAction( self ):
+            return SystemAction( [ "g++", "-o" + self.__fileName ] + [ o.getFileName() for o in self.__objects ] + [ "-L" + os.path.join( "build", "lib" ) ] + [ "-l" + lib.getLibName() for lib in self.__localLibraries ], "g++ -o " + self.__fileName )

@@ -26,7 +26,7 @@ def Objects( sources, localLibraries ):
     return objects
 
 def Executable( name, sources, localLibraries = [] ):
-    executable = Binary.Executable( name, Objects( Sources( sources ), localLibraries ), localLibraries )
+    executable = Project.inProgress.buildKit.Binary.Executable( name, Objects( Sources( sources ), localLibraries ), localLibraries )
     Project.inProgress.addArtifact( executable )
     return executable
 
