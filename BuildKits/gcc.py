@@ -2,7 +2,6 @@ import os
 
 import ViDE.Project.CPlusPlus.Object
 import ViDE.Project.Binary.Executable
-import ViDE.Project.Binary.DynamicLibrary
 from ViDE.Core.Actions import SystemAction
 
 class CPlusPlus:
@@ -28,3 +27,20 @@ class Binary:
         
         def doGetProductionAction( self ):
             return SystemAction( [ "g++", "-o" + self.__fileName ] + [ o.getFileName() for o in self.__objects ] + [ "-L" + os.path.join( "build", "lib" ) ] + [ "-l" + lib.getLibName() for lib in self.__localLibraries ], "g++ -o " + self.__fileName )
+
+    class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
+        def __init__( self, name, objects ):
+            self.__fileName = os.path.join( "build", "lib", name + ".dll" )
+            self.__objects = objects
+            ViDE.Project.Binary.DynamicLibraryBinary.__init__(
+                self,
+                name = name + "_bin",
+                files = [ self.__fileName ],
+                strongDependencies = objects,
+                orderOnlyDependencies = [],
+                automaticDependencies = []
+            )
+
+        def doGetProductionAction( self ):
+            # Build commands taken from http://www.cygwin.com/cygwin-ug-net/dll.html
+            return SystemAction( [ "g++", "-shared", "-o" + self.__fileName ] + [ o.getFileName() for o in self.__objects ], "g++ -o " + self.__fileName )

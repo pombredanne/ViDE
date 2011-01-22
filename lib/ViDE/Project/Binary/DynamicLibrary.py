@@ -3,23 +3,8 @@ import os.path
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Core.Actions import SystemAction, CopyFileAction
 
-# Build commands taken from http://www.cygwin.com/cygwin-ug-net/dll.html
-
 class DynamicLibraryBinary( AtomicArtifact ):
-    def __init__( self, name, objects ):
-        self.__fileName = os.path.join( "build", "lib", name + ".dll" )
-        self.__objects = objects
-        AtomicArtifact.__init__(
-            self,
-            name = name + "_bin",
-            files = [ self.__fileName ],
-            strongDependencies = objects,
-            orderOnlyDependencies = [],
-            automaticDependencies = []
-        )
-
-    def doGetProductionAction( self ):
-        return SystemAction( [ "g++", "-shared", "-o" + self.__fileName ] + [ o.getFileName() for o in self.__objects ], "g++ -o " + self.__fileName )
+    pass
 
 class CopiedHeader( AtomicArtifact ):
     def __init__( self, header ):
@@ -45,9 +30,9 @@ class CopiedHeaders( CompoundArtifact ):
         CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders )
         
 class DynamicLibrary( CompoundArtifact ):
-    def __init__( self, name, headers, objects ):
+    def __init__( self, name, headers, binary ):
         self.__libName = name
-        self.__binary = DynamicLibraryBinary( name, objects )
+        self.__binary = binary
         self.__copiedHeaders = CopiedHeaders( name, headers )
         CompoundArtifact.__init__( self, name = "lib" + name, componants = [ self.__binary, self.__copiedHeaders ] )
         

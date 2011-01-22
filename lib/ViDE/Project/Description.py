@@ -31,6 +31,7 @@ def Executable( name, sources, localLibraries = [] ):
     return executable
 
 def DynamicLibrary( name, headers, sources, localLibraries = [] ):
-    library = Binary.DynamicLibrary( name, Headers( headers ), Objects( Sources( sources ), localLibraries ) )
+    binary = Project.inProgress.buildKit.Binary.DynamicLibraryBinary( name, Objects( Sources( sources ), localLibraries ) )
+    library = Binary.DynamicLibrary( name, Headers( headers ), binary )
     Project.inProgress.addArtifact( library )
     return library
