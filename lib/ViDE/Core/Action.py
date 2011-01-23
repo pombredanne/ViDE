@@ -187,6 +187,10 @@ class Action:
             raise CompoundException( self.__exceptions )
 
     def __executeInThreads( self, keepGoing, threadNumber ):
+        # @todo Do not create all threads at the begining, but only when needed.
+        # This will allow the "make -j" (without jobs count) behavior:
+        # create as many threads as needed to parallelize every actions
+        # This will also allow to execute short actions in the main thread
         threads = []
         for i in range( threadNumber ):
             thread = threading.Thread( target = lambda: self.__executeInOneThread( keepGoing ) )
