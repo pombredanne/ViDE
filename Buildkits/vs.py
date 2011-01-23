@@ -7,7 +7,7 @@ from ViDE.Core.Actions import SystemAction
 class CPlusPlus:
     class Object( ViDE.Project.CPlusPlus.Object ):
         def __init__( self, source, localLibraries ):
-            self.__fileName = os.path.join( "build", "obj", source.getFileName() + ".o" )
+            self.__fileName = os.path.join( "build", "obj", source.getFileName() + ".obj" )
             ViDE.Project.CPlusPlus.Object.__init__( self, [ self.__fileName ], source, localLibraries )
     
         def doGetProductionAction( self ):
