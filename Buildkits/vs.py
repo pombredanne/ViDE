@@ -14,7 +14,7 @@ class CPlusPlus:
             sourceName = self.getSource().getFileName()
             return SystemAction(
                 [ "cl", "/c", sourceName ],
-                [ "/I" + os.path.join( "build", "inc" ), "/Fo" + self.__fileName ]
+                [ "/EHsc", "/I" + os.path.join( "build", "inc" ), "/Fo" + self.__fileName ]
             )
     
         def getFileName( self ):
