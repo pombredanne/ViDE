@@ -12,8 +12,77 @@ from Misc.MockMockMock import TestCase
 from ExecutionReport import ExecutionReport
 
 class Ordinates( TestCase ):
-    pass
-     
+    def setUp( self ):
+        TestCase.setUp( self )
+        self.a = self.m.createMock( "self.a" )
+        self.b = self.m.createMock( "self.b" )
+        self.c = self.m.createMock( "self.c" )
+        self.d = self.m.createMock( "self.d" )
+
+    def testOneBranch( self ):
+        self.d.getExecutionTimes().returns( ( 3., 4. ) )
+        self.d.isSuccess().returns( True )
+        self.d.getPreview().returns( "d" )
+        self.d.getPredecessors().returns( [ self.c ] )
+        self.c.getExecutionTimes().returns( ( 2., 3. ) )
+        self.c.isSuccess().returns( True )
+        self.c.getPreview().returns( "c" )
+        self.c.getPredecessors().returns( [ self.b ] )
+        self.b.getExecutionTimes().returns( ( 1., 2. ) )
+        self.b.isSuccess().returns( True )
+        self.b.getPreview().returns( "b" )
+        self.b.getPredecessors().returns( [ self.a ] )
+        self.a.getExecutionTimes().returns( ( 0., 1. ) )
+        self.a.isSuccess().returns( True )
+        self.a.getPreview().returns( "a" )
+        self.a.getPredecessors().returns( [] )
+
+        self.m.startTest()
+
+        report = ExecutionReport( self.d )
+        report._ExecutionReport__computeOrdinates()
+        for action in report._ExecutionReport__actions:
+            if action.text == "a":
+                self.assertEqual( action.y, 45 )
+            if action.text == "b":
+                self.assertEqual( action.y, 65 )
+            if action.text == "c":
+                self.assertEqual( action.y, 85 )
+            if action.text == "d":
+                self.assertEqual( action.y, 105 )
+
+    def testTwoBranches( self ):
+        self.d.getExecutionTimes().returns( ( 3., 4. ) )
+        self.d.isSuccess().returns( True )
+        self.d.getPreview().returns( "d" )
+        self.d.getPredecessors().returns( [ self.c, self.b ] )
+        self.c.getExecutionTimes().returns( ( 2., 3. ) )
+        self.c.isSuccess().returns( True )
+        self.c.getPreview().returns( "c" )
+        self.c.getPredecessors().returns( [ self.a ] )
+        self.a.getExecutionTimes().returns( ( 0., 1. ) )
+        self.a.isSuccess().returns( True )
+        self.a.getPreview().returns( "a" )
+        self.a.getPredecessors().returns( [] )
+        self.b.getExecutionTimes().returns( ( 1., 2. ) )
+        self.b.isSuccess().returns( True )
+        self.b.getPreview().returns( "b" )
+        self.b.getPredecessors().returns( [ self.a ] )
+
+        self.m.startTest()
+
+        report = ExecutionReport( self.d )
+        report._ExecutionReport__computeOrdinates()
+        for action in report._ExecutionReport__actions:
+            if action.text == "a":
+                self.assertEqual( action.y, 45 )
+            if action.text == "b":
+                self.assertEqual( action.y, 85 )
+            if action.text == "c":
+                self.assertEqual( action.y, 65 )
+            if action.text == "d":
+                self.assertEqual( action.y, 105 )
+
 def TestCaseWithDurationsAndWidths( durations, widths ):
     class TheNewClass:
         pass

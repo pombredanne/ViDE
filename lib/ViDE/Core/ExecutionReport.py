@@ -14,9 +14,11 @@ class ExecutionReport:
     class Action:
         def __init__( self, action ):
             self.begin, self.end = action.getExecutionTimes()
+            self.y = None
             self.success = action.isSuccess()
             self.text = action.getPreview()
             self.predecessors = set()
+            self.successors = set()
 
     ################################################################################ construction
 
@@ -39,6 +41,7 @@ class ExecutionReport:
                 for p in action.getPredecessors():
                     self.__addAction( p )
                     a.predecessors.add( self.theBigMap[ p ] )
+                    self.theBigMap[ p ].successors.add( a )
 
     def __computeDuration( self ):
         begin = min( a.begin for a in self.__actions )
@@ -66,10 +69,28 @@ class ExecutionReport:
         self.__computeOrdinates()
 
     def __computeOrdinates( self ):
-        for i, a in enumerate( self.__actions ):
-            a.y = i * 20 + 50
+        self.__nextOrdinate = len( self.__actions )
+        while self.__setLeavesOrdinates():
+            pass
         self.__horizontalAxisOrdinate = 25
-
+    
+    def __setLeavesOrdinates( self ):
+        nextActions = self.__findNextActionsToSetOrdinate()
+        if len( nextActions ) == 0:
+            return False
+        nextAction = sorted( nextActions, key = lambda action: action.end )[ 0 ]
+        nextAction.y = self.__nextOrdinate * 20 + 25
+        self.__nextOrdinate -= 1
+        return True
+            
+    def __findNextActionsToSetOrdinate( self ):
+        nextActions = []
+        for a in self.__actions:
+            if a.y is None:
+                if all( s.y is not None for s in a.successors ):
+                    nextActions.append( a )
+        return nextActions
+                
     def __computeAbscissa( self ):
         self.__computeOptimalTranscale()
         self.__computeGraduations()
