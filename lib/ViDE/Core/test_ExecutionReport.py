@@ -9,92 +9,11 @@ import cairo
 
 from Misc.MockMockMock import TestCase
 
-from ExecutionReport import ExecutionReport, segmentsIntersect
+from ExecutionReport import ExecutionReport
 
-class SegmentIntersection( TestCase ):
-    def test( self ):
-        img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 800 )
-        ctx = cairo.Context( img )
-        ctx.set_source_rgb( .9, .9, .9 )
-        ctx.paint()
-        ctx.set_line_width( 1 )
-        ctx.set_antialias( cairo.ANTIALIAS_NONE )
-        
-        s = ( ( random.randint( 200, 600 ), random.randint( 200, 600 ) ), ( random.randint( 200, 600 ), random.randint( 200, 600 ) ) )
-        coords = range( 0, 900, 200 )
-        ctx.set_source_rgb( 1, 0, 0 )
-        for x1 in coords:
-            for y1 in coords:
-                for x2 in coords:
-                    for y2 in coords:
-                        s2 = ( ( x1, y1 ), ( x2, y2 ) )
-                        self.pathSegment( ctx, s2 )
-        ctx.stroke()
-        ctx.set_source_rgb( 0, 1, 0 )
-        for x1 in coords:
-            for y1 in coords:
-                for x2 in coords:
-                    for y2 in coords:
-                        s2 = ( ( x1, y1 ), ( x2, y2 ) )
-                        if segmentsIntersect( s, s2 ):
-                            self.pathSegment( ctx, s2 )
-        ctx.stroke()
-        ctx.set_source_rgb( 0, 0, 1 )
-        self.pathSegment( ctx, s )
-        ctx.stroke()
-
-        img.write_to_png( "SegmentIntersection.png" )
-
-    def pathSegment( self, ctx, s ):
-        p1, p2 = s
-        x1, y1 = p1
-        x2, y2 = p2
-        ctx.move_to( x1, y1 )
-        ctx.line_to( x2, y2 )
-
-class DrawSomething( TestCase ):
-    def setUp( self ):
-        TestCase.setUp( self )
-        self.a = self.m.createMock( "self.a" )
-        self.b = self.m.createMock( "self.b" )
-        self.c = self.m.createMock( "self.c" )
-        self.d = self.m.createMock( "self.d" )
-        self.e = self.m.createMock( "self.e" )
-
-    def test( self ):
-        with self.m.unorderedGroup():
-            self.a.getExecutionTimes().returns( ( 115., 119. ) )
-            self.a.isSuccess().returns( False )
-            self.a.getPreview().returns( "self.a's preview" )
-            self.a.getPredecessors().returns( [ self.b, self.d ] )
-            self.b.getExecutionTimes().returns( ( 69., 90. ) )
-            self.b.isSuccess().returns( True )
-            self.b.getPreview().returns( "self.b's preview" )
-            self.b.getPredecessors().returns( [ self.c, self.e ] )
-            self.c.getExecutionTimes().returns( ( 0., 38. ) )
-            self.c.isSuccess().returns( True )
-            self.c.getPreview().returns( "self.c's preview" )
-            self.c.getPredecessors().returns( [] )
-            self.d.getExecutionTimes().returns( ( 59., 109. ) )
-            self.d.isSuccess().returns( True )
-            self.d.getPreview().returns( "self.d's preview" )
-            self.d.getPredecessors().returns( [ self.e ] )
-            self.e.getExecutionTimes().returns( ( 0., 58. ) )
-            self.e.isSuccess().returns( True )
-            self.e.getPreview().returns( "self.e's preview" )
-            self.e.getPredecessors().returns( [] )
-
-        self.m.startTest()
-
-        report = ExecutionReport( self.a )
-        img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 600 )
-        ctx = cairo.Context( img )
-        ctx.translate( 10, 10 )
-        ctx.set_source_rgb( .9, .9, .9 )
-        ctx.paint()
-        report.draw( ctx, 780, 580 )
-        img.write_to_png( "test_ExecutionReport.png" )
-        
+class Ordinates( TestCase ):
+    pass
+     
 def TestCaseWithDurationsAndWidths( durations, widths ):
     class TheNewClass:
         pass

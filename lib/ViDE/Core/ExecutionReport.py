@@ -4,36 +4,6 @@ import itertools
 
 import cairo
 
-def segmentsIntersect( s1, s2 ):
-    p11, p12 = s1
-    p21, p22 = s2
-    x11, y11 = p11
-    x12, y12 = p12
-    x21, y21 = p21
-    x22, y22 = p22
-    if max( [ x11, x12 ] ) < min( [ x21, x22 ] ):
-        return False
-    if max( [ x21, x22 ] ) < min( [ x11, x12 ] ):
-        return False
-    if max( [ y11, y12 ] ) < min( [ y21, y22 ] ):
-        return False
-    if max( [ y21, y22 ] ) < min( [ y11, y12 ] ):
-        return False
-    if ( ( y22 - y11 ) * ( x12 - x11 ) - ( x22 - x11 ) * ( y12 - y11 ) ) * ( ( y12 - y11 ) * ( x21 - x11 ) - ( y21 - y11 ) * ( x12 - x11 )  ) < 0:
-        return False
-    if ( ( y12 - y21 ) * ( x22 - x21 ) - ( x12 - x21 ) * ( y22 - y21 ) ) * ( ( y22 - y21 ) * ( x11 - x21 ) - ( y11 - y21 ) * ( x22 - x21 )  ) < 0:
-        return False
-    return True
-
-def countSegmentIntersections( segments ):
-    n = 0
-    for s1 in segments: 
-        for s2 in segments:
-            if s1 is not s2:
-                if segmentsIntersect( s1, s2 ):
-                    n += 1
-    return n
-
 class ExecutionReport:
     HorizontalAxisHeight = 50
     PossibleGraduationIntervalDurations = [ 0.1, 0.5, 1, 5, 10, 15, 30, 60, 
@@ -96,40 +66,9 @@ class ExecutionReport:
         self.__computeOrdinates()
 
     def __computeOrdinates( self ):
-        bestOrdering = list( self.__actions )
-        bestOrderingCost = self.__evaluateOrdering( bestOrdering )
-        for ordering in itertools.permutations( self.__actions ):
-            orderingCost = self.__evaluateOrdering( ordering )
-            if orderingCost < bestOrderingCost:
-                bestOrderingCost = orderingCost
-                bestOrdering = ordering
-            break
-        self.__applyActionOrdering( bestOrdering )
-        self.__horizontalAxisOrdinate = 25
-
-    def __applyActionOrdering( self, ordering ):
-        for i, a in enumerate( ordering ):
+        for i, a in enumerate( self.__actions ):
             a.y = i * 20 + 50
-
-    def __evaluateOrdering( self, ordering ):
-        self.__applyActionOrdering( ordering )
-        return ( self.__countCrossings(), self.__countLinksGoingUp() )
-
-    def __countCrossings( self ):
-        segments = set()
-        for a in self.__actions:
-            segments.add( ( ( a.begin, a.y ), ( a.end, a.y ) ) )
-            for p in a.predecessors:
-                segments.add( ( ( p.end, p.y ), ( a.begin, a.y ) ) )
-        return countSegmentIntersections( segments )
-
-    def __countLinksGoingUp( self ):
-        n = 0
-        for a in self.__actions:
-            for p in a.predecessors:
-                if p.y > a.y:
-                    n += 1
-        return n
+        self.__horizontalAxisOrdinate = 25
 
     def __computeAbscissa( self ):
         self.__computeOptimalTranscale()
