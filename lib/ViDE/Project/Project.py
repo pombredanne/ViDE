@@ -25,7 +25,7 @@ class Project( Descriptible ):
         action = NullAction()
         for artifact in self.__artifacts:
             action.addPredecessor( artifact.getProductionAction() )
-        return action
+        return action.prune()
 
     def getGraph( self ):
         graph = Graphviz.Graph( "Project" )

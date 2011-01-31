@@ -35,12 +35,37 @@ class Action:
         self.__graphNode = None
         self.__graphElements = None
         self.__cachedPreview = None
+        self.__prunedAction = None
 
     def addPredecessor( self, p ):
         self.__predecessors.add( p )
 
     def getPredecessors( self ):
         return self.__predecessors
+
+    def getAllPredecessors( self ):
+        predecessors = set()
+        predecessors.update( self.__predecessors )
+        for p in self.__predecessors:
+            predecessors.update( p.getAllPredecessors() )
+        return predecessors
+        
+    def prune( self ):
+        if self.__prunedAction is None:
+            self.__prunedAction = self.computePrunedAction()
+        return self.__prunedAction
+        
+    def computePrunedAction( self ):
+        prunedPredecessors = set()
+        for p in self.__predecessors:
+            prunedPredecessors.add( p.prune() )
+        if prunedPredecessors == self.__predecessors:
+            return self
+        prunedAction = self.shadowClone()
+        for p in prunedPredecessors:
+            if p is not None:
+                prunedAction.addPredecessor( p )
+        return prunedAction
         
     ###################################################################### height-based accessors
 
@@ -260,11 +285,40 @@ class NullAction( Action ):
         Action.__init__( self )
         self.__preview = preview
 
+    def shadowClone( self ):
+        return NullAction( self.__preview )
+        
     def doExecute( self ):
         pass
 
     def computePreview( self ):
         return self.__preview
+    
+    def computePrunedAction( self ):
+        predecessors = self.getPredecessors()
+        prunedPredecessors = set()
+        for p in predecessors:
+            add = True
+            for p2 in self.getPredecessors():
+                if p in p2.getAllPredecessors():
+                    add = False
+                    break
+            if add:
+                prunedPredecessor = p.prune()
+                if prunedPredecessor is not None:
+                    prunedPredecessors.add( prunedPredecessor )
+        if len( prunedPredecessors ) == 0:
+            return None
+        elif len( prunedPredecessors ) == 1:
+            for predecessor in prunedPredecessors:
+                return predecessor
+        elif prunedPredecessors == predecessors:
+            return self
+        else:
+            prunedAction = self.shadowClone()
+            for p in prunedPredecessors:
+                prunedAction.addPredecessor( p )
+            return prunedAction
 
 class LongAction( Action ):
     __duration = dict()

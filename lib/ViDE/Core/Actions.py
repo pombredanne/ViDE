@@ -8,8 +8,10 @@ from ViDE import Log
 class RemoveFileAction( Action ):
     def __init__( self, file ):
         Action.__init__( self )
-        assert( isinstance( self, Action ) )
         self.__file = file
+        
+    def shadowClone( self ):
+        return RemoveFileAction( self.__file )
 
     def computePreview( self ):
         return "rm -f " + self.__file
@@ -32,6 +34,9 @@ class CreateDirectoryAction( Action ):
     def __init__( self, directory ):
         Action.__init__( self )
         self.__directory = directory
+        
+    def shadowClone( self ):
+        return CreateDirectoryAction( self.__directory )
 
     def computePreview( self ):
         return "mkdir -p " + self.__directory
@@ -47,6 +52,9 @@ class CopyFileAction( Action ):
         Action.__init__( self )
         self.__originFile = originFile
         self.__destinationFile = destinationFile
+    
+    def shadowClone( self ):
+        return CopyFileAction( self.__originFile, self.__destinationFile )
 
     def computePreview( self ):
         return "cp " + self.__originFile + " " + self.__destinationFile
@@ -59,6 +67,9 @@ class SystemAction( LongAction ):
         LongAction.__init__( self )
         self.__base = base
         self.__options = options
+        
+    def shadowClone( self ):
+        return SystemAction( self.__base, self.__options )
     
     def computePreview( self ):
         return " ".join( self.__base )

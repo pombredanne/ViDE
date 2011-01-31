@@ -5,5 +5,4 @@ Fix division by zero in ExecutionReport.__computeOptimalTranscale when duration 
 Call all "virtual" functions only once, using pattern: if toto is None: toto = computeToto; return toto
 Prune useless NullAction in Action before dump, execute, preview, getGraph
 
-
-Remove NullActions which have arrows only up or down: they are useless
+Measure autotest coverage
