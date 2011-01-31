@@ -322,6 +322,7 @@ class NullAction( Action ):
 
 class LongAction( Action ):
     __duration = dict()
+    # @todo Put this file in "project/build", it has nothing to do in a system directory
     __durationFile = os.path.join( tempfile.gettempdir(), "ViDE.Core.LongAction.Durations.pickle" )
     
     @staticmethod
