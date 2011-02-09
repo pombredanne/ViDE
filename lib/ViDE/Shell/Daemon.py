@@ -1,6 +1,8 @@
 import wsgiref.simple_server
 import time
 import threading
+import subprocess
+import os
 
 import ViDE
 from Misc.InteractiveCommandLineProgram import Command
@@ -10,15 +12,13 @@ daemonLock = threading.Lock() ###@todo Maybe use a lock per project... or even q
 class OnPush:
     def __init__( self, project ):
         self.__project = project
-    
+
     def __call__( self ):
         with daemonLock:
             self.execute()
-    
+
     def execute( self ):
-        print "Yatta 1"
-        time.sleep( 10 )
-        print "Yatta 2"
+        subprocess.check_call( [ "git", "--git-dir=" + os.path.join( self.__project, ".git" ), "pull" ] )
 
 def DeamonApp( environ, start_response ):
     status = '200 OK'
