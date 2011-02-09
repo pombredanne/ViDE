@@ -1,4 +1,6 @@
-Focus on your code, let ViDE do peripheral tasks (list them) for you, in a uniform way (list axxes)
+vide draw autodepgraph
+
+Focus on your code, let ViDE do peripheral tasks (list them) for you, in a uniform way (list axes)
 
 Automatic dependencies (from #include): use Boost.Wave ? In the same process => export it to python
 Buildkits: gcc_cygwin msvc gcc_darwin gcc_linux gcc_mingw
@@ -11,7 +13,7 @@ Measure autotest coverage
 
 vide gen_makefile
 vide gen_batch: generate a batch to build the project
-those commands shal allow to bootstrap installation of ViDE
+those commands shall allow to bootstrap installation of ViDE
 
 Artifacts:
     Compile python code: import py_compile
@@ -21,7 +23,7 @@ Artifacts:
 Buildkits have a function
     system-on-which-they-run --> list-of-possible-target-systems
 => keep a fixed list of existing systems/platforms, etc.
-=> build in project/build/buildkit_buildsystem_target_platform/bin
+=> build in project/build/commitId (with optional '+' if commit is not clean) or HEAD/buildkit_buildsystem_target_platform/bin
     
 Make:
     -n -j -k
@@ -89,3 +91,7 @@ Languages: Java, Perl, Tcl, C#, etc.
 
 SCM, Delivery, Build, TEst, Continuous integration, Publication, Documentation, Roadmap, Editor
 
+vide daemon
+    a web service to be called by github
+        vide make for all builkits running on the platform
+        vide release --all (for not-yet-released tagged commits)

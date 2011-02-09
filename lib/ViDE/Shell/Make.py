@@ -38,6 +38,7 @@ class Make( ICLP.Command ):
             except CompoundException, e:
                 Log.error( "build failed", e )
                 raise
+            ### @todo Draw the ExecutionReport even in case of build failure
             report = ExecutionReport( action )
             img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 600 )
             ctx = cairo.Context( img )
@@ -45,4 +46,4 @@ class Make( ICLP.Command ):
             ctx.set_source_rgb( .9, .9, .9 )
             ctx.paint()
             report.draw( ctx, 780, 580 )
-            img.write_to_png( os.path.join( "build", "report.png" ) )
+            img.write_to_png( os.path.join( "build", "report.png" ) ) ### @todo Put the ExecutionReport in the right folder
