@@ -79,6 +79,7 @@ class Object( Binary.Object ):
         return self.__source
 
     def parseCppHeaders( self, source ):
+        return []
         depFile = DepFile( source )
         depFile.getProductionAction().execute( False, 1 )
         return [ header.strip() for header in open( depFile.getFileName() ) ]
