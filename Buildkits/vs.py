@@ -13,7 +13,7 @@ class vs( ViDE.Buildkit.Buildkit ):
             def __init__( self, buildkit, source, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".obj" )
-                ViDE.Project.CPlusPlus.Object.__init__( self, [ self.__fileName ], source, localLibraries )
+                ViDE.Project.CPlusPlus.Object.__init__( self, buildkit, [ self.__fileName ], source, localLibraries )
         
             def doGetProductionAction( self ):
                 sourceName = self.getSource().getFileName()
@@ -34,7 +34,7 @@ class vs( ViDE.Buildkit.Buildkit ):
             def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
-                ViDE.Project.Binary.Executable.__init__( self, name, [ self.__fileName ], objects, localLibraries )
+                ViDE.Project.Binary.Executable.__init__( self, buildkit, name, [ self.__fileName ], objects, localLibraries )
                 self.__localLibraries = localLibraries
                 self.__objects = objects
             
