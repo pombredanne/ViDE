@@ -25,7 +25,7 @@ class Make( ICLP.Command ):
         self.addOption( [ "draw-graph" ], "drawGraph", ICLP.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
         
     def execute( self, args ):
-        buildKit = imp.load_source( self.program.buildkit, os.path.join( ViDE.buildKitsDirectory, self.program.buildkit + ".py" ) )
+        buildKit = getattr( imp.load_source( self.program.buildkit, os.path.join( ViDE.buildKitsDirectory, self.program.buildkit + ".py" ) ), self.program.buildkit )()
         #buildKit = BuildKit.load( os.path.join( ViDE.buildKitsDirectory, self.program.buildkit + ".py" ) )
         action = Project.load( "videfile.py", buildKit ).getBuildAction()
         if self.dryRun:
