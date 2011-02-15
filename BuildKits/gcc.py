@@ -3,8 +3,9 @@ import os
 import ViDE.Project.CPlusPlus.Object
 import ViDE.Project.Binary.Executable
 from ViDE.Core.Actions import SystemAction
+import ViDE.Buildkit
 
-class gcc:
+class gcc( ViDE.Buildkit.Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.CPlusPlus.Object ):
             def __init__( self, source, localLibraries ):
