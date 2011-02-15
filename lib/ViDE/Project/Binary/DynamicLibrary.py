@@ -30,8 +30,6 @@ class CopiedHeaders( CompoundArtifact ):
         CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders )
         
 class DynamicLibrary( CompoundArtifact ):
-    needsBuildkit = True
-
     @staticmethod
     def computeName( buildkit, name, headers, binary ):
         return "lib" + name

@@ -6,8 +6,6 @@ import ViDE.Buildkit
 class vs( ViDE.Buildkit.Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.CPlusPlus.Object ):
-            needsBuildkit = True
-        
             @staticmethod
             def computeName( buildkit, source, localLibraries ):
                 return buildkit.fileName( "obj", source.getFileName() + ".obj" )
@@ -29,8 +27,6 @@ class vs( ViDE.Buildkit.Buildkit ):
 
     class Binary:
         class Executable( ViDE.Project.Binary.Executable ):
-            needsBuildkit = True
-
             @staticmethod
             def computeName( buildkit, name, objects, localLibraries ):
                 return name

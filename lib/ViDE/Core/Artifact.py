@@ -67,20 +67,6 @@ class InputArtifact( Artifact ):
     def computeGraphLinks( self ):
         return []
 
-class MonofileInputArtifact( InputArtifact ):
-    @staticmethod
-    def computeName( fileName ):
-        return fileName
-
-    def __init__( self, fileName ):
-        if fileName is None or len( fileName ) == 0:
-            raise Exception( "Trying to build an empty MonofileInputArtifact" )
-        InputArtifact.__init__( self, name = fileName, files = [ fileName ] )
-        self.__fileName = fileName
-        
-    def getFileName( self ):
-        return self.__fileName
-
 class AtomicArtifact( Artifact ):
     def __init__( self, name, files, strongDependencies, orderOnlyDependencies, automaticDependencies ):
         if len( files ) == 0:

@@ -25,11 +25,6 @@ class EmptyArtifacts( TestCase ):
         InputArtifact( "TestArtefact", [ "file" ] )
         self.assertRaises( Exception, InputArtifact, "TestArtefact", [] )
 
-    def testMonofileInput( self ):
-        MonofileInputArtifact( "file" )
-        self.assertRaises( Exception, MonofileInputArtifact, None )
-        self.assertRaises( Exception, MonofileInputArtifact, "" )
-
 class BasicAtomicArtifact( TestCase ):
     def setUp( self ):
         TestCase.setUp( self )

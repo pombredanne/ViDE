@@ -6,8 +6,6 @@ import ViDE.Buildkit
 class gcc( ViDE.Buildkit.Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.CPlusPlus.Object ):
-            needsBuildkit = True
-        
             @staticmethod
             def computeName( buildkit, source, localLibraries ):
                 return buildkit.fileName( "obj", source.getFileName() + ".o" )
@@ -29,8 +27,6 @@ class gcc( ViDE.Buildkit.Buildkit ):
 
     class Binary:
         class Executable( ViDE.Project.Binary.Executable ):
-            needsBuildkit = True
-
             @staticmethod
             def computeName( buildkit, name, objects, localLibraries ):
                 return name
@@ -38,7 +34,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
             def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name )
-                ViDE.Project.Binary.Executable.__init__( self, name, [ self.__fileName ], objects, localLibraries )
+                ViDE.Project.Binary.Executable.__init__( self, buildkit, name, [ self.__fileName ], objects, localLibraries )
                 self.__localLibraries = localLibraries
                 self.__objects = objects
 
@@ -51,8 +47,6 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
-            needsBuildkit = True
-        
             def __init__( self, buildkit, name, objects ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "lib", name + ".dll" )

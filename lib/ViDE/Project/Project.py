@@ -16,17 +16,11 @@ class Project( Descriptible ):
         self.__artifacts = []
 
     def createOrRetrieve( self, artifactClass, *args ):
-        if hasattr( artifactClass, "needsBuildkit" ):
-            name = artifactClass.computeName( self.buildkit, *args )
-        else:
-            name = artifactClass.computeName( *args )
+        name = artifactClass.computeName( self.buildkit, *args )
         for artifact in self.__artifacts:
             if artifact.getName() == name:
                 return artifact
-        if hasattr( artifactClass, "needsBuildkit" ):
-            artifact = artifactClass( self.buildkit, *args )
-        else:
-            artifact = artifactClass( *args )
+        artifact = artifactClass( self.buildkit, *args )
         self.__addArtifact( artifact )
         return artifact
         
