@@ -34,36 +34,17 @@ def AllPyIn( directory, recursive = True ):
     return AllXxxIn( directory, "py", recursive )
 
 def Headers( headers ):
-    headerArtifacts = []
-    for header in headers:
-        headerArtifact = CPlusPlus.Header( header )
-        Project.inProgress.addArtifact( headerArtifact )
-        headerArtifacts.append( headerArtifact )
-    return headerArtifacts
+    return [ Project.inProgress.createOrRetrieve( CPlusPlus.Header, header ) for header in headers ]
 
 def Sources( sources ):
-    sourceArtifacts = []
-    for source in sources:
-        sourceArtifact = CPlusPlus.Source( source )
-        Project.inProgress.addArtifact( sourceArtifact )
-        sourceArtifacts.append( sourceArtifact )
-    return sourceArtifacts
+    return [ Project.inProgress.createOrRetrieve( CPlusPlus.Source, source ) for source in sources ]
 
 def Objects( sources, localLibraries ):
-    objects = []
-    for source in sources:
-        object = Project.inProgress.buildkit.CPlusPlus.Object( source, localLibraries )
-        Project.inProgress.addArtifact( object )
-        objects.append( object )
-    return objects
+    return [ Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.CPlusPlus.Object, source, localLibraries ) for source in sources ]
 
 def Executable( name, sources, localLibraries = [] ):
-    executable = Project.inProgress.buildkit.Binary.Executable( name, Objects( Sources( sources ), localLibraries ), localLibraries )
-    Project.inProgress.addArtifact( executable )
-    return executable
+    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Binary.Executable, name, Objects( Sources( sources ), localLibraries ), localLibraries )
 
 def DynamicLibrary( name, headers, sources, localLibraries = [] ):
-    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( name, Objects( Sources( sources ), localLibraries ) )
-    library = Binary.DynamicLibrary( name, Headers( headers ), binary )
-    Project.inProgress.addArtifact( library )
-    return library
+    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, Objects( Sources( sources ), localLibraries ) )
+    return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, Headers( headers ), binary )

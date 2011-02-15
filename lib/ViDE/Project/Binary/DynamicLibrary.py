@@ -30,6 +30,10 @@ class CopiedHeaders( CompoundArtifact ):
         CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders )
         
 class DynamicLibrary( CompoundArtifact ):
+    @staticmethod
+    def computeName( name, headers, binary ):
+        return "lib" + name
+
     def __init__( self, name, headers, binary ):
         self.__libName = name
         self.__binary = binary

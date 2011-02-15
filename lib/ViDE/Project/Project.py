@@ -14,19 +14,25 @@ class Project( Descriptible ):
         Descriptible.__init__( self )
         self.buildkit = buildkit
         self.__artifacts = []
-        
-    def addArtifact( self, artifact ):
-        self.__artifacts.append( artifact )
-        
+
     def createOrRetrieve( self, artifactClass, *args ):
-        name = artifactClass.computeName( *args )
+        if hasattr( artifactClass, "needsBuildkit" ):
+            name = artifactClass.computeName( self.buildkit, *args )
+        else:
+            name = artifactClass.computeName( *args )
         for artifact in self.__artifacts:
             if artifact.getName() == name:
                 return artifact
-        artifact = artifactClass( *args )
-        self.addArtifact( artifact )
+        if hasattr( artifactClass, "needsBuildkit" ):
+            artifact = artifactClass( self.buildkit, *args )
+        else:
+            artifact = artifactClass( *args )
+        self.__addArtifact( artifact )
         return artifact
-
+        
+    def __addArtifact( self, artifact ):
+        self.__artifacts.append( artifact )
+        
     def getBuildAction( self ):
         action = NullAction()
         for artifact in self.__artifacts:
