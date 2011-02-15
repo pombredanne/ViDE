@@ -78,7 +78,6 @@ class Object( AtomicArtifact ):
         return self.__source
 
     def parseCppHeaders( self, buildkit, source ):
-        return []
         depFile = DepFile( buildkit, source )
         depFile.getProductionAction().execute( False, 1 )
         return [ header.strip() for header in open( depFile.getFileName() ) ]
