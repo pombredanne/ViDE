@@ -4,7 +4,6 @@ import re
 from ViDE.Core.Artifact import AtomicArtifact
 from ViDE.Core.Action import Action
 
-from ViDE.Project import Binary
 from ViDE.Project.Project import Project
 from ViDE.Project.CPlusPlus.Source import Header
 
@@ -62,10 +61,10 @@ class DepFile( AtomicArtifact ):
     def getFileName( self ):
         return self.__fileName
 
-class Object( Binary.Object ):
+class Object( AtomicArtifact ):
     def __init__( self, buildkit, files, source, localLibraries ):
         headers = self.parseCppHeaders( buildkit, source )
-        Binary.Object.__init__(
+        AtomicArtifact.__init__(
             self,
             name = files[ 0 ],
             files = files,
