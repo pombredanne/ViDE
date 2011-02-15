@@ -7,9 +7,9 @@ class DynamicLibraryBinary( AtomicArtifact ):
     pass
 
 class CopiedHeader( AtomicArtifact ):
-    def __init__( self, header ):
+    def __init__( self, buildkit, header ):
         self.__header = header
-        self.__copiedHeader = os.path.join( os.path.join( "build", "gcc", "inc" ), header.getFileName() ) # @todo Fix this bad work-around (the literal "gcc")
+        self.__copiedHeader = buildkit.fileName( "inc", header.getFileName() )
         AtomicArtifact.__init__(
             self,
             name = self.__copiedHeader,
@@ -23,21 +23,23 @@ class CopiedHeader( AtomicArtifact ):
         return CopyFileAction( self.__header.getFileName(), self.__copiedHeader )
         
 class CopiedHeaders( CompoundArtifact ):
-    def __init__( self, name, headers ):
+    def __init__( self, buildkit, name, headers ):
         copiedHeaders = []
         for header in headers:
-            copiedHeaders.append( CopiedHeader( header ) )
+            copiedHeaders.append( CopiedHeader( buildkit, header ) )
         CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders )
         
 class DynamicLibrary( CompoundArtifact ):
+    needsBuildkit = True
+
     @staticmethod
-    def computeName( name, headers, binary ):
+    def computeName( buildkit, name, headers, binary ):
         return "lib" + name
 
-    def __init__( self, name, headers, binary ):
+    def __init__( self, buildkit, name, headers, binary ):
         self.__libName = name
         self.__binary = binary
-        self.__copiedHeaders = CopiedHeaders( name, headers )
+        self.__copiedHeaders = CopiedHeaders( buildkit, name, headers )
         CompoundArtifact.__init__( self, name = "lib" + name, componants = [ self.__binary, self.__copiedHeaders ] )
         
     def getLibName( self ):

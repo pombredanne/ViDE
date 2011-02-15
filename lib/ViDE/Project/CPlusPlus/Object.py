@@ -39,8 +39,8 @@ class ParseCppHeadersAction( Action ):
         return headers
 
 class DepFile( AtomicArtifact ):
-    def __init__( self, source ):
-        fileName = os.path.join( "build", "dep", source.getFileName() + ".dep" )
+    def __init__( self, buildkit, source ):
+        fileName = buildkit.fileName( "dep", source.getFileName() + ".dep" )
         if os.path.exists( fileName ):
             automaticDependencies = [ Header( header.strip() ) for header in open( fileName ) ]
         else:
@@ -63,8 +63,8 @@ class DepFile( AtomicArtifact ):
         return self.__fileName
 
 class Object( Binary.Object ):
-    def __init__( self, files, source, localLibraries ):
-        headers = self.parseCppHeaders( source )
+    def __init__( self, buildkit, files, source, localLibraries ):
+        headers = self.parseCppHeaders( buildkit, source )
         Binary.Object.__init__(
             self,
             name = files[ 0 ],
@@ -78,9 +78,8 @@ class Object( Binary.Object ):
     def getSource( self ):
         return self.__source
 
-    def parseCppHeaders( self, source ):
+    def parseCppHeaders( self, buildkit, source ):
         return []
-        depFile = DepFile( source )
+        depFile = DepFile( buildkit, source )
         depFile.getProductionAction().execute( False, 1 )
         return [ header.strip() for header in open( depFile.getFileName() ) ]
-        

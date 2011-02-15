@@ -15,7 +15,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
             def __init__( self, buildkit, source, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".o" )
-                ViDE.Project.CPlusPlus.Object.__init__( self, [ self.__fileName ], source, localLibraries )
+                ViDE.Project.CPlusPlus.Object.__init__( self, buildkit, [ self.__fileName ], source, localLibraries )
 
             def doGetProductionAction( self ):
                 sourceName = self.getSource().getFileName()
