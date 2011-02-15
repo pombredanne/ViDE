@@ -10,7 +10,7 @@ class TestMake( unittest.TestCase ):
         shutil.rmtree( "build", True )
         shell = Shell()
         shell.execute( [ "test", "make" ] )
-        self.assertTrue( os.path.exists( os.path.join( "build", "bin", "hello" ) ) )
+        self.assertTrue( os.path.exists( os.path.join( "build", "gcc", "bin", "hello" ) ) )
         shutil.rmtree( "build", True )
 
 unittest.main()
