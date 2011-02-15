@@ -36,6 +36,7 @@ class Make( ICLP.Command ):
                 Log.error( "build failed", e )
                 raise
             finally:
+                # @todo Fix ExecutionReport when no action has been executed (vide make; vide make)
                 report = ExecutionReport( action )
                 img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 600 )
                 ctx = cairo.Context( img )

@@ -9,7 +9,7 @@ class DynamicLibraryBinary( AtomicArtifact ):
 class CopiedHeader( AtomicArtifact ):
     def __init__( self, header ):
         self.__header = header
-        self.__copiedHeader = os.path.join( os.path.join( "build", "inc" ), header.getFileName() )
+        self.__copiedHeader = os.path.join( os.path.join( "build", "gcc", "inc" ), header.getFileName() ) # @todo Fix this bad work-around (the literal "gcc")
         AtomicArtifact.__init__(
             self,
             name = self.__copiedHeader,
