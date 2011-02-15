@@ -4,4 +4,4 @@ rootDirectory = os.path.dirname( os.path.dirname( os.path.dirname( os.path.realp
 
 libDirectory = os.path.join( rootDirectory, "lib" )
 
-buildKitsDirectory = os.path.join( rootDirectory, "BuildKits" )
+buildkitsDirectory = os.path.join( rootDirectory, "Buildkits" )

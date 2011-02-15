@@ -4,7 +4,6 @@ from ViDE import Log
 from ViDE.Shell.AutoTest import AutoTest
 from ViDE.Shell.Make import Make
 from ViDE.Shell.Draw import Draw
-from ViDE.Shell.Daemon import Daemon
 
 # Get from ViDE
 defaultToolset = "Toolset1"
@@ -35,7 +34,6 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         
         self.addCommand( "draw", Draw, "print the dot graph of the project" )
         self.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
-        self.addCommand( "daemon", Daemon, "launch the continous integration daemon" )
 
         self.addHelpCommand()
         self.addExitCommand()

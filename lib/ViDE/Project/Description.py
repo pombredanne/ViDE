@@ -52,18 +52,18 @@ def Sources( sources ):
 def Objects( sources, localLibraries ):
     objects = []
     for source in sources:
-        object = Project.inProgress.buildKit.CPlusPlus.Object( source, localLibraries )
+        object = Project.inProgress.buildkit.CPlusPlus.Object( source, localLibraries )
         Project.inProgress.addArtifact( object )
         objects.append( object )
     return objects
 
 def Executable( name, sources, localLibraries = [] ):
-    executable = Project.inProgress.buildKit.Binary.Executable( name, Objects( Sources( sources ), localLibraries ), localLibraries )
+    executable = Project.inProgress.buildkit.Binary.Executable( name, Objects( Sources( sources ), localLibraries ), localLibraries )
     Project.inProgress.addArtifact( executable )
     return executable
 
 def DynamicLibrary( name, headers, sources, localLibraries = [] ):
-    binary = Project.inProgress.buildKit.Binary.DynamicLibraryBinary( name, Objects( Sources( sources ), localLibraries ) )
+    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( name, Objects( Sources( sources ), localLibraries ) )
     library = Binary.DynamicLibrary( name, Headers( headers ), binary )
     Project.inProgress.addArtifact( library )
     return library

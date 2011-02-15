@@ -10,7 +10,6 @@ from ViDE import Log
 from ViDE.Core.Action import CompoundException
 from ViDE.Core.ExecutionReport import ExecutionReport
 from ViDE.Project.Project import Project
-from ViDE.BuildKit.BuildKit import BuildKit
 
 class Make( ICLP.Command ):
     def __init__( self, program ):
@@ -25,9 +24,8 @@ class Make( ICLP.Command ):
         self.addOption( [ "draw-graph" ], "drawGraph", ICLP.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
         
     def execute( self, args ):
-        buildKit = getattr( imp.load_source( self.program.buildkit, os.path.join( ViDE.buildKitsDirectory, self.program.buildkit + ".py" ) ), self.program.buildkit )( self.program.buildkit )
-        #buildKit = BuildKit.load( os.path.join( ViDE.buildKitsDirectory, self.program.buildkit + ".py" ) )
-        action = Project.load( "videfile.py", buildKit ).getBuildAction()
+        buildkit = getattr( imp.load_source( self.program.buildkit, os.path.join( ViDE.buildkitsDirectory, self.program.buildkit + ".py" ) ), self.program.buildkit )( self.program.buildkit )
+        action = Project.load( "videfile.py", buildkit ).getBuildAction()
         if self.dryRun:
             print "\n".join( action.preview() )
         elif self.drawGraph:

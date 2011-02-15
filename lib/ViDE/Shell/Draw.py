@@ -15,6 +15,6 @@ class Draw( InteractiveCommandLineProgram.Command ):
         ### @todo Transfert the project's action graph from command Make to here
         
     def execute( self, args ):
-        buildKit = imp.load_source( self.program.buildkit, os.path.join( ViDE.buildKitsDirectory, self.program.buildkit + ".py" ) )
+        buildkit = getattr( imp.load_source( self.program.buildkit, os.path.join( ViDE.buildkitsDirectory, self.program.buildkit + ".py" ) ), self.program.buildkit )( self.program.buildkit )
         ### @todo Call dot
-        print Project.load( "videfile.py", buildKit ).getGraph().dotString()
+        print Project.load( "videfile.py", buildkit ).getGraph().dotString()
