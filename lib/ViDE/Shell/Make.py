@@ -44,4 +44,4 @@ class Make( ICLP.Command ):
                 ctx.set_source_rgb( .9, .9, .9 )
                 ctx.paint()
                 report.draw( ctx, 780, 580 )
-                img.write_to_png( os.path.join( "build", "report.png" ) ) ### @todo Put the ExecutionReport in the right folder
+                img.write_to_png( buildkit.fileName( "report.png" ) )
