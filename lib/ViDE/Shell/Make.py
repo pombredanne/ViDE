@@ -1,6 +1,3 @@
-import imp
-import os.path
-
 import cairo
 
 from Misc import InteractiveCommandLineProgram as ICLP
@@ -10,6 +7,7 @@ from ViDE import Log
 from ViDE.Core.Action import CompoundException
 from ViDE.Core.ExecutionReport import ExecutionReport
 from ViDE.Project.Project import Project
+from ViDE.Buildkit import Buildkit
 
 class Make( ICLP.Command ):
     def __init__( self, program ):
@@ -24,8 +22,9 @@ class Make( ICLP.Command ):
         self.addOption( [ "draw-graph" ], "drawGraph", ICLP.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
         
     def execute( self, args ):
-        buildkit = getattr( imp.load_source( self.program.buildkit, os.path.join( ViDE.buildkitsDirectory, self.program.buildkit + ".py" ) ), self.program.buildkit )( self.program.buildkit )
-        action = Project.load( "videfile.py", buildkit ).getBuildAction()
+        buildkit = Buildkit.load( self.program.buildkit )
+        project = Project.load( buildkit )
+        action = project.getBuildAction()
         if self.dryRun:
             print "\n".join( action.preview() )
         elif self.drawGraph:

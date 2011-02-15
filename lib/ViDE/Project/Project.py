@@ -1,9 +1,15 @@
+import os
+
 from Misc import Graphviz
 
 from ViDE.Core.Descriptible import Descriptible
 from ViDE.Core.Actions import NullAction
 
 class Project( Descriptible ):
+    @classmethod
+    def load( cls, buildkit, projectDirectory = "." ):
+        return Project.loadFromDescription( os.path.join( projectDirectory, "videfile.py" ), buildkit )
+
     def __init__( self, buildkit ):
         Descriptible.__init__( self )
         self.buildkit = buildkit

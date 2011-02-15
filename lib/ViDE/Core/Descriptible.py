@@ -5,7 +5,7 @@ class Descriptible:
         pass
 
     @classmethod
-    def load( cls, descriptionFile, *args, **kwargs ):
+    def loadFromDescription( cls, descriptionFile, *args, **kwargs ):
         instance = cls( *args, **kwargs )
 
         #print "Loading", cls.__name__, "from", descriptionFile

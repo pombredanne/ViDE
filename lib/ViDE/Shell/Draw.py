@@ -1,10 +1,8 @@
-import imp
-import os
-
 from Misc import InteractiveCommandLineProgram
 
 import ViDE
 from ViDE.Project.Project import Project
+from ViDE.Buildkit import Buildkit
 
 class Draw( InteractiveCommandLineProgram.Command ):
     def __init__( self, program ):
@@ -15,6 +13,7 @@ class Draw( InteractiveCommandLineProgram.Command ):
         ### @todo Transfert the project's action graph from command Make to here
         
     def execute( self, args ):
-        buildkit = getattr( imp.load_source( self.program.buildkit, os.path.join( ViDE.buildkitsDirectory, self.program.buildkit + ".py" ) ), self.program.buildkit )( self.program.buildkit )
+        buildkit = Buildkit.load( self.program.buildkit )
+        project = Project.load( buildkit )
         ### @todo Call dot
-        print Project.load( "videfile.py", buildkit ).getGraph().dotString()
+        print project.getGraph().dotString()
