@@ -72,9 +72,9 @@ class gcc( ViDE.Buildkit.Buildkit ):
         class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):
             def __init__( self, buildkit, name, objects ):
                 self.__buildkit = buildkit
-                self.__fileName = self.__buildkit.fileName( "lib", name + ".a" )
+                self.__fileName = self.__buildkit.fileName( "lib", "lib" + name + ".a" )
                 self.__objects = objects
-                ViDE.Project.Binary.DynamicLibraryBinary.__init__(
+                ViDE.Project.Binary.StaticLibraryBinary.__init__(
                     self,
                     name = name + "_bin",
                     files = [ self.__fileName ],

@@ -3,10 +3,10 @@ import os.path
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from Library import CopiedHeaders
 
-class DynamicLibraryBinary( AtomicArtifact ):
+class StaticLibraryBinary( AtomicArtifact ):
     pass
 
-class DynamicLibrary( CompoundArtifact ):
+class StaticLibrary( CompoundArtifact ):
     @staticmethod
     def computeName( buildkit, name, headers, binary ):
         return "lib" + name

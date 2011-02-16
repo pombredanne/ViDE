@@ -1,2 +1,3 @@
 from DynamicLibrary import DynamicLibrary, DynamicLibraryBinary
+from StaticLibrary import StaticLibrary, StaticLibraryBinary
 from Executable import Executable

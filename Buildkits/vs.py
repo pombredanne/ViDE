@@ -44,7 +44,8 @@ class vs( ViDE.Buildkit.Buildkit ):
                 return SystemAction(
                     [ "link", "/OUT:" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
-                    + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ]
+                    + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
+                    + [ "/LIBPATH:" + self.__buildkit.fileName( "lib" ) ] # Static libraries
                     + [ lib.getLibName() + ".lib" for lib in self.__localLibraries ]
                 )
 
@@ -56,6 +57,7 @@ class vs( ViDE.Buildkit.Buildkit ):
                 ViDE.Project.Binary.DynamicLibraryBinary.__init__(
                     self,
                     name = name + "_bin",
+                    # @todo Put the .dll in bin, but the .lib and .exp in lib
                     files = [ self.__buildkit.fileName( "bin", name + ".dll" ), self.__buildkit.fileName( "bin", name + ".lib" ), self.__buildkit.fileName( "bin", name + ".exp" ) ],
                     strongDependencies = objects,
                     orderOnlyDependencies = [],
@@ -65,5 +67,25 @@ class vs( ViDE.Buildkit.Buildkit ):
             def doGetProductionAction( self ):
                 return SystemAction(
                     [ "link", "/DLL", "/OUT:" + self.__libName ],
+                    [ o.getFileName() for o in self.__objects ]
+                )
+
+        class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):
+            def __init__( self, buildkit, name, objects ):
+                self.__buildkit = buildkit
+                self.__fileName = self.__buildkit.fileName( "lib", name + ".lib" )
+                self.__objects = objects
+                ViDE.Project.Binary.StaticLibraryBinary.__init__(
+                    self,
+                    name = name + "_bin",
+                    files = [ self.__fileName ],
+                    strongDependencies = objects,
+                    orderOnlyDependencies = [],
+                    automaticDependencies = []
+                )
+
+            def doGetProductionAction( self ):
+                return SystemAction(
+                    [ "lib", "/OUT:" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
                 )
