@@ -41,7 +41,7 @@ class DepFile( AtomicArtifact ):
     def __init__( self, buildkit, source ):
         fileName = buildkit.fileName( "dep", source.getFileName() + ".dep" )
         if os.path.exists( fileName ):
-            automaticDependencies = [ Header( header.strip() ) for header in open( fileName ) ]
+            automaticDependencies = [ Header( buildkit, header.strip() ) for header in open( fileName ) ]
         else:
             automaticDependencies = []
         AtomicArtifact.__init__(
