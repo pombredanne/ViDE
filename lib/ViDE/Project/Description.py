@@ -39,12 +39,12 @@ def Headers( headers ):
 def Sources( sources ):
     return [ Project.inProgress.createOrRetrieve( CPlusPlus.Source, source ) for source in sources ]
 
-def Objects( sources, localLibraries ):
-    return [ Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.CPlusPlus.Object, source, localLibraries ) for source in sources ]
+def Objects( sources, additionalDefines, localLibraries ):
+    return [ Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.CPlusPlus.Object, source, additionalDefines, localLibraries ) for source in sources ]
 
 def Executable( name, sources, localLibraries = [] ):
-    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Binary.Executable, name, Objects( Sources( sources ), localLibraries ), localLibraries )
+    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Binary.Executable, name, Objects( Sources( sources ), [], localLibraries ), localLibraries )
 
 def DynamicLibrary( name, headers, sources, localLibraries = [] ):
-    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, Objects( Sources( sources ), localLibraries ) )
+    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, Objects( Sources( sources ), [ "BUILD_" + name.upper() ], localLibraries ) )
     return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, Headers( headers ), binary )

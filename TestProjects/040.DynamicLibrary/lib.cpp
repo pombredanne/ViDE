@@ -2,6 +2,6 @@
 
 #include <iostream>
 
-void f() {
+HELLO_API void f() {
     std::cout << "Hello, World!" << std::endl;
 }

@@ -7,12 +7,13 @@ class gcc( ViDE.Buildkit.Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.CPlusPlus.Object ):
             @staticmethod
-            def computeName( buildkit, source, localLibraries ):
+            def computeName( buildkit, source, additionalDefines, localLibraries ):
                 return buildkit.fileName( "obj", source.getFileName() + ".o" )
             
-            def __init__( self, buildkit, source, localLibraries ):
+            def __init__( self, buildkit, source, additionalDefines, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".o" )
+                self.__additionalDefines = additionalDefines
                 ViDE.Project.CPlusPlus.Object.__init__( self, buildkit, [ self.__fileName ], source, localLibraries )
 
             def doGetProductionAction( self ):
@@ -20,6 +21,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 return SystemAction(
                     [ "g++", "-c", sourceName ],
                     [ "-I" + self.__buildkit.fileName( "inc" ), "-o" + self.__fileName ]
+                    + [ "-D" + name for name in self.__additionalDefines ]
                 )
 
             def getFileName( self ):
