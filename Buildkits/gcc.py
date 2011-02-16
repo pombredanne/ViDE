@@ -68,3 +68,23 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     [ "g++", "-shared", "-o" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
                 )
+
+        class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):
+            def __init__( self, buildkit, name, objects ):
+                self.__buildkit = buildkit
+                self.__fileName = self.__buildkit.fileName( "lib", name + ".a" )
+                self.__objects = objects
+                ViDE.Project.Binary.DynamicLibraryBinary.__init__(
+                    self,
+                    name = name + "_bin",
+                    files = [ self.__fileName ],
+                    strongDependencies = objects,
+                    orderOnlyDependencies = [],
+                    automaticDependencies = []
+                )
+
+            def doGetProductionAction( self ):
+                return SystemAction(
+                    [ "ar", "-q", self.__fileName ],
+                    [ o.getFileName() for o in self.__objects ]
+                )

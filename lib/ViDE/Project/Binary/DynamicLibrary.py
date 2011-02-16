@@ -24,9 +24,7 @@ class CopiedHeader( AtomicArtifact ):
         
 class CopiedHeaders( CompoundArtifact ):
     def __init__( self, buildkit, name, headers ):
-        copiedHeaders = []
-        for header in headers:
-            copiedHeaders.append( CopiedHeader( buildkit, header ) )
+        copiedHeaders = [ CopiedHeader( buildkit, header ) for header in headers ]
         CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders )
         
 class DynamicLibrary( CompoundArtifact ):
