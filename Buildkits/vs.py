@@ -63,7 +63,6 @@ class vs( ViDE.Buildkit.Buildkit ):
                 )
 
             def doGetProductionAction( self ):
-                # Build commands taken from http://www.cygwin.com/cygwin-ug-net/dll.html
                 return SystemAction(
                     [ "link", "/DLL", "/OUT:" + self.__libName ],
                     [ o.getFileName() for o in self.__objects ]
