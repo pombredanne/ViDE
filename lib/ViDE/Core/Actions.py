@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import time
 
 from ViDE.Core.Action import Action, LongAction, NullAction
 from ViDE import Log
@@ -61,6 +62,8 @@ class CopyFileAction( Action ):
         
     def doExecute( self ):
         shutil.copyfile( self.__originFile, self.__destinationFile )
+        # @todo Fix work-around
+        time.sleep( 1 ) # Race condition ? Microsoft cl doesn't see the file when called just after the copy...
 
 class SystemAction( LongAction ):
     def __init__( self, base, options = [] ):
