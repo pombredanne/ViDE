@@ -20,27 +20,14 @@ class Binary( AtomicArtifact ):
         for lib in self.__localLibraries:
             if hasattr( lib, "getBinary" ):
                 libs.append( lib )
-                libs += lib.getBinary().localLibrariesWithBinaryToTransmit()
+            libs += lib.localLibrariesWithBinaryToTransmit()
         return libs
-
-    def localLibrariesWithBinaryToTransmit( self ):
-        return []
 
 class Executable( Binary ):
     pass
 
 class StaticLibraryBinary( Binary ):
-    def __init__( self, buildkit, name, files, objects, localLibraries ):
-        self.__localLibraries = localLibraries
-        Binary.__init__( self, buildkit, name, files, objects, localLibraries )
-
-    def localLibrariesWithBinaryToTransmit( self ):
-        libs = []
-        for lib in self.__localLibraries:
-            if hasattr( lib, "getBinary" ):
-                libs.append( lib )
-                libs += lib.getBinary().localLibrariesWithBinaryToTransmit()
-        return libs
+    pass
 
 class DynamicLibraryBinary( Binary ):
     pass
@@ -68,10 +55,10 @@ class CopiedHeaders( CompoundArtifact ):
 
 class LibraryWithBinary( CompoundArtifact ):
     @staticmethod
-    def computeName( buildkit, name, headers, binary ):
+    def computeName( buildkit, name, headers, binary, localLibraries ):
         return "lib" + name
 
-    def __init__( self, buildkit, name, headers, binary ):
+    def __init__( self, buildkit, name, headers, binary, localLibraries ):
         self.__libName = name
         self.__binary = binary
         self.__copiedHeaders = CopiedHeaders( buildkit, name, headers )
@@ -87,19 +74,31 @@ class LibraryWithBinary( CompoundArtifact ):
         return self.__copiedHeaders
 
 class DynamicLibrary( LibraryWithBinary ):
-    pass
+    def localLibrariesWithBinaryToTransmit( self ):
+        return []
 
 class StaticLibrary( LibraryWithBinary ):
-    pass
+    def __init__( self, buildkit, name, headers, binary, localLibraries ):
+        self.__localLibraries = localLibraries
+        LibraryWithBinary.__init__( self, buildkit, name, headers, binary, localLibraries )
+
+    def localLibrariesWithBinaryToTransmit( self ):
+        libs = []
+        for lib in self.__localLibraries:
+            if hasattr( lib, "getBinary" ):
+                libs.append( lib )
+            libs += lib.localLibrariesWithBinaryToTransmit()
+        return libs
 
 class HeaderLibrary( CompoundArtifact ):
     @staticmethod
-    def computeName( buildkit, name, headers ):
+    def computeName( buildkit, name, headers, localLibraries ):
         return "lib" + name
 
-    def __init__( self, buildkit, name, headers ):
+    def __init__( self, buildkit, name, headers, localLibraries ):
         self.__libName = name
         self.__copiedHeaders = CopiedHeaders( buildkit, name, headers )
+        self.__localLibraries = localLibraries
         CompoundArtifact.__init__( self, name = "lib" + name, componants = [ self.__copiedHeaders ] )
 
     def getLibName( self ):
@@ -107,3 +106,11 @@ class HeaderLibrary( CompoundArtifact ):
 
     def getCopiedHeaders( self ):
         return self.__copiedHeaders
+
+    def localLibrariesWithBinaryToTransmit( self ):
+        libs = []
+        for lib in self.__localLibraries:
+            if hasattr( lib, "getBinary" ):
+                libs.append( lib )
+            libs += lib.localLibrariesWithBinaryToTransmit()
+        return libs

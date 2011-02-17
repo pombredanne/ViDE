@@ -47,11 +47,11 @@ def Executable( name, sources, localLibraries = [] ):
 
 def DynamicLibrary( name, headers, sources, localLibraries = [] ):
     binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, Objects( Sources( sources ), [ "BUILD_" + name.upper() ], localLibraries ), localLibraries )
-    return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, Headers( headers ), binary )
+    return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, Headers( headers ), binary, localLibraries )
 
 def StaticLibrary( name, headers, sources, localLibraries = [] ):
     binary = Project.inProgress.buildkit.Binary.StaticLibraryBinary( Project.inProgress.buildkit, name, Objects( Sources( sources ), [], localLibraries ), localLibraries )
-    return Project.inProgress.createOrRetrieve( Binary.StaticLibrary, name, Headers( headers ), binary )
+    return Project.inProgress.createOrRetrieve( Binary.StaticLibrary, name, Headers( headers ), binary, localLibraries )
 
 def HeaderLibrary( name, headers, localLibraries = [] ):
-    return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, Headers( headers ) )
+    return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, Headers( headers ), localLibraries )
