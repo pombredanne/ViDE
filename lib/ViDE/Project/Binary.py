@@ -1,8 +1,25 @@
 import os.path
 
-from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Core.Actions import CopyFileAction
-from Binary import Binary
+from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
+
+class Binary( AtomicArtifact ):
+    def __init__( self, buildkit, name, files, objects, localLibraries ):
+        self.__localLibraries = localLibraries
+        AtomicArtifact.__init__(
+            self,
+            name = name,
+            files = files,
+            strongDependencies = objects,
+            orderOnlyDependencies = [ lib.getBinary() for lib in self.localLibrariesWithBinary() ],
+            automaticDependencies = []
+        )
+
+    def localLibrariesWithBinary( self ):
+        return [ lib for lib in self.__localLibraries if hasattr( lib, "getBinary" ) ]
+
+class Executable( Binary ):
+    pass
 
 class StaticLibraryBinary( Binary ):
     pass
@@ -22,10 +39,10 @@ class CopiedHeader( AtomicArtifact ):
             orderOnlyDependencies = [],
             automaticDependencies = []
         )
-        
+
     def doGetProductionAction( self ):
         return CopyFileAction( self.__header.getFileName(), self.__copiedHeader )
-        
+
 class CopiedHeaders( CompoundArtifact ):
     def __init__( self, buildkit, name, headers ):
         copiedHeaders = [ CopiedHeader( buildkit, header ) for header in headers ]
@@ -51,6 +68,12 @@ class LibraryWithBinary( CompoundArtifact ):
     def getCopiedHeaders( self ):
         return self.__copiedHeaders
 
+class DynamicLibrary( LibraryWithBinary ):
+    pass
+
+class StaticLibrary( LibraryWithBinary ):
+    pass
+
 class HeaderLibrary( CompoundArtifact ):
     @staticmethod
     def computeName( buildkit, name, headers ):
@@ -60,10 +83,9 @@ class HeaderLibrary( CompoundArtifact ):
         self.__libName = name
         self.__copiedHeaders = CopiedHeaders( buildkit, name, headers )
         CompoundArtifact.__init__( self, name = "lib" + name, componants = [ self.__copiedHeaders ] )
-        
+
     def getLibName( self ):
         return self.__libName
 
     def getCopiedHeaders( self ):
         return self.__copiedHeaders
-    

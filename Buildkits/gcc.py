@@ -1,5 +1,5 @@
-import ViDE.Project.CPlusPlus.Object
-import ViDE.Project.Binary.Executable
+import ViDE.Project.CPlusPlus
+import ViDE.Project.Binary
 from ViDE.Core.Actions import SystemAction
 import ViDE.Buildkit
 
