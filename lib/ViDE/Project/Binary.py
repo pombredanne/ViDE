@@ -16,13 +16,31 @@ class Binary( AtomicArtifact ):
         )
 
     def localLibrariesWithBinary( self ):
-        return [ lib for lib in self.__localLibraries if hasattr( lib, "getBinary" ) ]
+        libs = []
+        for lib in self.__localLibraries:
+            if hasattr( lib, "getBinary" ):
+                libs.append( lib )
+                libs += lib.getBinary().localLibrariesWithBinaryToTransmit()
+        return libs
+
+    def localLibrariesWithBinaryToTransmit( self ):
+        return []
 
 class Executable( Binary ):
     pass
 
 class StaticLibraryBinary( Binary ):
-    pass
+    def __init__( self, buildkit, name, files, objects, localLibraries ):
+        self.__localLibraries = localLibraries
+        Binary.__init__( self, buildkit, name, files, objects, localLibraries )
+
+    def localLibrariesWithBinaryToTransmit( self ):
+        libs = []
+        for lib in self.__localLibraries:
+            if hasattr( lib, "getBinary" ):
+                libs.append( lib )
+                libs += lib.getBinary().localLibrariesWithBinaryToTransmit()
+        return libs
 
 class DynamicLibraryBinary( Binary ):
     pass
