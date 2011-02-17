@@ -37,7 +37,6 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name )
                 ViDE.Project.Binary.Executable.__init__( self, buildkit, name, [ self.__fileName ], objects, localLibraries )
-                self.__localLibraries = localLibraries
                 self.__objects = objects
 
             def doGetProductionAction( self ):
@@ -45,7 +44,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     [ "g++", "-o" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
-                    + [ "-l" + lib.getLibName() for lib in self.__localLibraries ]
+                    + [ "-l" + lib.getLibName() for lib in self.localLibrariesWithBinary() ]
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):

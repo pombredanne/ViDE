@@ -3,6 +3,12 @@ import os.path
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Core.Actions import CopyFileAction
 
+class StaticLibraryBinary( AtomicArtifact ):
+    pass
+
+class DynamicLibraryBinary( AtomicArtifact ):
+    pass
+
 class CopiedHeader( AtomicArtifact ):
     def __init__( self, buildkit, header ):
         self.__header = header
@@ -23,3 +29,40 @@ class CopiedHeaders( CompoundArtifact ):
     def __init__( self, buildkit, name, headers ):
         copiedHeaders = [ CopiedHeader( buildkit, header ) for header in headers ]
         CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders )
+
+class LibraryWithBinary( CompoundArtifact ):
+    @staticmethod
+    def computeName( buildkit, name, headers, binary ):
+        return "lib" + name
+
+    def __init__( self, buildkit, name, headers, binary ):
+        self.__libName = name
+        self.__binary = binary
+        self.__copiedHeaders = CopiedHeaders( buildkit, name, headers )
+        CompoundArtifact.__init__( self, name = "lib" + name, componants = [ self.__binary, self.__copiedHeaders ] )
+        
+    def getLibName( self ):
+        return self.__libName
+        
+    def getBinary( self ):
+        return self.__binary
+
+    def getCopiedHeaders( self ):
+        return self.__copiedHeaders
+
+class HeaderLibrary( CompoundArtifact ):
+    @staticmethod
+    def computeName( buildkit, name, headers ):
+        return "lib" + name
+
+    def __init__( self, buildkit, name, headers ):
+        self.__libName = name
+        self.__copiedHeaders = CopiedHeaders( buildkit, name, headers )
+        CompoundArtifact.__init__( self, name = "lib" + name, componants = [ self.__copiedHeaders ] )
+        
+    def getLibName( self ):
+        return self.__libName
+
+    def getCopiedHeaders( self ):
+        return self.__copiedHeaders
+    

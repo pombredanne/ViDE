@@ -37,7 +37,6 @@ class vs( ViDE.Buildkit.Buildkit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
                 ViDE.Project.Binary.Executable.__init__( self, buildkit, name, [ self.__fileName ], objects, localLibraries )
-                self.__localLibraries = localLibraries
                 self.__objects = objects
             
             def doGetProductionAction( self ):
@@ -46,7 +45,7 @@ class vs( ViDE.Buildkit.Buildkit ):
                     [ o.getFileName() for o in self.__objects ]
                     + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
                     + [ "/LIBPATH:" + self.__buildkit.fileName( "lib" ) ] # Static libraries
-                    + [ lib.getLibName() + ".lib" for lib in self.__localLibraries ]
+                    + [ lib.getLibName() + ".lib" for lib in self.localLibrariesWithBinary() ]
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):

@@ -52,3 +52,6 @@ def DynamicLibrary( name, headers, sources, localLibraries = [] ):
 def StaticLibrary( name, headers, sources, localLibraries = [] ):
     binary = Project.inProgress.buildkit.Binary.StaticLibraryBinary( Project.inProgress.buildkit, name, Objects( Sources( sources ), [], localLibraries ) )
     return Project.inProgress.createOrRetrieve( Binary.StaticLibrary, name, Headers( headers ), binary )
+
+def HeaderLibrary( name, headers, localLibraries = [] ):
+    return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, Headers( headers ) )
