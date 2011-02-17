@@ -2,11 +2,12 @@ import os.path
 
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Core.Actions import CopyFileAction
+from Binary import Binary
 
-class StaticLibraryBinary( AtomicArtifact ):
+class StaticLibraryBinary( Binary ):
     pass
 
-class DynamicLibraryBinary( AtomicArtifact ):
+class DynamicLibraryBinary( Binary ):
     pass
 
 class CopiedHeader( AtomicArtifact ):

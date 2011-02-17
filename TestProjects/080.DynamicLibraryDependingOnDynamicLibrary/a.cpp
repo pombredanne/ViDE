@@ -1,7 +1,7 @@
-#include "lib.hpp"
+#include "a.hpp"
 
 #include <iostream>
 
-void f() {
+void A::f() {
     std::cout << "Hello, World!" << std::endl;
 }

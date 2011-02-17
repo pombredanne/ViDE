@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <b.hpp>
+
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    B().f();
 }

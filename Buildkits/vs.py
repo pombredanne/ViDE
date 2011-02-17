@@ -15,7 +15,7 @@ class vs( ViDE.Buildkit.Buildkit ):
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".obj" )
                 self.__additionalDefines = additionalDefines
                 ViDE.Project.CPlusPlus.Object.__init__( self, buildkit, [ self.__fileName ], source, localLibraries )
-        
+
             def doGetProductionAction( self ):
                 sourceName = self.getSource().getFileName()
                 return SystemAction(
@@ -23,7 +23,7 @@ class vs( ViDE.Buildkit.Buildkit ):
                     [ "/EHsc", "/I" + self.__buildkit.fileName( "inc" ), "/Fo" + self.__fileName ]
                     + [ "/D" + name for name in self.__additionalDefines ]
                 )
-        
+
             def getFileName( self ):
                 return self.__fileName
 
@@ -32,55 +32,65 @@ class vs( ViDE.Buildkit.Buildkit ):
             @staticmethod
             def computeName( buildkit, name, objects, localLibraries ):
                 return name
-            
+
             def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
-                ViDE.Project.Binary.Executable.__init__( self, buildkit, name, [ self.__fileName ], objects, localLibraries )
                 self.__objects = objects
-            
+                ViDE.Project.Binary.Executable.__init__(
+                    self,
+                    buildkit,
+                    name = name,
+                    files = [ self.__fileName ],
+                    objects = objects,
+                    localLibraries = localLibraries
+                )
+
             def doGetProductionAction( self ):
                 return SystemAction(
                     [ "link", "/OUT:" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
-                    + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
                     + [ "/LIBPATH:" + self.__buildkit.fileName( "lib" ) ] # Static libraries
+                    + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
                     + [ lib.getLibName() + ".lib" for lib in self.localLibrariesWithBinary() ]
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
-            def __init__( self, buildkit, name, objects ):
+            def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
+                self.__fileName = self.__buildkit.fileName( "bin", name + ".dll" )
                 self.__objects = objects
-                self.__libName = self.__buildkit.fileName( "bin", name + ".dll" )
                 ViDE.Project.Binary.DynamicLibraryBinary.__init__(
                     self,
+                    buildkit,
                     name = name + "_bin",
                     # @todo Put the .dll in bin, but the .lib and .exp in lib
-                    files = [ self.__buildkit.fileName( "bin", name + ".dll" ), self.__buildkit.fileName( "bin", name + ".lib" ), self.__buildkit.fileName( "bin", name + ".exp" ) ],
-                    strongDependencies = objects,
-                    orderOnlyDependencies = [],
-                    automaticDependencies = []
+                    files = [ self.__fileName, self.__buildkit.fileName( "bin", name + ".lib" ), self.__buildkit.fileName( "bin", name + ".exp" ) ],
+                    objects = objects,
+                    localLibraries = localLibraries
                 )
 
             def doGetProductionAction( self ):
                 return SystemAction(
-                    [ "link", "/DLL", "/OUT:" + self.__libName ],
+                    [ "link", "/DLL", "/OUT:" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
+                    + [ "/LIBPATH:" + self.__buildkit.fileName( "lib" ) ] # Static libraries
+                    + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
+                    + [ lib.getLibName() + ".lib" for lib in self.localLibrariesWithBinary() ]
                 )
 
         class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):
-            def __init__( self, buildkit, name, objects ):
+            def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "lib", name + ".lib" )
                 self.__objects = objects
                 ViDE.Project.Binary.StaticLibraryBinary.__init__(
                     self,
+                    buildkit,
                     name = name + "_bin",
                     files = [ self.__fileName ],
-                    strongDependencies = objects,
-                    orderOnlyDependencies = [],
-                    automaticDependencies = []
+                    objects = objects,
+                    localLibraries = localLibraries
                 )
 
             def doGetProductionAction( self ):

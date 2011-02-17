@@ -9,7 +9,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
             @staticmethod
             def computeName( buildkit, source, additionalDefines, localLibraries ):
                 return buildkit.fileName( "obj", source.getFileName() + ".o" )
-            
+
             def __init__( self, buildkit, source, additionalDefines, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".o" )
@@ -32,33 +32,41 @@ class gcc( ViDE.Buildkit.Buildkit ):
             @staticmethod
             def computeName( buildkit, name, objects, localLibraries ):
                 return name
-            
+
             def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name )
-                ViDE.Project.Binary.Executable.__init__( self, buildkit, name, [ self.__fileName ], objects, localLibraries )
                 self.__objects = objects
+                ViDE.Project.Binary.Executable.__init__(
+                    self,
+                    buildkit,
+                    name = name,
+                    files = [ self.__fileName ],
+                    objects = objects,
+                    localLibraries = localLibraries
+                )
 
             def doGetProductionAction( self ):
                 return SystemAction(
                     [ "g++", "-o" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
+                    + [ "-L" + self.__buildkit.fileName( "bin" ) ]
                     + [ "-l" + lib.getLibName() for lib in self.localLibrariesWithBinary() ]
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
-            def __init__( self, buildkit, name, objects ):
+            def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
-                self.__fileName = self.__buildkit.fileName( "lib", name + ".dll" )
+                self.__fileName = self.__buildkit.fileName( "bin", name + ".dll" )
                 self.__objects = objects
                 ViDE.Project.Binary.DynamicLibraryBinary.__init__(
                     self,
+                    buildkit,
                     name = name + "_bin",
                     files = [ self.__fileName ],
-                    strongDependencies = objects,
-                    orderOnlyDependencies = [],
-                    automaticDependencies = []
+                    objects = objects,
+                    localLibraries = localLibraries
                 )
 
             def doGetProductionAction( self ):
@@ -66,20 +74,23 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 return SystemAction(
                     [ "g++", "-shared", "-o" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
+                    + [ "-L" + self.__buildkit.fileName( "lib" ) ]
+                    + [ "-L" + self.__buildkit.fileName( "bin" ) ]
+                    + [ "-l" + lib.getLibName() for lib in self.localLibrariesWithBinary() ]
                 )
 
         class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):
-            def __init__( self, buildkit, name, objects ):
+            def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "lib", "lib" + name + ".a" )
                 self.__objects = objects
                 ViDE.Project.Binary.StaticLibraryBinary.__init__(
                     self,
+                    buildkit,
                     name = name + "_bin",
                     files = [ self.__fileName ],
-                    strongDependencies = objects,
-                    orderOnlyDependencies = [],
-                    automaticDependencies = []
+                    objects = objects,
+                    localLibraries = localLibraries
                 )
 
             def doGetProductionAction( self ):
