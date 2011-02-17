@@ -29,7 +29,7 @@ class ParseCppHeadersAction( Action ):
         f = open( fileName )
         for line in f:
             line = line.strip()
-            ### @todo Handle <...> includes for local libraries
+            ### @todo Handle <...> includes for local libraries => copy library headers before anything
             match = re.match( "\s*#\s*include\s*\"(.*)\"", line )
             if match:
                 header = match.groups()[0]
