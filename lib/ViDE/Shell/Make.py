@@ -20,6 +20,7 @@ class Make( ICLP.Command ):
         self.addOption( [ "n", "dry-run" ], "dryRun", ICLP.StoreConstant( True ), "print commands instead of executing them" )
         self.drawGraph = False
         self.addOption( [ "draw-graph" ], "drawGraph", ICLP.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
+        ### @todo Add an option to build with all buildkits
         
     def execute( self, args ):
         buildkit = Buildkit.load( self.program.buildkit )
