@@ -27,10 +27,10 @@ class Project( Descriptible ):
     def __addArtifact( self, artifact ):
         self.__artifacts.append( artifact )
         
-    def getBuildAction( self ):
+    def getBuildAction( self, assumeNew, assumeOld ):
         action = NullAction()
         for artifact in self.__artifacts:
-            action.addPredecessor( artifact.getProductionAction() )
+            action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld ) )
         return action.prune()
 
     def getGraph( self ):

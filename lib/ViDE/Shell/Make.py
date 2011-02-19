@@ -18,6 +18,12 @@ class Make( ICLP.Command ):
         self.addOption( [ "k", "keep-going" ], "keepGoing", ICLP.StoreConstant( True ), "keep going in case of failure" )
         self.dryRun = False
         self.addOption( [ "n", "dry-run" ], "dryRun", ICLP.StoreConstant( True ), "print commands instead of executing them" )
+        fakeAge = self.createOptionGroup( "Faking file age", "" )
+        self.assumeNew = []
+        fakeAge.addOption( [ "W", "what-if", "new-file", "assume-new" ], "assumeNew", ICLP.AppendArgument( "FILE" ), "assume that FILE is newer than its dependants" )
+        self.assumeOld = []
+        fakeAge.addOption( [ "o", "old-file", "assume-old" ], "assumeOld", ICLP.AppendArgument( "FILE" ), "assume that FILE is older than its dependants" )
+        ### @todo Always draw the graph of actions, near report.png. Remove this drawGraph option
         self.drawGraph = False
         self.addOption( [ "draw-graph" ], "drawGraph", ICLP.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
         ### @todo Add an option to build with all buildkits
@@ -25,7 +31,7 @@ class Make( ICLP.Command ):
     def execute( self, args ):
         buildkit = Buildkit.load( self.program.buildkit )
         project = Project.load( buildkit )
-        action = project.getBuildAction()
+        action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld )
         if self.dryRun:
             print "\n".join( action.preview() )
         elif self.drawGraph:

@@ -24,14 +24,6 @@ class RemoveFileAction( Action ):
             pass
 
 class CreateDirectoryAction( Action ):
-    __all = dict() # @todo Remove this static variable. Unicity must be managed at client level
-
-    @staticmethod
-    def getOrCreate( directory ):
-        if directory not in CreateDirectoryAction.__all:
-            CreateDirectoryAction.__all[ directory ] = CreateDirectoryAction( directory )
-        return CreateDirectoryAction.__all[ directory ]
-
     def __init__( self, directory ):
         Action.__init__( self )
         self.__directory = directory

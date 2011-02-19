@@ -6,7 +6,7 @@ import unittest
 from Misc.MockMockMock import TestCase
 from Misc.Graphviz import Graph, Cluster, Node, Link
 
-from Artifact import Artifact, AtomicArtifact, CompoundArtifact, InputArtifact, MonofileInputArtifact, CreateDirectoryAction
+from Artifact import Artifact, AtomicArtifact, CompoundArtifact, InputArtifact, CreateDirectoryAction
 from Action import Action, NullAction
 
 def actionHasGraph( a, g ):
@@ -155,12 +155,12 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWithNoReasonToProduce( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.strongDependency.computeProductionAction().returns( NullAction() )
-        self.automaticDependency.computeProductionAction().returns( NullAction() )
-        self.artifact.getOldestFile().returns( 1200001 )
-        self.strongDependency.getNewestFile().returns( 1200000 )
-        self.automaticDependency.getNewestFile().returns( 1200000 )
-        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
+        self.strongDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.automaticDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.artifact.getOldestFile( [], [] ).returns( 1200001 )
+        self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
+        self.automaticDependency.getNewestFile( [], [] ).returns( 1200000 )
+        self.orderOnlyDependency.computeProductionAction( [], [] ).returns( NullAction() )
 
         self.m.startTest()
 
@@ -172,9 +172,9 @@ class ProductionReasons( TestCase ):
     def testGetProductionActionWhenFileIsMissing( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
         self.artifact.doGetProductionAction().returns( self.productionAction )
-        self.strongDependency.computeProductionAction().returns( NullAction() )
-        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
-        self.automaticDependency.computeProductionAction().returns( NullAction() )
+        self.strongDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.orderOnlyDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.automaticDependency.computeProductionAction( [], [] ).returns( NullAction() )
 
         self.productionAction.computePreview().returns( "create file1" )
         
@@ -197,13 +197,13 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWhenOrderOnlyDependencyIsNewer( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.strongDependency.computeProductionAction().returns( NullAction() )
-        self.automaticDependency.computeProductionAction().returns( NullAction() )
-        self.artifact.getOldestFile().returns( 1200001 )
-        self.strongDependency.getNewestFile().returns( 1200000 )
-        self.automaticDependency.getNewestFile().returns( 1200000 )
-        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
-        self.orderOnlyDependency.getNewestFile().returns( 1200002 ).isOptional() # Never called
+        self.strongDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.automaticDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.artifact.getOldestFile( [], [] ).returns( 1200001 )
+        self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
+        self.automaticDependency.getNewestFile( [], [] ).returns( 1200000 )
+        self.orderOnlyDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.orderOnlyDependency.getNewestFile( [], [] ).returns( 1200002 ).isOptional() # Never called
 
         self.m.startTest()
 
@@ -214,12 +214,12 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWhenOrderOnlyDependencyMustBeProduced( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.strongDependency.computeProductionAction().returns( NullAction() )
-        self.automaticDependency.computeProductionAction().returns( NullAction() )
-        self.artifact.getOldestFile().returns( 1200001 )
-        self.strongDependency.getNewestFile().returns( 1200000 )
-        self.automaticDependency.getNewestFile().returns( 1200000 )
-        self.orderOnlyDependency.computeProductionAction().returns( self.orderOnlyDependencyProductionAction )
+        self.strongDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.automaticDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.artifact.getOldestFile( [], [] ).returns( 1200001 )
+        self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
+        self.automaticDependency.getNewestFile( [], [] ).returns( 1200000 )
+        self.orderOnlyDependency.computeProductionAction( [], [] ).returns( self.orderOnlyDependencyProductionAction )
         
         self.orderOnlyDependencyProductionAction.computePreview().returns( "create orderOnlyDependency" )
 
@@ -239,12 +239,12 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWhenStrongDependencyIsNewer( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.strongDependency.computeProductionAction().returns( NullAction() )
-        self.automaticDependency.computeProductionAction().returns( NullAction() )
-        self.artifact.getOldestFile().returns( 1200000 )
-        self.strongDependency.getNewestFile().returns( 1200000 )
+        self.strongDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.automaticDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.artifact.getOldestFile( [], [] ).returns( 1200000 )
+        self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
         self.artifact.doGetProductionAction().returns( self.productionAction )
-        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
+        self.orderOnlyDependency.computeProductionAction( [], [] ).returns( NullAction() )
 
         self.productionAction.computePreview().returns( "create file1" )
 
@@ -267,10 +267,10 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWhenStrongDependencyMustBeProduced( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.strongDependency.computeProductionAction().returns( self.strongDependencyProductionAction )
+        self.strongDependency.computeProductionAction( [], [] ).returns( self.strongDependencyProductionAction )
         self.artifact.doGetProductionAction().returns( self.productionAction )
-        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
-        self.automaticDependency.computeProductionAction().returns( NullAction() )
+        self.orderOnlyDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.automaticDependency.computeProductionAction( [], [] ).returns( NullAction() )
 
         self.productionAction.computePreview().returns( "create file1" )
         self.strongDependencyProductionAction.computePreview().returns( "create strongDependency" )
@@ -297,13 +297,13 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWhenAutomaticDependencyIsNewer( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.strongDependency.computeProductionAction().returns( NullAction() )
-        self.automaticDependency.computeProductionAction().returns( NullAction() )
-        self.artifact.getOldestFile().returns( 1200001 )
-        self.strongDependency.getNewestFile().returns( 1200000 )
-        self.automaticDependency.getNewestFile().returns( 1200001 )
+        self.strongDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.automaticDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.artifact.getOldestFile( [], [] ).returns( 1200001 )
+        self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
+        self.automaticDependency.getNewestFile( [], [] ).returns( 1200001 )
         self.artifact.doGetProductionAction().returns( self.productionAction )
-        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
+        self.orderOnlyDependency.computeProductionAction( [], [] ).returns( NullAction() )
 
         self.productionAction.computePreview().returns( "create file1" )
 
@@ -326,10 +326,10 @@ class ProductionReasons( TestCase ):
 
     def testGetProductionActionWhenAutomaticDependencyMustBeProduced( self ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        self.strongDependency.computeProductionAction().returns( NullAction() )
-        self.automaticDependency.computeProductionAction().returns( self.automaticDependencyProductionAction )
+        self.strongDependency.computeProductionAction( [], [] ).returns( NullAction() )
+        self.automaticDependency.computeProductionAction( [], [] ).returns( self.automaticDependencyProductionAction )
         self.artifact.doGetProductionAction().returns( self.productionAction )
-        self.orderOnlyDependency.computeProductionAction().returns( NullAction() )
+        self.orderOnlyDependency.computeProductionAction( [], [] ).returns( NullAction() )
 
         self.productionAction.computePreview().returns( "create file1" )
         self.automaticDependencyProductionAction.computePreview().returns( "create automaticDependency" )

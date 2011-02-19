@@ -1,8 +1,10 @@
 import os
+import time
 
 from Misc import Graphviz
 
 from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction
+from ViDE import Log
 
 class Artifact:
     ###################################################################### virtuals to be implemented
@@ -15,17 +17,21 @@ class Artifact:
         self.__name = name
         self.__cachedGraphNode = None
         self.__cachedGraphLinks = None
-        self.__cachedProductionAction = None
+        self.__cachedProductionAction = dict()
 
     @staticmethod
-    def getModificationDate( file ):
+    def getModificationDate( file, assumeNew, assumeOld ):
+        if file in assumeNew:
+            return time.time()
+        if file in assumeOld:
+            return 0
         return os.stat( file ).st_mtime
 
-    def getOldestFile( self ):
-        return min( Artifact.getModificationDate( f ) for f in self.getAllFiles() )
+    def getOldestFile( self, assumeNew, assumeOld ):
+        return min( Artifact.getModificationDate( f, assumeNew, assumeOld ) for f in self.getAllFiles() )
 
-    def getNewestFile( self ):
-        return max( Artifact.getModificationDate( f ) for f in self.getAllFiles() )
+    def getNewestFile( self, assumeNew, assumeOld ):
+        return max( Artifact.getModificationDate( f, assumeNew, assumeOld ) for f in self.getAllFiles() )
     
     def getName( self ):
         return self.__name
@@ -40,10 +46,11 @@ class Artifact:
             self.__cachedGraphLinks = self.computeGraphLinks()
         return self.__cachedGraphLinks
 
-    def getProductionAction( self ):
-        if self.__cachedProductionAction is None:
-            self.__cachedProductionAction = self.computeProductionAction()
-        return self.__cachedProductionAction
+    def getProductionAction( self, assumeNew = [], assumeOld = [] ):
+        key = ":".join( assumeNew ) + " " + ":".join( assumeOld )
+        if not self.__cachedProductionAction.has_key( key ):
+            self.__cachedProductionAction[ key ] = self.computeProductionAction( assumeNew, assumeOld )
+        return self.__cachedProductionAction[ key ]
 
 class InputArtifact( Artifact ):
     def __init__( self, name, files ):
@@ -52,7 +59,7 @@ class InputArtifact( Artifact ):
         Artifact.__init__( self, name )
         self.__files = files
 
-    def computeProductionAction( self ):
+    def computeProductionAction( self, assumeNew, assumeOld ):
         return NullAction()
 
     def getAllFiles( self ):
@@ -81,43 +88,51 @@ class AtomicArtifact( Artifact ):
         self.__orderOnlyDependencies = orderOnlyDependencies
         self.__automaticDependencies = automaticDependencies
 
-    def computeProductionAction( self ):
-        if self.__filesMustBeProduced():
+    def computeProductionAction( self, assumeNew, assumeOld ):
+        if self.__filesMustBeProduced( assumeNew, assumeOld ):
             productionAction = self.doGetProductionAction()
             directories = set( os.path.dirname( f ) for f in self.__files )
             for d in directories:
-                productionAction.addPredecessor( CreateDirectoryAction.getOrCreate( d ) )
+                productionAction.addPredecessor( CreateDirectoryAction( d ) )
             for f in self.__files:
                 productionAction.addPredecessor( RemoveFileAction( f ) )
         else:
+            Log.verbose( "Do not produce", self.__files )
             productionAction = NullAction()
         for d in self.__strongDependencies + self.__orderOnlyDependencies + self.__automaticDependencies:
-            predecessorAction = d.getProductionAction()
+            predecessorAction = d.getProductionAction( assumeNew, assumeOld )
             productionAction.addPredecessor( predecessorAction )
         return productionAction
 
-    def __filesMustBeProduced( self ):
+    def __filesMustBeProduced( self, assumeNew, assumeOld ):
         return (
             self.__anyFileIsMissing()
-            or self.__anyStrongDependencyWillBeProduced()
-            or self.__anyStrongDependencyIsMoreRecent()
+            or self.__anyStrongDependencyWillBeProduced( assumeNew, assumeOld )
+            or self.__anyStrongDependencyIsMoreRecent( assumeNew, assumeOld )
         )
 
     def __anyFileIsMissing( self ):
-        return any( AtomicArtifact.__fileIsMissing( f ) for f in self.__files )
+        return any( self.__fileIsMissing( f ) for f in self.__files )
 
-    @staticmethod
-    def __fileIsMissing( f ):
-        return not os.path.exists( f )
+    def __fileIsMissing( self, f ):
+        if not os.path.exists( f ):
+            Log.verbose( "Produce", self.__files, "because", f, "is missing" )
+            return True
+        return False
 
-    def __anyStrongDependencyWillBeProduced( self ):
-        return not all( d.getProductionAction().isFullyNull() for d in self.__strongDependencies + self.__automaticDependencies )
-
-    def __anyStrongDependencyIsMoreRecent( self ):
-        selfOldestModificationDate = self.getOldestFile()
+    def __anyStrongDependencyWillBeProduced( self, assumeNew, assumeOld ):
         for d in self.__strongDependencies + self.__automaticDependencies:
-            depNewestModificationDate = d.getNewestFile()
+            if not d.getProductionAction( assumeNew, assumeOld ).isFullyNull():
+                Log.verbose( "Produce", self.__files, "because", d.getName(), "is produced" )
+                return True
+        return False
+
+    def __anyStrongDependencyIsMoreRecent( self, assumeNew, assumeOld ):
+        selfOldestModificationDate = self.getOldestFile( assumeNew, assumeOld )
+        for d in self.__strongDependencies + self.__automaticDependencies:
+            depNewestModificationDate = d.getNewestFile( assumeNew, assumeOld )
             if depNewestModificationDate >= selfOldestModificationDate:
+                Log.verbose( "Produce", self.__files, "because", d.getName(), "is more recent" )
                 return True
         return False
 
@@ -154,10 +169,10 @@ class CompoundArtifact( Artifact ):
         Artifact.__init__( self, name )
         self.__componants = componants
 
-    def computeProductionAction( self ):
+    def computeProductionAction( self, assumeNew, assumeOld ):
         productionAction = NullAction()
         for c in self.__componants:
-            productionAction.addPredecessor( c.getProductionAction() )
+            productionAction.addPredecessor( c.getProductionAction( assumeNew, assumeOld ) )
         return productionAction
 
     def getAllFiles( self ):
