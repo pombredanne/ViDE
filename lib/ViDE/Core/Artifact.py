@@ -59,10 +59,14 @@ class InputArtifact( Artifact ):
         return self.__files
 
     def computeGraphNode( self ):
-        node = Graphviz.Cluster( self.getName() )
-        for f in self.__files:
-            node.add( Graphviz.Node( f ) )
-        return node
+    ### @todo Factorize with AtomicArtifact.computeGraphNode
+        if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
+            return Graphviz.Node( self.getName() )
+        else:
+            node = Graphviz.Cluster( self.getName() )
+            for f in self.__files:
+                node.add( Graphviz.Node( f ) )
+            return node
 
     def computeGraphLinks( self ):
         return []
@@ -121,10 +125,13 @@ class AtomicArtifact( Artifact ):
         return self.__files
         
     def computeGraphNode( self ):
-        node = Graphviz.Cluster( self.getName() )
-        for f in self.__files:
-            node.add( Graphviz.Node( f ) )
-        return node
+        if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
+            return Graphviz.Node( self.getName() )
+        else:
+            node = Graphviz.Cluster( self.getName() )
+            for f in self.__files:
+                node.add( Graphviz.Node( f ) )
+            return node
 
     def computeGraphLinks( self ):
         links = []
