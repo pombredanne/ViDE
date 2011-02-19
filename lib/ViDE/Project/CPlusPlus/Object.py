@@ -7,6 +7,36 @@ from ViDE.Core.Action import Action
 from ViDE.Project.Project import Project
 from ViDE.Project.CPlusPlus.Source import Header
 
+class Headers:
+    def __init__( self ):
+        self.__doubleQuotedHeaders = []
+        self.__angleHeaders = [ "lib.hpp" ]
+        
+    def save( self, fileName ):
+        f = open( fileName, "w" )
+        for header in self.__doubleQuotedHeaders:
+            f.write( header + "\n" )
+        f.close()
+    
+    @staticmethod
+    def load( fileName ):
+        headers = Headers()
+        for header in open( fileName ):
+            headers.addDoubleQuotedHeader( header.strip() )
+        return headers
+    
+    def getDoubleQuotedHeaders( self ):
+        return self.__doubleQuotedHeaders
+    
+    def getAngleHeaders( self ):
+        return self.__angleHeaders
+        
+    def addDoubleQuotedHeader( self, header ):
+        self.__doubleQuotedHeaders.append( header )
+    
+    def addAngleHeader( self, header ):
+        self.__angleHeaders.append( header )
+
 # @todo Implement using Boost.Wave, through Boost.Python
 class ParseCppHeadersAction( Action ):
     def __init__( self, source, depFile ):
@@ -18,11 +48,9 @@ class ParseCppHeadersAction( Action ):
         return "blahblah " + self.__source + " " + self.__depFile
         
     def doExecute( self ):
-        headers = self.parse( self.__source )
-        f = open( self.__depFile, "w" )
-        for header in headers:
-            f.write( header + "\n" )
-        f.close()
+        for header in self.parse( self.__source ):
+            headers.addDoubleQuotedHeader( header )
+        header.save( self.__depFile )
         
     def parse( self, fileName ):
         headers = set()
@@ -39,10 +67,11 @@ class ParseCppHeadersAction( Action ):
         return headers
 
 class DepFile( AtomicArtifact ):
-    def __init__( self, buildkit, source ):
+    def __init__( self, buildkit, source, localLibraries ):
         fileName = buildkit.fileName( "dep", source.getFileName() + ".dep" )
         if os.path.exists( fileName ):
-            automaticDependencies = [ Header( buildkit, header.strip() ) for header in open( fileName ) ]
+            headers = Headers.load( fileName )
+            automaticDependencies = [ Header( buildkit, header ) for header in headers.getDoubleQuotedHeaders() + headers.getAngleHeaders() ]
         else:
             automaticDependencies = []
         AtomicArtifact.__init__(
@@ -64,21 +93,26 @@ class DepFile( AtomicArtifact ):
 
 class Object( AtomicArtifact ):
     def __init__( self, buildkit, files, source, localLibraries ):
-        headers = self.parseCppHeaders( buildkit, source )
+        headers = self.parseCppHeaders( buildkit, source, localLibraries )
+        print source.getFileName(), "->", headers.getDoubleQuotedHeaders(), headers.getAngleHeaders()
+        copiedHeaders = []
         AtomicArtifact.__init__(
             self,
             name = files[ 0 ],
             files = files,
             strongDependencies = [ source ],
             orderOnlyDependencies = [ lib.getCopiedHeaders() for lib in localLibraries ],
-            automaticDependencies = [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers ]
+            automaticDependencies =
+                [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers.getDoubleQuotedHeaders() ]
+                + copiedHeaders
+                # + [ Project.inProgress.retrieveByName( CopiedHeader, header ) for header in headers.getAngleHeaders() ]
         )
         self.__source = source
 
     def getSource( self ):
         return self.__source
 
-    def parseCppHeaders( self, buildkit, source ):
-        depFile = DepFile( buildkit, source )
+    def parseCppHeaders( self, buildkit, source, localLibraries ):
+        depFile = DepFile( buildkit, source, localLibraries )
         depFile.getProductionAction().execute( False, 1 )
-        return [ header.strip() for header in open( depFile.getFileName() ) ]
+        return Headers.load( depFile.getFileName() )
