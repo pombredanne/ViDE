@@ -18,6 +18,7 @@ class Artifact:
         self.__cachedGraphNode = None
         self.__cachedGraphLinks = None
         self.__cachedProductionAction = dict()
+        self.__cachedMustBeProduced = dict()
 
     @staticmethod
     def getModificationDate( file, assumeNew, assumeOld ):
@@ -52,6 +53,12 @@ class Artifact:
             self.__cachedProductionAction[ key ] = self.computeProductionAction( assumeNew, assumeOld, touch )
         return self.__cachedProductionAction[ key ]
 
+    def mustBeProduced( self, assumeNew, assumeOld, touch ):
+        key = ":".join( assumeNew ) + " " + ":".join( assumeOld ) + str( touch )
+        if not self.__cachedMustBeProduced.has_key( key ):
+            self.__cachedMustBeProduced[ key ] = self.computeIfMustBeProduced( assumeNew, assumeOld, touch )
+        return self.__cachedMustBeProduced[ key ]
+
 class InputArtifact( Artifact ):
     def __init__( self, name, files ):
         if len( files ) == 0:
@@ -61,6 +68,9 @@ class InputArtifact( Artifact ):
 
     def computeProductionAction( self, assumeNew, assumeOld, touch ):
         return NullAction()
+
+    def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
+        return False
 
     def getAllFiles( self ):
         return self.__files
@@ -89,7 +99,7 @@ class AtomicArtifact( Artifact ):
         self.__automaticDependencies = automaticDependencies
 
     def computeProductionAction( self, assumeNew, assumeOld, touch ):
-        if self.__filesMustBeProduced( assumeNew, assumeOld, touch ):
+        if self.mustBeProduced( assumeNew, assumeOld, touch ):
             if touch:
                 productionAction = TouchAction( self.__files )
             else:
@@ -101,14 +111,15 @@ class AtomicArtifact( Artifact ):
                 for f in self.__files:
                     productionAction.addPredecessor( RemoveFileAction( f ) )
         else:
-            Log.verbose( "Do not produce", self.__files )
+            Log.debug( "Do not produce", self.__files )
             productionAction = NullAction()
         for d in self.__strongDependencies + self.__orderOnlyDependencies + self.__automaticDependencies:
-            predecessorAction = d.getProductionAction( assumeNew, assumeOld, touch )
-            productionAction.addPredecessor( predecessorAction )
+            if d.mustBeProduced( assumeNew, assumeOld, touch ):
+                predecessorAction = d.getProductionAction( assumeNew, assumeOld, touch )
+                productionAction.addPredecessor( predecessorAction )
         return productionAction
 
-    def __filesMustBeProduced( self, assumeNew, assumeOld, touch ):
+    def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
         return (
             self.__anyFileIsMissing()
             or self.__anyStrongDependencyWillBeProduced( assumeNew, assumeOld, touch )
@@ -126,7 +137,7 @@ class AtomicArtifact( Artifact ):
 
     def __anyStrongDependencyWillBeProduced( self, assumeNew, assumeOld, touch ):
         for d in self.__strongDependencies + self.__automaticDependencies:
-            if not d.getProductionAction( assumeNew, assumeOld, touch ).isFullyNull():
+            if d.mustBeProduced( assumeNew, assumeOld, touch ):
                 Log.verbose( "Produce", self.__files, "because", d.getName(), "is produced" )
                 return True
         return False
@@ -196,3 +207,6 @@ class CompoundArtifact( Artifact ):
         for c in self.__componants:
             links += c.getGraphLinks()
         return links
+        
+    def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
+        return any( c.mustBeProduced( assumeNew, assumeOld, touch ) for c in self.__componants )

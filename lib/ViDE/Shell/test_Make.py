@@ -73,14 +73,14 @@ DynamicLibrary = TestMake( "DynamicLibrary", {
 
 DynamicLibraryDependingOnDynamicLibrary = TestMake( "DynamicLibraryDependingOnDynamicLibrary", {
     "a.cpp": set( [ "build/gcc/bin/a.dll", "build/gcc/obj/a.cpp.o", ] ),
-    "a.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o", ] ),
+    "a.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/bin/b.dll", "build/gcc/inc/a.hpp", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o", ] ),
     "b.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/obj/b.cpp.o", ] ),
     "b.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o", ] ),
     "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o", ] ),
 } )
 
 DynamicLibraryDependingOnHeaderLibrary = TestMake( "DynamicLibraryDependingOnHeaderLibrary", {
-    "a.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", "build/gcc/obj/b.cpp.o", ] ),
+    "a.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/inc/a.hpp", "build/gcc/obj/b.cpp.o", ] ),
     "b.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/obj/b.cpp.o", ] ),
     "b.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o", ] ),
     "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o", ] ),
@@ -88,7 +88,7 @@ DynamicLibraryDependingOnHeaderLibrary = TestMake( "DynamicLibraryDependingOnHea
 
 DynamicLibraryDependingOnStaticLibrary = TestMake( "DynamicLibraryDependingOnStaticLibrary", {
     "a.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/lib/liba.a", "build/gcc/obj/a.cpp.o", ] ),
-    "a.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", "build/gcc/lib/liba.a", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o", ] ),
+    "a.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/inc/a.hpp", "build/gcc/lib/liba.a", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o", ] ),
     "b.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/obj/b.cpp.o", ] ),
     "b.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o", ] ),
     "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o", ] ),
@@ -128,13 +128,13 @@ HeaderLibrary = TestMake( "HeaderLibrary", {
 
 HeaderLibraryDependingOnDynamicLibrary = TestMake( "HeaderLibraryDependingOnDynamicLibrary", {
     "a.cpp": set( [ "build/gcc/bin/a.dll", "build/gcc/obj/a.cpp.o", ] ),
-    "a.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", "build/gcc/obj/a.cpp.o", ] ),
+    "a.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/inc/a.hpp", "build/gcc/obj/a.cpp.o", ] ),
     "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/main.cpp.o", ] ),
     "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o", ] ),
 } )
 
 HeaderLibraryDependingOnHeaderLibrary = TestMake( "HeaderLibraryDependingOnHeaderLibrary", {
-    "a.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", ] ),
+    "a.hpp": set( [ "build/gcc/inc/a.hpp", ] ),
     "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/main.cpp.o", ] ),
     "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o", ] ),
 } )
