@@ -20,6 +20,7 @@ class AutoTest( Command ):
 
     def __selectTestsToRun( self, args ):
         ### @todo Refactor
+        ### @todo Allow arguments of form Filename.Classname.testMethod => python Filename Classname.testMethod
         if len( args ) == 0:
             self.__testsToRun = self.__testFiles
         else:

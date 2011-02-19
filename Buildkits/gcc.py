@@ -35,7 +35,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
 
             def __init__( self, buildkit, name, objects, localLibraries ):
                 self.__buildkit = buildkit
-                self.__fileName = self.__buildkit.fileName( "bin", name )
+                self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
                 self.__objects = objects
                 ViDE.Project.Binary.Executable.__init__(
                     self,

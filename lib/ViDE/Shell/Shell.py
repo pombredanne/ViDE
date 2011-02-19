@@ -18,6 +18,7 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         self.prompt = "ViDE>"
 
         verbosity = self.createOptionGroup( "Verbosity", "" )
+        verbosity.addOption( "silent", "setVerbosity", InteractiveCommandLineProgram.CallWithConstant( -1 ), "print absolutely nothing (not even error messages)", InteractiveCommandLineProgram.CallWithConstant( 1 ), "print normal messages" )
         verbosity.addOption( [ "q", "quiet" ], "setVerbosity", InteractiveCommandLineProgram.CallWithConstant( 0 ), "print as few messages as possible", InteractiveCommandLineProgram.CallWithConstant( 1 ), "print normal messages" )
         verbosity.addOption( [ "v", "verbose" ], "setVerbosity", InteractiveCommandLineProgram.CallWithConstant( 2 ), "print more information messages", InteractiveCommandLineProgram.CallWithConstant( 1 ), "don't print information messages" )
         verbosity.addOption( "debug", "setVerbosity", InteractiveCommandLineProgram.CallWithConstant( 3 ), "print debug messages", InteractiveCommandLineProgram.CallWithConstant( 1 ), "don't print debug messages" )

@@ -19,10 +19,19 @@ class CopiedHeader( AtomicArtifact ):
     def doGetProductionAction( self ):
         return CopyFileAction( self.__header.getFileName(), self.__copiedHeader )
 
+    def getDestination( self ):
+        return self.__copiedHeader
+
+    def getSource( self ):
+        return self.__header
+
 class CopiedHeaders( CompoundArtifact ):
     def __init__( self, buildkit, name, headers ):
-        copiedHeaders = [ CopiedHeader( buildkit, header ) for header in headers ]
-        CompoundArtifact.__init__( self, name = name + "_hdr", componants = copiedHeaders )
+        self.__copiedHeaders = [ CopiedHeader( buildkit, header ) for header in headers ]
+        CompoundArtifact.__init__( self, name = name + "_hdr", componants = self.__copiedHeaders )
+
+    def get( self ):
+        return self.__copiedHeaders
 
 class Library( CompoundArtifact ):
     @staticmethod

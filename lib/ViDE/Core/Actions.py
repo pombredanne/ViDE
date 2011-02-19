@@ -72,5 +72,37 @@ class SystemAction( LongAction ):
     def doExecute( self ):
         Log.info( self.computePreview() )
         Log.debug( " ".join( self.__base + self.__options ) )
-        subprocess.check_call( self.__base + self.__options )
-        Log.verbose( "End of", self.computePreview() )
+        p = subprocess.Popen( self.__base + self.__options, stdout = subprocess.PIPE, stderr = subprocess.PIPE )
+        stdoutdata, stderrdata = p.communicate()
+        stdoutdata = stdoutdata.strip()
+        stderrdata = stderrdata.strip()
+        if stdoutdata != "":
+            Log.info( stdoutdata )
+        if stderrdata != "":
+            Log.error( stderrdata )
+        if p.returncode == 0:
+            Log.verbose( "End of", self.computePreview() )
+        else:
+            Log.verbose( "Error during", self.computePreview() )
+            raise Exception( "Error during " + self.computePreview() )
+
+class TouchAction( Action ):
+    def __init__( self, files ):
+        Action.__init__( self )
+        self.__files = files
+
+    def shadowClone( self ):
+        return TouchAction( self.__files )
+
+    def computePreview( self ):
+        return "touch " + " ".join( self.__files )
+
+    def doExecute( self ):
+        now = time.time()
+        for file in self.__files:
+            # Inspired from http://code.activestate.com/recipes/576915-touch/
+            try:
+                os.utime( file, ( now, now ) )
+            except os.error:
+                open( file, "w" ).close()
+                os.utime( file, ( now, now ) )

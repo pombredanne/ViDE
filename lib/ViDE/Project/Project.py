@@ -27,11 +27,15 @@ class Project( Descriptible ):
     def __addArtifact( self, artifact ):
         self.__artifacts.append( artifact )
         
-    def getBuildAction( self, assumeNew, assumeOld ):
+    def getBuildAction( self, assumeNew, assumeOld, touch ):
         action = NullAction()
         for artifact in self.__artifacts:
-            action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld ) )
-        return action.prune()
+            action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld, touch = touch ) )
+        prunedAction = action.prune()
+        if prunedAction is None:
+            return NullAction()
+        else:
+            return prunedAction
 
     def getGraph( self ):
         graph = Graphviz.Graph( "Project" )

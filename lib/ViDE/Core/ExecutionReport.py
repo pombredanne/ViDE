@@ -48,7 +48,7 @@ class ExecutionReport:
         for a in self.__actions:
             a.begin -= begin
             a.end -= begin
-        self.__duration = max( a.end for a in self.__actions )
+        self.__duration = max( [ 0.1 ] + [ a.end for a in self.__actions ] )
 
     ################################################################################ drawing (public interface)
 

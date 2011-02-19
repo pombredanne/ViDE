@@ -5,7 +5,8 @@ lock = threading.Lock()
 level = 1
 
 def error( *args ):
-    log( *args )
+    if level >= 0:
+        log( *args )
 
 def info( *args ):
     if level >= 1:

@@ -1,5 +1,6 @@
 import os.path
 import re
+import sys
 
 from ViDE.Core.Artifact import AtomicArtifact
 from ViDE.Core.Action import Action
@@ -16,13 +17,21 @@ class Headers:
         f = open( fileName, "w" )
         for header in self.__doubleQuotedHeaders:
             f.write( header + "\n" )
+        f.write( "\n" )
+        for header in self.__angleHeaders:
+            f.write( header + "\n" )
         f.close()
     
     @staticmethod
     def load( fileName ):
         headers = Headers()
+        adder = headers.addDoubleQuotedHeader
         for header in open( fileName ):
-            headers.addDoubleQuotedHeader( header.strip() )
+            header = header.strip()
+            if header == "":
+                adder = headers.addAngleHeader
+            else:
+                adder( header.strip() )
         return headers
     
     def getDoubleQuotedHeaders( self ):
@@ -49,30 +58,40 @@ class ParseCppHeadersAction( Action ):
         
     def doExecute( self ):
         headers = Headers()
-        for header in self.parse( self.__source ):
-            headers.addDoubleQuotedHeader( header )
+        self.parse( headers, self.__source )
         headers.save( self.__depFile )
         
-    def parse( self, fileName ):
-        headers = set()
+    def parse( self, headers, fileName ):
         f = open( fileName )
         for line in f:
             line = line.strip()
-            ### @todo Handle <...> includes for local libraries => copy library headers before anything: NO: just continue exploration in the headers of the local libraries
             match = re.match( "\s*#\s*include\s*\"(.*)\"", line )
             if match:
                 header = match.groups()[0]
-                headers.add( header )
-                headers.update( self.parse( header ) )
+                headers.addDoubleQuotedHeader( header )
+                self.parse( headers, header )
+            else:
+                match = re.match( "\s*#\s*include\s*<(.*)>", line )
+                if match:
+                    header = match.groups()[0]
+                    headers.addAngleHeader( header )
         f.close()
-        return headers
 
 class DepFile( AtomicArtifact ):
     def __init__( self, buildkit, source, localLibraries ):
         fileName = buildkit.fileName( "dep", source.getFileName() + ".dep" )
         if os.path.exists( fileName ):
             headers = Headers.load( fileName )
-            automaticDependencies = [ Header( buildkit, header ) for header in headers.getDoubleQuotedHeaders() + headers.getAngleHeaders() ]
+            automaticDependencies = [ Header( buildkit, header ) for header in headers.getDoubleQuotedHeaders() ]
+            allCopiedHeaders = []
+            ### @todo Factorize with Object.__init__
+            for lib in localLibraries:
+                allCopiedHeaders += lib.getCopiedHeaders()
+            for searchedHeader in headers.getAngleHeaders():
+                for copiedHeaders in allCopiedHeaders:
+                    for copiedHeader in copiedHeaders.get():
+                        if buildkit.fileName( "inc", searchedHeader ) == copiedHeader.getDestination():
+                            automaticDependencies.append( Header( buildkit, copiedHeader.getSource().getFileName() ) )
         else:
             automaticDependencies = []
         AtomicArtifact.__init__(
@@ -99,6 +118,11 @@ class Object( AtomicArtifact ):
         orderOnlyDependencies = []
         for lib in localLibraries:
             orderOnlyDependencies += lib.getCopiedHeaders()
+        for searchedHeader in headers.getAngleHeaders():
+            for copiedHeaders in orderOnlyDependencies:
+                for copiedHeader in copiedHeaders.get():
+                    if buildkit.fileName( "inc", searchedHeader ) == copiedHeader.getDestination():
+                        automaticDependencies.append( copiedHeader )
         AtomicArtifact.__init__(
             self,
             name = files[ 0 ],

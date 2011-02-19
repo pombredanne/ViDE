@@ -23,6 +23,8 @@ class Make( ICLP.Command ):
         fakeAge.addOption( [ "W", "what-if", "new-file", "assume-new" ], "assumeNew", ICLP.AppendArgument( "FILE" ), "assume that FILE is newer than its dependants" )
         self.assumeOld = []
         fakeAge.addOption( [ "o", "old-file", "assume-old" ], "assumeOld", ICLP.AppendArgument( "FILE" ), "assume that FILE is older than its dependants" )
+        self.touch = False
+        self.addOption( [ "t", "touch" ], "touch", ICLP.StoreConstant( True ), "touch targets instead of remaking them")
         ### @todo Always draw the graph of actions, near report.png. Remove this drawGraph option
         self.drawGraph = False
         self.addOption( [ "draw-graph" ], "drawGraph", ICLP.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
@@ -31,7 +33,7 @@ class Make( ICLP.Command ):
     def execute( self, args ):
         buildkit = Buildkit.load( self.program.buildkit )
         project = Project.load( buildkit )
-        action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld )
+        action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
         if self.dryRun:
             print "\n".join( action.preview() )
         elif self.drawGraph:
@@ -41,7 +43,6 @@ class Make( ICLP.Command ):
                 action.execute( self.keepGoing, self.jobs )
             except CompoundException, e:
                 Log.error( "build failed", e )
-                raise
             finally:
                 # @todo Fix ExecutionReport when no action has been executed (vide make; vide make)
                 report = ExecutionReport( action )

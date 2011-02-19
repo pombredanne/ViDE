@@ -3,7 +3,7 @@ import time
 
 from Misc import Graphviz
 
-from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction
+from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction, TouchAction
 from ViDE import Log
 
 class Artifact:
@@ -46,10 +46,10 @@ class Artifact:
             self.__cachedGraphLinks = self.computeGraphLinks()
         return self.__cachedGraphLinks
 
-    def getProductionAction( self, assumeNew = [], assumeOld = [] ):
-        key = ":".join( assumeNew ) + " " + ":".join( assumeOld )
+    def getProductionAction( self, assumeNew = [], assumeOld = [], touch = False ):
+        key = ":".join( assumeNew ) + " " + ":".join( assumeOld ) + str( touch )
         if not self.__cachedProductionAction.has_key( key ):
-            self.__cachedProductionAction[ key ] = self.computeProductionAction( assumeNew, assumeOld )
+            self.__cachedProductionAction[ key ] = self.computeProductionAction( assumeNew, assumeOld, touch )
         return self.__cachedProductionAction[ key ]
 
 class InputArtifact( Artifact ):
@@ -59,7 +59,7 @@ class InputArtifact( Artifact ):
         Artifact.__init__( self, name )
         self.__files = files
 
-    def computeProductionAction( self, assumeNew, assumeOld ):
+    def computeProductionAction( self, assumeNew, assumeOld, touch ):
         return NullAction()
 
     def getAllFiles( self ):
@@ -88,26 +88,30 @@ class AtomicArtifact( Artifact ):
         self.__orderOnlyDependencies = orderOnlyDependencies
         self.__automaticDependencies = automaticDependencies
 
-    def computeProductionAction( self, assumeNew, assumeOld ):
-        if self.__filesMustBeProduced( assumeNew, assumeOld ):
-            productionAction = self.doGetProductionAction()
+    def computeProductionAction( self, assumeNew, assumeOld, touch ):
+        if self.__filesMustBeProduced( assumeNew, assumeOld, touch ):
+            if touch:
+                productionAction = TouchAction( self.__files )
+            else:
+                productionAction = self.doGetProductionAction()
             directories = set( os.path.dirname( f ) for f in self.__files )
             for d in directories:
                 productionAction.addPredecessor( CreateDirectoryAction( d ) )
-            for f in self.__files:
-                productionAction.addPredecessor( RemoveFileAction( f ) )
+            if not touch:
+                for f in self.__files:
+                    productionAction.addPredecessor( RemoveFileAction( f ) )
         else:
             Log.verbose( "Do not produce", self.__files )
             productionAction = NullAction()
         for d in self.__strongDependencies + self.__orderOnlyDependencies + self.__automaticDependencies:
-            predecessorAction = d.getProductionAction( assumeNew, assumeOld )
+            predecessorAction = d.getProductionAction( assumeNew, assumeOld, touch )
             productionAction.addPredecessor( predecessorAction )
         return productionAction
 
-    def __filesMustBeProduced( self, assumeNew, assumeOld ):
+    def __filesMustBeProduced( self, assumeNew, assumeOld, touch ):
         return (
             self.__anyFileIsMissing()
-            or self.__anyStrongDependencyWillBeProduced( assumeNew, assumeOld )
+            or self.__anyStrongDependencyWillBeProduced( assumeNew, assumeOld, touch )
             or self.__anyStrongDependencyIsMoreRecent( assumeNew, assumeOld )
         )
 
@@ -120,9 +124,9 @@ class AtomicArtifact( Artifact ):
             return True
         return False
 
-    def __anyStrongDependencyWillBeProduced( self, assumeNew, assumeOld ):
+    def __anyStrongDependencyWillBeProduced( self, assumeNew, assumeOld, touch ):
         for d in self.__strongDependencies + self.__automaticDependencies:
-            if not d.getProductionAction( assumeNew, assumeOld ).isFullyNull():
+            if not d.getProductionAction( assumeNew, assumeOld, touch ).isFullyNull():
                 Log.verbose( "Produce", self.__files, "because", d.getName(), "is produced" )
                 return True
         return False
@@ -169,10 +173,10 @@ class CompoundArtifact( Artifact ):
         Artifact.__init__( self, name )
         self.__componants = componants
 
-    def computeProductionAction( self, assumeNew, assumeOld ):
+    def computeProductionAction( self, assumeNew, assumeOld, touch ):
         productionAction = NullAction()
         for c in self.__componants:
-            productionAction.addPredecessor( c.getProductionAction( assumeNew, assumeOld ) )
+            productionAction.addPredecessor( c.getProductionAction( assumeNew, assumeOld, touch ) )
         return productionAction
 
     def getAllFiles( self ):
