@@ -10,7 +10,7 @@ from ViDE.Project.CPlusPlus.Source import Header
 class Headers:
     def __init__( self ):
         self.__doubleQuotedHeaders = []
-        self.__angleHeaders = [ "lib.hpp" ]
+        self.__angleHeaders = []
         
     def save( self, fileName ):
         f = open( fileName, "w" )
@@ -95,17 +95,17 @@ class DepFile( AtomicArtifact ):
 class Object( AtomicArtifact ):
     def __init__( self, buildkit, files, source, localLibraries ):
         headers = self.parseCppHeaders( buildkit, source, localLibraries )
-        copiedHeaders = []
+        automaticDependencies = [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers.getDoubleQuotedHeaders() ]
+        orderOnlyDependencies = []
+        for lib in localLibraries:
+            orderOnlyDependencies += lib.getCopiedHeaders()
         AtomicArtifact.__init__(
             self,
             name = files[ 0 ],
             files = files,
             strongDependencies = [ source ],
-            orderOnlyDependencies = [ lib.getCopiedHeaders() for lib in localLibraries ],
-            automaticDependencies =
-                [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers.getDoubleQuotedHeaders() ]
-                + copiedHeaders
-                # + [ Project.inProgress.retrieveByName( CopiedHeader, header ) for header in headers.getAngleHeaders() ]
+            orderOnlyDependencies = orderOnlyDependencies,
+            automaticDependencies = automaticDependencies
         )
         self.__source = source
 

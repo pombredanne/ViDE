@@ -52,7 +52,7 @@ class vs( ViDE.Buildkit.Buildkit ):
                     [ o.getFileName() for o in self.__objects ]
                     + [ "/LIBPATH:" + self.__buildkit.fileName( "lib" ) ] # Static libraries
                     + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
-                    + [ lib.getLibName() + ".lib" for lib in self.localLibrariesWithBinary() ]
+                    + [ lib.getLibName() + ".lib" for lib in self.getLibrariesToLink() ]
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
@@ -76,7 +76,7 @@ class vs( ViDE.Buildkit.Buildkit ):
                     [ o.getFileName() for o in self.__objects ]
                     + [ "/LIBPATH:" + self.__buildkit.fileName( "lib" ) ] # Static libraries
                     + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
-                    + [ lib.getLibName() + ".lib" for lib in self.localLibrariesWithBinary() ]
+                    + [ lib.getLibName() + ".lib" for lib in self.getLibrariesToLink() ]
                 )
 
         class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):

@@ -52,7 +52,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
-                    + [ "-l" + lib.getLibName() for lib in self.localLibrariesWithBinary() ]
+                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
@@ -76,7 +76,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
-                    + [ "-l" + lib.getLibName() for lib in self.localLibrariesWithBinary() ]
+                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                 )
 
         class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):
