@@ -10,8 +10,8 @@ from ViDE.Project.CPlusPlus.Source import Header
 
 class Headers:
     def __init__( self ):
-        self.__doubleQuotedHeaders = []
-        self.__angleHeaders = []
+        self.__doubleQuotedHeaders = set()
+        self.__angleHeaders = set()
         
     def save( self, fileName ):
         f = open( fileName, "w" )
@@ -41,10 +41,10 @@ class Headers:
         return self.__angleHeaders
         
     def addDoubleQuotedHeader( self, header ):
-        self.__doubleQuotedHeaders.append( header )
+        self.__doubleQuotedHeaders.add( header )
     
     def addAngleHeader( self, header ):
-        self.__angleHeaders.append( header )
+        self.__angleHeaders.add( header )
 
 # @todo Implement using Boost.Wave, through Boost.Python
 class ParseCppHeadersAction( Action ):
