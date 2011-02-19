@@ -4,6 +4,11 @@ import fnmatch
 import ViDE
 from Misc.InteractiveCommandLineProgram import Command
 
+class Test:
+    def __init__( self, file, test ):
+        self.file = file
+        self.test = test
+
 class AutoTest( Command ):
     ### @todo Measure test coverage
     ### @todo Discover missing test files, base on python files *.py without a test_*.py
@@ -22,23 +27,20 @@ class AutoTest( Command ):
         ### @todo Refactor
         ### @todo Allow arguments of form Filename.Classname.testMethod => python Filename Classname.testMethod
         if len( args ) == 0:
-            self.__testsToRun = self.__testFiles
+            self.__testsToRun = [ Test( file, None ) for file in self.__testFiles ]
         else:
             self.__testsToRun = set()
             for arg in args:
-                if os.path.realpath( arg ) in self.__testFiles:
-                    self.__testsToRun.add( arg )
-                elif arg in [ os.path.basename( f ) for f in self.__testFiles ]:
-                    for f in self.__testFiles:
-                        if arg == os.path.basename( f ):
-                            self.__testsToRun.add( f )
-                elif "test_" + arg + ".py" in [ os.path.basename( f ) for f in self.__testFiles ]:
-                    for f in self.__testFiles:
-                        if "test_" + arg + ".py" == os.path.basename( f ):
-                            self.__testsToRun.add( f )
+                fileAndTest = arg.split( ".", 1 )
+                if len( fileAndTest ) == 2:
+                    file, test = fileAndTest
                 else:
-                    raise Exception( "Incorrect argument " + arg )
-        self.__testsToRun = sorted( self.__testsToRun )
+                    file = fileAndTest[ 0 ]
+                    test = None
+                for f in self.__testFiles:
+                    if "test_" + file + ".py" == os.path.basename( f ):
+                        self.__testsToRun.add( Test( f, test ) )
+        self.__testsToRun = sorted( self.__testsToRun, key = lambda test: ( test.file, test.test ) )
     
     def __runTests( self ):
         for test in self.__testsToRun:
@@ -46,7 +48,11 @@ class AutoTest( Command ):
     
     def __runTest( self, test ):
         ### @todo Refactor
-        print test
         os.environ[ "PYTHONPATH" ] = ViDE.libDirectory
-        os.system( "python " + test + " -q" )
+        if test.test:
+            print test.file, test.test
+            os.system( "python " + test.file + " -q " + test.test )
+        else:
+            print test.file
+            os.system( "python " + test.file + " -q " )
         print

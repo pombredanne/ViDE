@@ -99,6 +99,7 @@ class TouchAction( Action ):
 
     def doExecute( self ):
         now = time.time()
+        time.sleep( 0.1 ) # Ensure files will be more recent than any other touched files
         for file in self.__files:
             # Inspired from http://code.activestate.com/recipes/576915-touch/
             try:
