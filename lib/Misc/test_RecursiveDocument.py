@@ -163,4 +163,26 @@ class HelpFormating( unittest.TestCase ):
                       blah blah blah blah blah blah blah blah blah blah
         """ ) )
 
+    def testListWithOnlyTooLongItems( self ):
+        main = Document()
+        list = DefinitionList()
+        definitions = Section( "Definitions" )
+        main.add( definitions )
+        definitions.add( list )
+        list.add( "--very-very-very-long-item1", "definition1 blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah" )
+        list.add( "--very-very-very-long-item2", "definition2 blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah" )
+        list.add( "--very-very-very-long-item3", "definition3 blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah" )
+        self.assertEquals( main.format(), textwrap.dedent( """\
+        Definitions:
+          --very-very-very-long-item1
+            definition1 blah blah blah blah blah blah blah blah blah blah blah
+            blah blah blah blah
+          --very-very-very-long-item2
+            definition2 blah blah blah blah blah blah blah blah blah blah blah
+            blah blah blah blah
+          --very-very-very-long-item3
+            definition3 blah blah blah blah blah blah blah blah blah blah blah
+            blah blah blah blah
+        """ ) )
+
 unittest.main()

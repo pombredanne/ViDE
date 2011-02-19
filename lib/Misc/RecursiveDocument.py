@@ -51,7 +51,7 @@ class DefinitionList( Section ):
     def formatLines( self, indent ):
         lines = []
         if len( self.__content ) != 0:
-            longestItem = max( len( item ) for ( item, definition ) in self.__content if self.__itemIsShortEnought( item, indent ) )
+            longestItem = max( [ 0 ] + [ len( item ) for ( item, definition ) in self.__content if self.__itemIsShortEnought( item, indent ) ] )
             for ( item, definition ) in self.__content:
                 initial_indent = indent + item + ( longestItem - len( item ) + 2 ) * " "
                 subsequent_indent = indent + ( longestItem + 2 ) * " "
