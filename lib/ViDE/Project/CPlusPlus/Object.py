@@ -48,9 +48,10 @@ class ParseCppHeadersAction( Action ):
         return "blahblah " + self.__source + " " + self.__depFile
         
     def doExecute( self ):
+        headers = Headers()
         for header in self.parse( self.__source ):
             headers.addDoubleQuotedHeader( header )
-        header.save( self.__depFile )
+        headers.save( self.__depFile )
         
     def parse( self, fileName ):
         headers = set()
@@ -94,7 +95,6 @@ class DepFile( AtomicArtifact ):
 class Object( AtomicArtifact ):
     def __init__( self, buildkit, files, source, localLibraries ):
         headers = self.parseCppHeaders( buildkit, source, localLibraries )
-        print source.getFileName(), "->", headers.getDoubleQuotedHeaders(), headers.getAngleHeaders()
         copiedHeaders = []
         AtomicArtifact.__init__(
             self,
