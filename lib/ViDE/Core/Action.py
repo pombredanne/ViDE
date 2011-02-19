@@ -17,7 +17,7 @@ class CompoundException( Exception ):
         self.__exceptions = exceptions
 
     def __str__( self ):
-        return "CompoundException( " + str( self.__exceptions ) + " )"
+        return "CompoundException( [" + ", ".join( str( e ) for e in self.__exceptions ) + "] )"
 
 class Action:
     ###################################################################### virtuals to be implemented
