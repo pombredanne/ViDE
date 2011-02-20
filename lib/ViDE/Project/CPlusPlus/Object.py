@@ -74,10 +74,10 @@ class ParseCppHeadersAction( Action ):
 
     def doExecute( self ):
         headers = Headers()
-        self.parse( headers, self.__source, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader )
+        self.__parse( headers, self.__source, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader )
         headers.save( self.__depFile )
 
-    def parse( self, headers, fileName, handleDoubleQuotedHeader ):
+    def __parse( self, headers, fileName, handleDoubleQuotedHeader ):
         f = open( fileName )
         for line in f:
             line = line.strip()
@@ -92,18 +92,18 @@ class ParseCppHeadersAction( Action ):
     def __handleDoubleQuotedHeaderFromDoubleQuotedHeader( self, headers, fileName, header ):
         header = os.path.join( os.path.dirname( fileName ), header )
         headers.addDoubleQuotedHeader( header )
-        self.parse( headers, header, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader )
+        self.__parse( headers, header, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader )
 
     def __handleDoubleQuotedHeaderFromAngleHeader( self, headers, fileName, header ):
         copiedHeader = self.__candidateCopiedHeaders.find( header )
         headers.addAngleHeader( header )
-        self.parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
+        self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
         
     def __handleAngleHeader( self, headers, header ):
         copiedHeader = self.__candidateCopiedHeaders.find( header )
         if copiedHeader is not None:
             headers.addAngleHeader( header )
-            self.parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
+            self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
         
     def __doubleQuotedHeaderOnLine( self, line ):
         return self.__headerOnLine( line, "\s*#\s*include\s*\"(.*)\"" )
