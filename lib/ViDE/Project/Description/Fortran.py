@@ -1,6 +1,7 @@
 from ViDE.Project.Project import Project
 from ViDE.Project.Description.Utilities import *
-from ViDE.Project.Artifacts import Binary, Fortran
+from ViDE.Project.Description.Binary import __Executable
+from ViDE.Project.Artifacts import Fortran
 
 def __FortranSource( source, explicit = False ):
     if isArtifact( source ):
@@ -23,5 +24,5 @@ def FortranSource( source ):
 def FortranObject( source, additionalDefines = [] ):
     return __FortranObject( __FortranSource( source, False ), True )
 
-def FortranExecutable( name, sources = [], objects = [] ):
-    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Binary.Executable, name, __FortranObjects( __FortranSources( sources ), objects ), [], True )
+def FortranExecutable( name, sources = [], objects = [], localLibraries = [] ):
+    return __Executable( name, __FortranObjects( __FortranSources( sources ), objects ), localLibraries, True )

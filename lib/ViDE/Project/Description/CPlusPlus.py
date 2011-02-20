@@ -1,6 +1,7 @@
 from ViDE.Project.Project import Project
 from ViDE.Project.Description.Utilities import *
-from ViDE.Project.Artifacts import Binary, CPlusPlus
+from ViDE.Project.Description.Binary import __Executable
+from ViDE.Project.Artifacts import CPlusPlus, Binary
 
 def __CppHeader( header, explicit = False ):
     if isArtifact( header ):
@@ -36,7 +37,7 @@ def CppObject( source, additionalDefines = [], localLibraries = [] ):
     return __CppObject( __CppSource( source, False ), additionalDefines, localLibraries, True )
 
 def CppExecutable( name, sources = [], objects = [], localLibraries = [] ):
-    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Binary.Executable, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries ), localLibraries, True )
+    return __Executable( name, __CppObjects( __CppSources( sources ), objects, [], localLibraries ), localLibraries, True )
 
 def CppDynamicLibrary( name, headers, sources = [], objects = [], localLibraries = [], stripHeaders = identity ):
     binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, __CppObjects( __CppSources( sources ), objects, [ "BUILD_" + name.upper() ], localLibraries ), localLibraries, False )
