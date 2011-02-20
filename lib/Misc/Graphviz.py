@@ -1,3 +1,5 @@
+import subprocess
+
 def attributesDotString( attr, sep = "," ):
     return sep.join( sorted( k + "=\"" + attr[ k ] + "\"" for k in attr ) )
 
@@ -66,6 +68,10 @@ class Graph( Container ):
             + "".join( sorted( l.dotString() for l in self.__links ) )
             + "}"
         )
+
+    def drawTo( self, fileName ):
+        p = subprocess.Popen( [ "dot", "-Tpng", "-o" + fileName ], stdin=subprocess.PIPE )
+        p.communicate( self.dotString() )
 
     @staticmethod
     def areSame( left, right ):

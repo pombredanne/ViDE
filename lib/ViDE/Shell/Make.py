@@ -25,26 +25,23 @@ class Make( ICLP.Command ):
         fakeAge.addOption( [ "o", "old-file", "assume-old" ], "assumeOld", ICLP.AppendArgument( "FILE" ), "assume that FILE is older than its dependants" )
         self.touch = False
         self.addOption( [ "t", "touch" ], "touch", ICLP.StoreConstant( True ), "touch targets instead of remaking them")
-        ### @todo Always draw the graph of actions, near report.png. Remove this drawGraph option
-        self.drawGraph = False
-        self.addOption( [ "draw-graph" ], "drawGraph", ICLP.StoreConstant( True ), "print the dot graph of the commands instead of executing them" )
         ### @todo Add an option to build with all buildkits
         
     def execute( self, args ):
         buildkit = Buildkit.load( self.program.buildkit )
         project = Project.load( buildkit )
         action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
+        action.getGraph().drawTo( buildkit.fileName( "action-dependencies.png" ) )
+        project.getGraph().drawTo( buildkit.fileName( "project-artifacts.png" ) )
+        # @todo project's include/import graph
         if self.dryRun:
             print "\n".join( action.preview() )
-        elif self.drawGraph:
-            print action.getGraph().dotString()
         else:
             try:
                 action.execute( self.keepGoing, self.jobs )
             except CompoundException, e:
                 Log.error( "build failed", e )
             finally:
-                # @todo Fix ExecutionReport when no action has been executed (vide make; vide make)
                 report = ExecutionReport( action )
                 img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 600 )
                 ctx = cairo.Context( img )
@@ -52,4 +49,4 @@ class Make( ICLP.Command ):
                 ctx.set_source_rgb( .9, .9, .9 )
                 ctx.paint()
                 report.draw( ctx, 780, 580 )
-                img.write_to_png( buildkit.fileName( "report.png" ) )
+                img.write_to_png( buildkit.fileName( "action-execution.png" ) )
