@@ -248,4 +248,9 @@ FortranExecutable = TestMake( "FortranExecutable", {
     "sub.for": [ exeFile( "hello" ), forObjFile( "sub" ) ],
 } )
 
+FortranCalledFromCpp = TestMake( "FortranCalledFromCpp", {
+    "main.cpp": [ exeFile( "hello" ), cppObjFile( "main" ) ],
+    "sub.for": [ exeFile( "hello" ), forObjFile( "sub" ) ],
+} )
+
 unittest.main()
