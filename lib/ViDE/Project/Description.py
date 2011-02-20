@@ -7,6 +7,9 @@ from ViDE.Project.Project import Project
 from ViDE.Core.Artifact import Artifact
 from ViDE.Project import Binary, CPlusPlus
 
+def identity( x ):
+    return x
+
 def __isArtifact( object ):
     return isinstance( object, Artifact )
 
@@ -46,13 +49,13 @@ def Object( source, additionalDefines = [], localLibraries = [] ):
 def Executable( name, sources = [], objects = [], localLibraries = [] ):
     return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Binary.Executable, name, __Objects( __Sources( sources ), objects, [], localLibraries ), localLibraries, True )
 
-def DynamicLibrary( name, headers, sources = [], objects = [], localLibraries = [] ):
+def DynamicLibrary( name, headers, sources = [], objects = [], localLibraries = [], stripHeaders = identity ):
     binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, __Objects( __Sources( sources ), objects, [ "BUILD_" + name.upper() ], localLibraries ), localLibraries, False )
-    return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, __Headers( headers ), binary, localLibraries, True )
+    return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, __Headers( headers ), binary, localLibraries, stripHeaders, True )
 
-def StaticLibrary( name, headers, sources = [], objects = [], localLibraries = [] ):
+def StaticLibrary( name, headers, sources = [], objects = [], localLibraries = [], stripHeaders = identity ):
     binary = Project.inProgress.buildkit.Binary.StaticLibraryBinary( Project.inProgress.buildkit, name, __Objects( __Sources( sources ), objects, [], localLibraries ), localLibraries, False )
-    return Project.inProgress.createOrRetrieve( Binary.StaticLibrary, name, __Headers( headers ), binary, localLibraries, True )
+    return Project.inProgress.createOrRetrieve( Binary.StaticLibrary, name, __Headers( headers ), binary, localLibraries, stripHeaders, True )
 
-def HeaderLibrary( name, headers, localLibraries = [] ):
-    return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, __Headers( headers ), localLibraries, True )
+def HeaderLibrary( name, headers, localLibraries = [], stripHeaders = identity ):
+    return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, __Headers( headers ), localLibraries, stripHeaders, True )

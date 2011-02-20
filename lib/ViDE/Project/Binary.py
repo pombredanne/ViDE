@@ -4,9 +4,9 @@ from ViDE.Core.Actions import CopyFileAction
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 
 class CopiedHeader( AtomicArtifact ):
-    def __init__( self, buildkit, header, explicit ):
+    def __init__( self, buildkit, header, stripHeaders, explicit ):
         self.__header = header
-        self.__copiedHeader = buildkit.fileName( "inc", header.getFileName() )
+        self.__copiedHeader = buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
         AtomicArtifact.__init__(
             self,
             name = self.__copiedHeader,
@@ -27,8 +27,8 @@ class CopiedHeader( AtomicArtifact ):
         return self.__header
 
 class CopiedHeaders( CompoundArtifact ):
-    def __init__( self, buildkit, name, headers, explicit ):
-        self.__copiedHeaders = [ CopiedHeader( buildkit, header, False ) for header in headers ]
+    def __init__( self, buildkit, name, headers, stripHeaders, explicit ):
+        self.__copiedHeaders = [ CopiedHeader( buildkit, header, stripHeaders, False ) for header in headers ]
         CompoundArtifact.__init__( self, name = name + "_hdr", componants = self.__copiedHeaders, explicit = explicit )
 
     def get( self ):
@@ -36,12 +36,12 @@ class CopiedHeaders( CompoundArtifact ):
 
 class Library( CompoundArtifact ):
     @staticmethod
-    def computeName( buildkit, name, headers, binary, localLibraries, explicit ):
+    def computeName( buildkit, name, headers, binary, localLibraries, stripHeaders, explicit ):
         return "lib" + name
 
-    def __init__( self, buildkit, name, headers, binary, localLibraries, explicit ):
+    def __init__( self, buildkit, name, headers, binary, localLibraries, stripHeaders, explicit ):
         self.__libName = name
-        self.__copiedHeaders = CopiedHeaders( buildkit, name, headers, False )
+        self.__copiedHeaders = CopiedHeaders( buildkit, name, headers, stripHeaders, False )
         self.__binary = binary
         self.__localLibraries = localLibraries
         componants = [ self.__copiedHeaders ]
@@ -71,10 +71,10 @@ class Library( CompoundArtifact ):
 
 class HeaderLibrary( Library ):
     @staticmethod
-    def computeName( buildkit, name, headers, localLibraries, explicit ):
-        return Library.computeName( buildkit, name, headers, None, localLibraries, explicit )
+    def computeName( buildkit, name, headers, localLibraries, stripHeaders, explicit ):
+        return Library.computeName( buildkit, name, headers, None, localLibraries, stripHeaders, explicit )
 
-    def __init__( self, buildkit, name, headers, localLibraries, explicit ):
+    def __init__( self, buildkit, name, headers, localLibraries, stripHeaders, explicit ):
         Library.__init__(
             self,
             buildkit = buildkit,
@@ -82,6 +82,7 @@ class HeaderLibrary( Library ):
             headers = headers,
             binary = None,
             localLibraries = localLibraries,
+            stripHeaders = stripHeaders,
             explicit = explicit
         )
 

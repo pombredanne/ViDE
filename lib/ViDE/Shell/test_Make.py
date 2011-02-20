@@ -215,4 +215,11 @@ ExecutableWithExplicitObjectsAndSources = TestMake( "ExecutableWithExplicitObjec
     "hello4.cpp": [ exeFile( "hello4" ), objFile( "hello4" ) ],
 } )
 
+StaticLibraryWithHeaderStrip = TestMake( "StaticLibraryWithHeaderStrip", {
+    "main.cpp": [ objFile( "main" ), exeFile( "hello" ) ],
+    os.path.join( "src", "lib.hpp" ): [ objFile( "main" ), exeFile( "hello" ), hppFile( "lib" ), objFile( os.path.join( "src", "lib" ) ), libFile( "hello" ) ],
+    os.path.join( "src", "lib.cpp" ): [ exeFile( "hello" ), objFile( os.path.join( "src", "lib" ) ), libFile( "hello" ) ],
+    os.path.join( "src", "sub", "sub.hpp" ): [ objFile( "main" ), exeFile( "hello" ), hppFile( os.path.join( "sub", "sub" ) ), objFile( os.path.join( "src", "lib" ) ), libFile( "hello" ) ],
+} )
+
 unittest.main()

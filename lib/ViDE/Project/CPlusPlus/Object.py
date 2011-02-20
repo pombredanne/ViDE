@@ -84,6 +84,7 @@ class ParseCppHeadersAction( Action ):
             match = re.match( "\s*#\s*include\s*\"(.*)\"", line )
             if match:
                 header = match.groups()[0]
+                header = os.path.join( os.path.dirname( fileName ), header )
                 headers.addDoubleQuotedHeader( header )
                 self.parse( headers, header )
             else:
@@ -103,8 +104,9 @@ class ParseCppHeadersAction( Action ):
             match = re.match( "\s*#\s*include\s*\"(.*)\"", line )
             if match:
                 header = match.groups()[0]
+                copiedHeader = self.__candidateCopiedHeaders.find( header )
                 headers.addAngleHeader( header )
-                self.parse2( headers, header )
+                self.parse2( headers, copiedHeader.getSource().getFileName() )
             else:
                 match = re.match( "\s*#\s*include\s*<(.*)>", line )
                 if match:
