@@ -31,8 +31,6 @@ class Make( ICLP.Command ):
         buildkit = Buildkit.load( self.program.buildkit )
         project = Project.load( buildkit )
         action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
-        action.getGraph().drawTo( buildkit.fileName( "action-dependencies.png" ) )
-        project.getGraph().drawTo( buildkit.fileName( "project-artifacts.png" ) )
         # @todo project's include/import graph
         if self.dryRun:
             print "\n".join( action.preview() )
@@ -50,3 +48,5 @@ class Make( ICLP.Command ):
                 ctx.paint()
                 report.draw( ctx, 780, 580 )
                 img.write_to_png( buildkit.fileName( "action-execution.png" ) )
+                action.getGraph().drawTo( buildkit.fileName( "action-dependencies.png" ) )
+                project.getGraph().drawTo( buildkit.fileName( "project-artifacts.png" ) )

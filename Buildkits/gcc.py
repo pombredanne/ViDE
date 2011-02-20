@@ -1,4 +1,5 @@
 import ViDE.Project.Artifacts.CPlusPlus
+import ViDE.Project.Artifacts.Fortran
 import ViDE.Project.Artifacts.Binary
 import ViDE.Project.Artifacts.Python
 from ViDE.Core.Actions import SystemAction
@@ -30,7 +31,34 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     [ "g++", "-c", sourceName ],
                     [ "-I" + self.__buildkit.fileName( "inc" ), "-o" + self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
-                    + [ "-I/usr/include/python2.6" ]
+                    + [ "-I/usr/include/python2.6" ] # @todo Remove
+                )
+
+            def getFileName( self ):
+                return self.__fileName
+
+    class Fortran:
+        class Object( ViDE.Project.Artifacts.Fortran.Object ):
+            @staticmethod
+            def computeName( buildkit, source, explicit ):
+                return buildkit.fileName( "obj", source.getFileName() + ".o" )
+
+            def __init__( self, buildkit, source, explicit ):
+                self.__buildkit = buildkit
+                self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".o" )
+                ViDE.Project.Artifacts.Fortran.Object.__init__(
+                    self,
+                    buildkit = buildkit,
+                    files = [ self.__fileName ],
+                    source = source,
+                    explicit = explicit
+                )
+
+            def doGetProductionAction( self ):
+                sourceName = self.getSource().getFileName()
+                return SystemAction(
+                    [ "gfortran", "-c", sourceName ],
+                    [ "-o" + self.__fileName ]
                 )
 
             def getFileName( self ):
@@ -63,6 +91,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
+                    + [ "-lgfortranbegin", "-lgfortran" ] # @todo Remove
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
@@ -140,5 +169,5 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
-                    + [ "-lpython2.6" ]
+                    + [ "-lpython2.6" ] # @todo Remove
                 )
