@@ -2,29 +2,17 @@ import os.path
 
 from ViDE.Core.Actions import CopyFileAction
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
+from ViDE.Project.BasicArtifacts import CopiedArtifact
 
-class CopiedHeader( AtomicArtifact ):
+class CopiedHeader( CopiedArtifact ):
     def __init__( self, buildkit, header, stripHeaders, explicit ):
-        self.__header = header
-        self.__copiedHeader = buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
-        AtomicArtifact.__init__(
+        CopiedArtifact.__init__(
             self,
-            name = self.__copiedHeader,
-            files = [ self.__copiedHeader ],
-            strongDependencies = [ header ],
-            orderOnlyDependencies = [],
-            automaticDependencies = [],
+            buildkit,
+            source = header,
+            destination = buildkit.fileName( "inc", stripHeaders( header.getFileName() ) ),
             explicit = explicit
         )
-
-    def doGetProductionAction( self ):
-        return CopyFileAction( self.__header.getFileName(), self.__copiedHeader )
-
-    def getDestination( self ):
-        return self.__copiedHeader
-
-    def getSource( self ):
-        return self.__header
 
 class CopiedHeaders( CompoundArtifact ):
     def __init__( self, buildkit, name, headers, stripHeaders, explicit ):

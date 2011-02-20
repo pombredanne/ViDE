@@ -5,7 +5,7 @@ import fnmatch
 from ViDE.Project.FindFiles import *
 from ViDE.Project.Project import Project
 from ViDE.Core.Artifact import Artifact
-from ViDE.Project import Binary, CPlusPlus
+from ViDE.Project import Binary, CPlusPlus, Python
 
 def identity( x ):
     return x
@@ -59,3 +59,12 @@ def StaticLibrary( name, headers, sources = [], objects = [], localLibraries = [
 
 def HeaderLibrary( name, headers, localLibraries = [], stripHeaders = identity ):
     return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, __Headers( headers ), localLibraries, stripHeaders, True )
+
+def __PythonSource( source, explicit = False ):
+    if __isArtifact( source ):
+        return source
+    else:
+        return Project.inProgress.createOrRetrieve( Python.Source, source, explicit )
+
+def PythonScript( source, strip = identity ):
+    return Project.inProgress.createOrRetrieve( Python.Script, __PythonSource( source ), strip, True )
