@@ -1,5 +1,6 @@
 import ViDE.Project.CPlusPlus
 import ViDE.Project.Binary
+import ViDE.Project.Python
 from ViDE.Core.Actions import SystemAction
 import ViDE.Buildkit
 
@@ -29,6 +30,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     [ "g++", "-c", sourceName ],
                     [ "-I" + self.__buildkit.fileName( "inc" ), "-o" + self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
+                    + [ "-I/usr/include/python2.6" ]
                 )
 
             def getFileName( self ):
@@ -107,4 +109,36 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 return SystemAction(
                     [ "ar", "-q", self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
+                )
+
+    class Python:
+        class CModule( ViDE.Project.Python.CModule ):
+            @staticmethod
+            def computeName( buildkit, name, objects, localLibraries, explicit ):
+                return name
+
+            def __init__( self, buildkit, name, objects, localLibraries, explicit ):
+                self.__buildkit = buildkit
+                names = name.split( "." )
+                names[ -1 ] += ".dll"
+                self.__fileName = self.__buildkit.fileName( "pyd", *names )
+                self.__objects = objects
+                ViDE.Project.Python.CModule.__init__(
+                    self,
+                    buildkit,
+                    name = self.__fileName,
+                    files = [ self.__fileName ],
+                    objects = objects,
+                    localLibraries = localLibraries,
+                    explicit = explicit
+                )
+
+            def doGetProductionAction( self ):
+                return SystemAction(
+                    [ "g++", "-shared", "-o" + self.__fileName ],
+                    [ o.getFileName() for o in self.__objects ]
+                    + [ "-L" + self.__buildkit.fileName( "lib" ) ]
+                    + [ "-L" + self.__buildkit.fileName( "bin" ) ]
+                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
+                    + [ "-lpython2.6" ]
                 )

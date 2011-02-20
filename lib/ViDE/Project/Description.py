@@ -86,3 +86,6 @@ def PythonPackage( name, sources = [], modules = [], strip = identity ):
 
 def PythonScript( source ):
     return Project.inProgress.createOrRetrieve( Python.Script, __PythonSource( source ), True )
+
+def CPythonModule( name, sources = [], objects = [], localLibraries = [] ):
+    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Python.CModule, name, __Objects( __Sources( sources ), objects, [], localLibraries ), localLibraries, True )

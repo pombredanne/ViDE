@@ -4,6 +4,7 @@ import py_compile
 from ViDE.Core.Action import Action
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Project.BasicArtifacts import MonofileInputArtifact, CopiedArtifact
+from ViDE.Project.Binary import LinkedBinary
 
 class Source( MonofileInputArtifact ):
     pass
@@ -70,5 +71,5 @@ class Package( CompoundArtifact ):
             explicit = explicit
         )
 
-# class CModule:
-    # pass
+class CModule( LinkedBinary ):
+    pass

@@ -19,6 +19,9 @@ def objFile( name ):
 def dllFile( name ):
     return os.path.join( "build", buildkit, "bin", name + ".dll" )
 
+def modFile( name ):
+    return os.path.join( "build", buildkit, "pyd", name + ".dll" )
+
 def exeFile( name ):
     return os.path.join( "build", buildkit, "bin", name + ".exe" )
 
@@ -233,6 +236,7 @@ PythonScriptAndModules = TestMake( "PythonScriptAndModules", {
     os.path.join( "pack", "b", "__init__.py" ): [ pycFile( os.path.join( "b", "__init__" ) ) ],
     os.path.join( "pack", "b", "b1.py" ): [ pycFile( os.path.join( "b", "b1" ) ) ],
     os.path.join( "pack", "b", "b2.py" ): [ pycFile( os.path.join( "b", "b2" ) ) ],
+    "b3.cpp": [ modFile( os.path.join( "b", "b3" ) ) ],
     "a.py": [ pycFile( "a" ) ],
 } )
 
