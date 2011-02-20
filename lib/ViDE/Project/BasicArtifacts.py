@@ -14,13 +14,9 @@ class MonofileInputArtifact( InputArtifact ):
         return self.__fileName
 
 class CopiedArtifact( AtomicArtifact ):
-    @staticmethod
-    def computeName( buildkit, source, destination, explicit ):
-        return destination
-
-    def __init__( self, buildkit, source, destination, explicit ):
+    def __init__( self, buildkit, name, source, destination, explicit ):
         self.__source = source
-        self.__destination = destination
+        self.__destination = name
         AtomicArtifact.__init__(
             self,
             name = destination,

@@ -5,12 +5,18 @@ from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Project.BasicArtifacts import CopiedArtifact
 
 class CopiedHeader( CopiedArtifact ):
+    @staticmethod
+    def computeName( buildkit, header, stripHeaders, explicit ):
+        return buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
+
     def __init__( self, buildkit, header, stripHeaders, explicit ):
+        fileName = buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
         CopiedArtifact.__init__(
             self,
             buildkit,
+            name = fileName,
             source = header,
-            destination = buildkit.fileName( "inc", stripHeaders( header.getFileName() ) ),
+            destination = fileName,
             explicit = explicit
         )
 

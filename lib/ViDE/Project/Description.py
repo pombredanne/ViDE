@@ -66,5 +66,23 @@ def __PythonSource( source, explicit = False ):
     else:
         return Project.inProgress.createOrRetrieve( Python.Source, source, explicit )
 
-def PythonScript( source, strip = identity ):
-    return Project.inProgress.createOrRetrieve( Python.Script, __PythonSource( source ), strip, True )
+def __PythonSources( sources ):
+    return [ __PythonSource( source ) for source in sources ]
+
+def __PythonModule( source, strip, explicit = False ):
+    return Project.inProgress.createOrRetrieve( Python.Module, __PythonSource( source ), strip, explicit )
+
+def __PythonModules( sources, strip ):
+    return [ __PythonModule( source, strip ) for source in sources ]
+
+def PythonSource( source ):
+    return __PythonSource( source, True )
+
+def PythonModule( source, strip = identity ):
+    return __PythonModule( source, strip, True )
+
+def PythonPackage( name, sources, strip = identity ):
+    return Project.inProgress.createOrRetrieve( Python.Package, name, __PythonModules( __PythonSources( sources ), strip ), True )
+
+def PythonScript( source ):
+    return Project.inProgress.createOrRetrieve( Python.Script, __PythonSource( source ), True )
