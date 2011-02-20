@@ -9,7 +9,7 @@ b1 = PythonModule(
     strip = lambda f: f[5:]
 )
 
-b3 = CPythonModule(
+b3 = CppPythonModule(
     name = "b.b3",
     sources = [ "b3.cpp" ],
     localLibraries = []

@@ -1,6 +1,6 @@
 from ViDE.Project.Description import *
 
-Executable(
+CppExecutable(
     name = "hello",
     sources = [ "main.cpp" ]
 )

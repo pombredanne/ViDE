@@ -1,17 +1,17 @@
 from ViDE.Project.Description import *
 
-a = HeaderLibrary(
+a = CppHeaderLibrary(
     name = "a",
     headers = [ "a.hpp" ]
 )
 
-b = HeaderLibrary(
+b = CppHeaderLibrary(
     name = "b",
     headers = [ "b.hpp" ],
     localLibraries = [ a ]
 )
 
-Executable(
+CppExecutable(
     name = "hello",
     sources = [ "main.cpp" ],
     localLibraries = [ b ]

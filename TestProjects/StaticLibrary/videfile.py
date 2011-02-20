@@ -1,12 +1,12 @@
 from ViDE.Project.Description import *
 
-lib = StaticLibrary(
+lib = CppStaticLibrary(
     name = "hello",
     headers = [ "lib.hpp" ],
     sources = [ "lib.cpp" ]
 )
 
-Executable(
+CppExecutable(
     name = "hello",
     sources = [ "main.cpp" ],
     localLibraries = [ lib ]

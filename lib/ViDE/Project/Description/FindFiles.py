@@ -1,3 +1,7 @@
+import glob
+import fnmatch
+import os
+
 def __AllXxxIn_flat( directory, xxx ):
     return glob.glob( os.path.join( directory, "*." + xxx ) )
 

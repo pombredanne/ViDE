@@ -1,19 +1,19 @@
 from ViDE.Project.Description import *
 
-a = StaticLibrary(
+a = CppStaticLibrary(
     name = "a",
     sources = [ "a.cpp" ],
     headers = [ "a.hpp" ]
 )
 
-b = DynamicLibrary(
+b = CppDynamicLibrary(
     name = "b",
     sources = [ "b.cpp" ],
     headers = [ "b.hpp" ],
     localLibraries = [ a ]
 )
 
-Executable(
+CppExecutable(
     name = "hello",
     sources = [ "main.cpp" ],
     localLibraries = [ b ]

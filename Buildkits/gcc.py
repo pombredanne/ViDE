@@ -1,12 +1,12 @@
-import ViDE.Project.CPlusPlus
-import ViDE.Project.Binary
-import ViDE.Project.Python
+import ViDE.Project.Artifacts.CPlusPlus
+import ViDE.Project.Artifacts.Binary
+import ViDE.Project.Artifacts.Python
 from ViDE.Core.Actions import SystemAction
 import ViDE.Buildkit
 
 class gcc( ViDE.Buildkit.Buildkit ):
     class CPlusPlus:
-        class Object( ViDE.Project.CPlusPlus.Object ):
+        class Object( ViDE.Project.Artifacts.CPlusPlus.Object ):
             @staticmethod
             def computeName( buildkit, source, additionalDefines, localLibraries, explicit ):
                 return buildkit.fileName( "obj", source.getFileName() + ".o" )
@@ -15,7 +15,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".o" )
                 self.__additionalDefines = additionalDefines
-                ViDE.Project.CPlusPlus.Object.__init__(
+                ViDE.Project.Artifacts.CPlusPlus.Object.__init__(
                     self,
                     buildkit = buildkit,
                     files = [ self.__fileName ],
@@ -37,7 +37,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 return self.__fileName
 
     class Binary:
-        class Executable( ViDE.Project.Binary.Executable ):
+        class Executable( ViDE.Project.Artifacts.Binary.Executable ):
             @staticmethod
             def computeName( buildkit, name, objects, localLibraries, explicit ):
                 return name
@@ -46,7 +46,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
                 self.__objects = objects
-                ViDE.Project.Binary.Executable.__init__(
+                ViDE.Project.Artifacts.Binary.Executable.__init__(
                     self,
                     buildkit,
                     name = name,
@@ -65,12 +65,12 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                 )
 
-        class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
+        class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, buildkit, name, objects, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".dll" )
                 self.__objects = objects
-                ViDE.Project.Binary.DynamicLibraryBinary.__init__(
+                ViDE.Project.Artifacts.Binary.DynamicLibraryBinary.__init__(
                     self,
                     buildkit,
                     name = name + "_bin",
@@ -90,12 +90,12 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                 )
 
-        class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):
+        class StaticLibraryBinary( ViDE.Project.Artifacts.Binary.StaticLibraryBinary ):
             def __init__( self, buildkit, name, objects, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "lib", "lib" + name + ".a" )
                 self.__objects = objects
-                ViDE.Project.Binary.StaticLibraryBinary.__init__(
+                ViDE.Project.Artifacts.Binary.StaticLibraryBinary.__init__(
                     self,
                     buildkit,
                     name = name + "_bin",
@@ -112,7 +112,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 )
 
     class Python:
-        class CModule( ViDE.Project.Python.CModule ):
+        class CModule( ViDE.Project.Artifacts.Python.CModule ):
             @staticmethod
             def computeName( buildkit, name, objects, localLibraries, explicit ):
                 return name
@@ -123,7 +123,7 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 names[ -1 ] += ".dll"
                 self.__fileName = self.__buildkit.fileName( "pyd", *names )
                 self.__objects = objects
-                ViDE.Project.Python.CModule.__init__(
+                ViDE.Project.Artifacts.Python.CModule.__init__(
                     self,
                     buildkit,
                     name = self.__fileName,

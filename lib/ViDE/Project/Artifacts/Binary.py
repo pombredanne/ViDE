@@ -2,7 +2,7 @@ import os.path
 
 from ViDE.Core.Actions import CopyFileAction
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
-from ViDE.Project.BasicArtifacts import CopiedArtifact
+from ViDE.Project.Artifacts.BasicArtifacts import CopiedArtifact
 
 class CopiedHeader( CopiedArtifact ):
     @staticmethod
