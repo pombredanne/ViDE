@@ -27,7 +27,7 @@ class Headers:
     def __init__( self ):
         self.__doubleQuotedHeaders = set()
         self.__angleHeaders = set()
-        
+
     def save( self, fileName ):
         f = open( fileName, "w" )
         for header in self.__doubleQuotedHeaders:
@@ -36,7 +36,7 @@ class Headers:
         for header in self.__angleHeaders:
             f.write( header + "\n" )
         f.close()
-    
+
     @staticmethod
     def load( fileName ):
         headers = Headers()
@@ -48,16 +48,16 @@ class Headers:
             else:
                 adder( header.strip() )
         return headers
-    
+
     def getDoubleQuotedHeaders( self ):
         return self.__doubleQuotedHeaders
-    
+
     def getAngleHeaders( self ):
         return self.__angleHeaders
-        
+
     def addDoubleQuotedHeader( self, header ):
         self.__doubleQuotedHeaders.add( header )
-    
+
     def addAngleHeader( self, header ):
         self.__angleHeaders.add( header )
 
@@ -68,54 +68,55 @@ class ParseCppHeadersAction( Action ):
         self.__source = source
         self.__depFile = depFile
         self.__candidateCopiedHeaders = candidateCopiedHeaders
-        
+
     def computePreview( self ):
         return "blahblah " + self.__source + " " + self.__depFile
-        
+
     def doExecute( self ):
         headers = Headers()
-        self.parse( headers, self.__source )
+        self.parse( headers, self.__source, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader )
         headers.save( self.__depFile )
-        
-    def parse( self, headers, fileName ):
+
+    def parse( self, headers, fileName, handleDoubleQuotedHeader ):
         f = open( fileName )
         for line in f:
             line = line.strip()
-            match = re.match( "\s*#\s*include\s*\"(.*)\"", line )
-            if match:
-                header = match.groups()[0]
-                header = os.path.join( os.path.dirname( fileName ), header )
-                headers.addDoubleQuotedHeader( header )
-                self.parse( headers, header )
-            else:
-                match = re.match( "\s*#\s*include\s*<(.*)>", line )
-                if match:
-                    header = match.groups()[0]
-                    copiedHeader = self.__candidateCopiedHeaders.find( header )
-                    if copiedHeader is not None:
-                        headers.addAngleHeader( header )
-                        self.parse2( headers, copiedHeader.getSource().getFileName() )
+            header = self.__doubleQuotedHeaderOnLine( line )
+            if header:
+                handleDoubleQuotedHeader( headers, fileName, header )
+            header = self.__angleHeaderOnLine( line )
+            if header:
+                self.__handleAngleHeader( headers, header )
         f.close()
 
-    def parse2( self, headers, fileName ):
-        f = open( fileName )
-        for line in f:
-            line = line.strip()
-            match = re.match( "\s*#\s*include\s*\"(.*)\"", line )
-            if match:
-                header = match.groups()[0]
-                copiedHeader = self.__candidateCopiedHeaders.find( header )
-                headers.addAngleHeader( header )
-                self.parse2( headers, copiedHeader.getSource().getFileName() )
-            else:
-                match = re.match( "\s*#\s*include\s*<(.*)>", line )
-                if match:
-                    header = match.groups()[0]
-                    copiedHeader = self.__candidateCopiedHeaders.find( header )
-                    if copiedHeader is not None:
-                        headers.addAngleHeader( header )
-                        self.parse2( headers, copiedHeader.getSource().getFileName() )
-        f.close()
+    def __handleDoubleQuotedHeaderFromDoubleQuotedHeader( self, headers, fileName, header ):
+        header = os.path.join( os.path.dirname( fileName ), header )
+        headers.addDoubleQuotedHeader( header )
+        self.parse( headers, header, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader )
+
+    def __handleDoubleQuotedHeaderFromAngleHeader( self, headers, fileName, header ):
+        copiedHeader = self.__candidateCopiedHeaders.find( header )
+        headers.addAngleHeader( header )
+        self.parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
+        
+    def __handleAngleHeader( self, headers, header ):
+        copiedHeader = self.__candidateCopiedHeaders.find( header )
+        if copiedHeader is not None:
+            headers.addAngleHeader( header )
+            self.parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
+        
+    def __doubleQuotedHeaderOnLine( self, line ):
+        return self.__headerOnLine( line, "\s*#\s*include\s*\"(.*)\"" )
+
+    def __angleHeaderOnLine( self, line ):
+        return self.__headerOnLine( line, "\s*#\s*include\s*<(.*)>" )
+
+    def __headerOnLine( self, line, regex ):
+        match = re.match( regex, line )
+        if match:
+            return match.groups()[0]
+        else:
+            return None
 
 class DepFile( AtomicArtifact ):
     class Header( InputArtifact ):
