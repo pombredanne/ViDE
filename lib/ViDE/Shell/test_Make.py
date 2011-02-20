@@ -25,6 +25,12 @@ def exeFile( name ):
 def libFile( name ):
     return os.path.join( "build", buildkit, "lib", "lib" + name + ".a" )
 
+def pyFile( name ):
+    return os.path.join( "build", buildkit, "bin", name + ".py" )
+
+def pycFile( name ):
+    return os.path.join( "build", buildkit, "pyd", name + ".pyc" )
+
 def allFilesIn( directory ):
     l = set()
     for path, dirs, files in os.walk( directory ):
@@ -220,6 +226,14 @@ StaticLibraryWithHeaderStrip = TestMake( "StaticLibraryWithHeaderStrip", {
     os.path.join( "src", "lib.hpp" ): [ objFile( "main" ), exeFile( "hello" ), hppFile( "lib" ), objFile( os.path.join( "src", "lib" ) ), libFile( "hello" ) ],
     os.path.join( "src", "lib.cpp" ): [ exeFile( "hello" ), objFile( os.path.join( "src", "lib" ) ), libFile( "hello" ) ],
     os.path.join( "src", "sub", "sub.hpp" ): [ objFile( "main" ), exeFile( "hello" ), hppFile( os.path.join( "sub", "sub" ) ), objFile( os.path.join( "src", "lib" ) ), libFile( "hello" ) ],
+} )
+
+PythonScriptAndModules = TestMake( "PythonScriptAndModules", {
+    "hello.py": [ pyFile( "hello" ) ],
+    os.path.join( "pack", "b", "__init__.py" ): [ pycFile( os.path.join( "b", "__init__" ) ) ],
+    os.path.join( "pack", "b", "b1.py" ): [ pycFile( os.path.join( "b", "b1" ) ) ],
+    os.path.join( "pack", "b", "b2.py" ): [ pycFile( os.path.join( "b", "b2" ) ) ],
+    "a.py": [ pycFile( "a" ) ],
 } )
 
 unittest.main()
