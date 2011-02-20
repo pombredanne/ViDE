@@ -2,56 +2,57 @@ import glob
 import os
 import fnmatch
 
+from ViDE.Project.FindFiles import *
 from ViDE.Project.Project import Project
+from ViDE.Core.Artifact import Artifact
 from ViDE.Project import Binary, CPlusPlus
 
-def __AllXxxIn_flat( directory, xxx ):
-    return glob.glob( os.path.join( directory, "*." + xxx ) )
+def __isArtifact( object ):
+    return isinstance( object, Artifact )
 
-def __AllXxxIn_recursive( directory, xxx ):
-    l = []
-    for path, dirs, files in os.walk( directory ):
-        for fileName in fnmatch.filter( files, "*." + xxx ):
-            l.append( os.path.join( path, fileName ) )
-    return l
-
-def AllXxxIn( directory, xxx, recursive ):
-    if recursive:
-        return __AllXxxIn_recursive( directory, xxx )
+def __Header( header, explicit = False ):
+    if __isArtifact( header ):
+        return header
     else:
-        return __AllXxxIn_flat( directory, xxx )
+        return Project.inProgress.createOrRetrieve( CPlusPlus.Header, header, explicit )
 
-def AllCppIn( directory, recursive = True ):
-    return AllXxxIn( directory, "cpp", recursive ) + AllXxxIn( directory, "c", recursive )
+def __Headers( headers ):
+    return [ __Header( header ) for header in headers ]
 
-def AllHppIn( directory, recursive = True ):
-    return AllXxxIn( directory, "hpp", recursive ) + AllXxxIn( directory, "h", recursive )
+def __Source( source, explicit = False ):
+    if __isArtifact( source ):
+        return source
+    else:
+        return Project.inProgress.createOrRetrieve( CPlusPlus.Source, source, explicit )
 
-def AllIppIn( directory, recursive = True ):
-    return AllXxxIn( directory, "ipp", recursive )
+def __Sources( sources ):
+    return [ __Source( source ) for source in sources ]
 
-def AllPyIn( directory, recursive = True ):
-    return AllXxxIn( directory, "py", recursive )
+def __Object( source, additionalDefines, localLibraries, explicit = False ):
+    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.CPlusPlus.Object, source, additionalDefines, localLibraries, explicit )
 
-def Headers( headers ):
-    return [ Project.inProgress.createOrRetrieve( CPlusPlus.Header, header ) for header in headers ]
+def __Objects( sources, objects, additionalDefines, localLibraries ):
+    return objects + [ __Object( source, additionalDefines, localLibraries ) for source in sources ]
 
-def Sources( sources ):
-    return [ Project.inProgress.createOrRetrieve( CPlusPlus.Source, source ) for source in sources ]
+def Header( header ):
+    return __Header( header, True )
 
-def Objects( sources, additionalDefines, localLibraries ):
-    return [ Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.CPlusPlus.Object, source, additionalDefines, localLibraries ) for source in sources ]
+def Source( source ):
+    return __Source( source, True )
 
-def Executable( name, sources, localLibraries = [] ):
-    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Binary.Executable, name, Objects( Sources( sources ), [], localLibraries ), localLibraries )
+def Object( source, additionalDefines = [], localLibraries = [] ):
+    return __Object( __Source( source, False ), additionalDefines, localLibraries, True )
 
-def DynamicLibrary( name, headers, sources, localLibraries = [] ):
-    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, Objects( Sources( sources ), [ "BUILD_" + name.upper() ], localLibraries ), localLibraries )
-    return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, Headers( headers ), binary, localLibraries )
+def Executable( name, sources = [], objects = [], localLibraries = [] ):
+    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.Binary.Executable, name, __Objects( __Sources( sources ), objects, [], localLibraries ), localLibraries, True )
 
-def StaticLibrary( name, headers, sources, localLibraries = [] ):
-    binary = Project.inProgress.buildkit.Binary.StaticLibraryBinary( Project.inProgress.buildkit, name, Objects( Sources( sources ), [], localLibraries ), localLibraries )
-    return Project.inProgress.createOrRetrieve( Binary.StaticLibrary, name, Headers( headers ), binary, localLibraries )
+def DynamicLibrary( name, headers, sources = [], objects = [], localLibraries = [] ):
+    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, __Objects( __Sources( sources ), objects, [ "BUILD_" + name.upper() ], localLibraries ), localLibraries, False )
+    return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, __Headers( headers ), binary, localLibraries, True )
+
+def StaticLibrary( name, headers, sources = [], objects = [], localLibraries = [] ):
+    binary = Project.inProgress.buildkit.Binary.StaticLibraryBinary( Project.inProgress.buildkit, name, __Objects( __Sources( sources ), objects, [], localLibraries ), localLibraries, False )
+    return Project.inProgress.createOrRetrieve( Binary.StaticLibrary, name, __Headers( headers ), binary, localLibraries, True )
 
 def HeaderLibrary( name, headers, localLibraries = [] ):
-    return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, Headers( headers ), localLibraries )
+    return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, __Headers( headers ), localLibraries, True )

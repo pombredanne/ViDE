@@ -121,7 +121,8 @@ class DepFile( AtomicArtifact ):
             InputArtifact.__init__(
                 self,
                 name = header,
-                files = [ header ]
+                files = [ header ],
+                explicit = False
             )
 
     def __init__( self, buildkit, source, candidateCopiedHeaders ):
@@ -139,7 +140,8 @@ class DepFile( AtomicArtifact ):
             files = [ fileName ],
             strongDependencies = [ source ],
             orderOnlyDependencies = [],
-            automaticDependencies = automaticDependencies
+            automaticDependencies = automaticDependencies,
+            explicit = False
         )
         self.__fileName = fileName
         self.__source = source
@@ -152,10 +154,10 @@ class DepFile( AtomicArtifact ):
         return self.__fileName
 
 class Object( AtomicArtifact ):
-    def __init__( self, buildkit, files, source, localLibraries ):
+    def __init__( self, buildkit, files, source, localLibraries, explicit ):
         candidateCopiedHeaders = CandidateCopiedHeaders( buildkit, localLibraries )
         headers = self.parseCppHeaders( buildkit, source, candidateCopiedHeaders )
-        includedHeaders = [ Project.inProgress.createOrRetrieve( Header, header ) for header in headers.getDoubleQuotedHeaders() ]
+        includedHeaders = [ Project.inProgress.createOrRetrieve( Header, header, False ) for header in headers.getDoubleQuotedHeaders() ]
         for searchedHeader in headers.getAngleHeaders():
             includedHeaders.append( candidateCopiedHeaders.find( searchedHeader ) )
         AtomicArtifact.__init__(
@@ -164,7 +166,8 @@ class Object( AtomicArtifact ):
             files = files,
             strongDependencies = [ source ],
             orderOnlyDependencies = list( itertools.chain.from_iterable( lib.getCopiedHeaders() for lib in localLibraries ) ),
-            automaticDependencies = includedHeaders
+            automaticDependencies = includedHeaders,
+            explicit = explicit
         )
         self.__source = source
 

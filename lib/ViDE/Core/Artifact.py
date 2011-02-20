@@ -6,6 +6,9 @@ from Misc import Graphviz
 from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction, TouchAction
 from ViDE import Log
 
+class BuildEmptyArtifact( Exception ):
+    pass
+
 class Artifact:
     ###################################################################### virtuals to be implemented
     # computeGraphNode
@@ -13,12 +16,13 @@ class Artifact:
     # getAllFiles
     # computeProductionAction
     
-    def __init__( self, name ):
+    def __init__( self, name, explicit ):
         self.__name = name
         self.__cachedGraphNode = None
         self.__cachedGraphLinks = None
         self.__cachedProductionAction = dict()
         self.__cachedMustBeProduced = dict()
+        self.explicit = explicit
 
     @staticmethod
     def getModificationDate( file, assumeNew, assumeOld ):
@@ -60,10 +64,10 @@ class Artifact:
         return self.__cachedMustBeProduced[ key ]
 
 class InputArtifact( Artifact ):
-    def __init__( self, name, files ):
+    def __init__( self, name, files, explicit ):
         if len( files ) == 0:
-            raise Exception( "Trying to build an empty InputArtifact" )
-        Artifact.__init__( self, name )
+            raise BuildEmptyArtifact( "Trying to build an empty InputArtifact" )
+        Artifact.__init__( self, name, explicit )
         self.__files = files
 
     def computeProductionAction( self, assumeNew, assumeOld, touch ):
@@ -78,21 +82,24 @@ class InputArtifact( Artifact ):
     def computeGraphNode( self ):
     ### @todo Factorize with AtomicArtifact.computeGraphNode
         if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
-            return Graphviz.Node( self.getName() )
+            node = Graphviz.Node( self.getName() )
         else:
             node = Graphviz.Cluster( self.getName() )
+            node.attr[ "style" ] = "solid"
             for f in self.__files:
                 node.add( Graphviz.Node( f ) )
-            return node
+        if self.explicit:
+            node.attr[ "style" ] = "bold"
+        return node
 
     def computeGraphLinks( self ):
         return []
 
 class AtomicArtifact( Artifact ):
-    def __init__( self, name, files, strongDependencies, orderOnlyDependencies, automaticDependencies ):
+    def __init__( self, name, files, strongDependencies, orderOnlyDependencies, automaticDependencies, explicit ):
         if len( files ) == 0:
-            raise Exception( "Trying to build an empty AtomicArtifact" )
-        Artifact.__init__( self, name )
+            raise BuildEmptyArtifact( "Trying to build an empty AtomicArtifact" )
+        Artifact.__init__( self, name, explicit )
         self.__files = files
         self.__strongDependencies = strongDependencies
         self.__orderOnlyDependencies = orderOnlyDependencies
@@ -156,12 +163,15 @@ class AtomicArtifact( Artifact ):
         
     def computeGraphNode( self ):
         if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
-            return Graphviz.Node( self.getName() )
+            node = Graphviz.Node( self.getName() )
         else:
             node = Graphviz.Cluster( self.getName() )
+            node.attr[ "style" ] = "solid"
             for f in self.__files:
                 node.add( Graphviz.Node( f ) )
-            return node
+        if self.explicit:
+            node.attr[ "style" ] = "bold"
+        return node
 
     def computeGraphLinks( self ):
         links = []
@@ -178,10 +188,10 @@ class AtomicArtifact( Artifact ):
         return links
 
 class CompoundArtifact( Artifact ):
-    def __init__( self, name, componants ):
+    def __init__( self, name, componants, explicit ):
         if len( componants ) == 0:
-            raise Exception( "Trying to build an empty CompoundArtifact" )
-        Artifact.__init__( self, name )
+            raise BuildEmptyArtifact( "Trying to build an empty CompoundArtifact" )
+        Artifact.__init__( self, name, explicit )
         self.__componants = componants
 
     def computeProductionAction( self, assumeNew, assumeOld, touch ):
@@ -198,8 +208,11 @@ class CompoundArtifact( Artifact ):
 
     def computeGraphNode( self ):
         node = Graphviz.Cluster( self.getName() )
+        node.attr[ "style" ] = "solid"
         for c in self.__componants:
             node.add( c.getGraphNode() )
+        if self.explicit:
+            node.attr[ "style" ] = "bold"
         return node
 
     def computeGraphLinks( self ):

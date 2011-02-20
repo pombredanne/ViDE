@@ -208,4 +208,11 @@ ComplexCopiedHeadersDependencies = TestMake( "ComplexCopiedHeadersDependencies",
     "b.cpp": [ dllFile( "b" ), objFile( "b" ) ],
 } )
 
+ExecutableWithExplicitObjectsAndSources = TestMake( "ExecutableWithExplicitObjectsAndSources", {
+    "hello1.cpp": [ exeFile( "hello1" ), objFile( "hello1" ) ],
+    "hello2.cpp": [ exeFile( "hello2" ), objFile( "hello2" ) ],
+    "hello3.cpp": [ exeFile( "hello3" ), objFile( "hello3" ) ],
+    "hello4.cpp": [ exeFile( "hello4" ), objFile( "hello4" ) ],
+} )
+
 unittest.main()

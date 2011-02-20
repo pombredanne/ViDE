@@ -4,7 +4,7 @@ from ViDE.Core.Actions import CopyFileAction
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 
 class CopiedHeader( AtomicArtifact ):
-    def __init__( self, buildkit, header ):
+    def __init__( self, buildkit, header, explicit ):
         self.__header = header
         self.__copiedHeader = buildkit.fileName( "inc", header.getFileName() )
         AtomicArtifact.__init__(
@@ -13,7 +13,8 @@ class CopiedHeader( AtomicArtifact ):
             files = [ self.__copiedHeader ],
             strongDependencies = [ header ],
             orderOnlyDependencies = [],
-            automaticDependencies = []
+            automaticDependencies = [],
+            explicit = explicit
         )
 
     def doGetProductionAction( self ):
@@ -26,21 +27,21 @@ class CopiedHeader( AtomicArtifact ):
         return self.__header
 
 class CopiedHeaders( CompoundArtifact ):
-    def __init__( self, buildkit, name, headers ):
-        self.__copiedHeaders = [ CopiedHeader( buildkit, header ) for header in headers ]
-        CompoundArtifact.__init__( self, name = name + "_hdr", componants = self.__copiedHeaders )
+    def __init__( self, buildkit, name, headers, explicit ):
+        self.__copiedHeaders = [ CopiedHeader( buildkit, header, False ) for header in headers ]
+        CompoundArtifact.__init__( self, name = name + "_hdr", componants = self.__copiedHeaders, explicit = explicit )
 
     def get( self ):
         return self.__copiedHeaders
 
 class Library( CompoundArtifact ):
     @staticmethod
-    def computeName( buildkit, name, headers, binary, localLibraries ):
+    def computeName( buildkit, name, headers, binary, localLibraries, explicit ):
         return "lib" + name
 
-    def __init__( self, buildkit, name, headers, binary, localLibraries ):
+    def __init__( self, buildkit, name, headers, binary, localLibraries, explicit ):
         self.__libName = name
-        self.__copiedHeaders = CopiedHeaders( buildkit, name, headers )
+        self.__copiedHeaders = CopiedHeaders( buildkit, name, headers, False )
         self.__binary = binary
         self.__localLibraries = localLibraries
         componants = [ self.__copiedHeaders ]
@@ -49,7 +50,8 @@ class Library( CompoundArtifact ):
         CompoundArtifact.__init__(
             self,
             name = "lib" + name,
-            componants = componants
+            componants = componants,
+            explicit = explicit
         )
 
     def getLibName( self ):
@@ -69,17 +71,18 @@ class Library( CompoundArtifact ):
 
 class HeaderLibrary( Library ):
     @staticmethod
-    def computeName( buildkit, name, headers, localLibraries ):
-        return Library.computeName( buildkit, name, headers, None, localLibraries )
+    def computeName( buildkit, name, headers, localLibraries, explicit ):
+        return Library.computeName( buildkit, name, headers, None, localLibraries, explicit )
 
-    def __init__( self, buildkit, name, headers, localLibraries ):
+    def __init__( self, buildkit, name, headers, localLibraries, explicit ):
         Library.__init__(
             self,
             buildkit = buildkit,
             name = name,
             headers = headers,
             binary = None,
-            localLibraries = localLibraries
+            localLibraries = localLibraries,
+            explicit = explicit
         )
 
 class DynamicLibrary( Library ):
@@ -89,18 +92,19 @@ class StaticLibrary( Library ):
     pass
 
 class StaticLibraryBinary( AtomicArtifact ):
-    def __init__( self, buildkit, name, files, objects, localLibraries ):
+    def __init__( self, buildkit, name, files, objects, localLibraries, explicit ):
         AtomicArtifact.__init__(
             self,
             name = name,
             files = files,
             strongDependencies = objects,
             orderOnlyDependencies = [],
-            automaticDependencies = []
+            automaticDependencies = [],
+            explicit = explicit
         )
 
 class LinkedBinary( AtomicArtifact ):
-    def __init__( self, buildkit, name, files, objects, localLibraries ):
+    def __init__( self, buildkit, name, files, objects, localLibraries, explicit ):
         self.__librariesToLink, staticLibraryBinaries, dynamicLibraryBinaries = LinkedBinary.__extractLibraries( localLibraries )
         AtomicArtifact.__init__(
             self,
@@ -108,7 +112,8 @@ class LinkedBinary( AtomicArtifact ):
             files = files,
             strongDependencies = objects + staticLibraryBinaries,
             orderOnlyDependencies = dynamicLibraryBinaries,
-            automaticDependencies = []
+            automaticDependencies = [],
+            explicit = explicit
         )
 
     @staticmethod

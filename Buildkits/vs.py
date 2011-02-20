@@ -7,14 +7,21 @@ class vs( ViDE.Buildkit.Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.CPlusPlus.Object ):
             @staticmethod
-            def computeName( buildkit, source, additionalDefines, localLibraries ):
+            def computeName( buildkit, source, additionalDefines, localLibraries, explicit ):
                 return buildkit.fileName( "obj", source.getFileName() + ".obj" )
 
-            def __init__( self, buildkit, source, additionalDefines, localLibraries ):
+            def __init__( self, buildkit, source, additionalDefines, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".obj" )
                 self.__additionalDefines = additionalDefines
-                ViDE.Project.CPlusPlus.Object.__init__( self, buildkit, [ self.__fileName ], source, localLibraries )
+                ViDE.Project.CPlusPlus.Object.__init__(
+                    self,
+                    buildkit = buildkit,
+                    files = [ self.__fileName ],
+                    source = source,
+                    localLibraries = localLibraries,
+                    explicit = explicit
+                )
 
             def doGetProductionAction( self ):
                 sourceName = self.getSource().getFileName()
@@ -30,20 +37,21 @@ class vs( ViDE.Buildkit.Buildkit ):
     class Binary:
         class Executable( ViDE.Project.Binary.Executable ):
             @staticmethod
-            def computeName( buildkit, name, objects, localLibraries ):
+            def computeName( buildkit, name, objects, localLibraries, explicit ):
                 return name
 
-            def __init__( self, buildkit, name, objects, localLibraries ):
+            def __init__( self, buildkit, name, objects, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
                 self.__objects = objects
                 ViDE.Project.Binary.Executable.__init__(
                     self,
-                    buildkit,
+                    buildkit = buildkit,
                     name = name,
                     files = [ self.__fileName ],
                     objects = objects,
-                    localLibraries = localLibraries
+                    localLibraries = localLibraries,
+                    explicit = explicit
                 )
 
             def doGetProductionAction( self ):
@@ -56,7 +64,7 @@ class vs( ViDE.Buildkit.Buildkit ):
                 )
 
         class DynamicLibraryBinary( ViDE.Project.Binary.DynamicLibraryBinary ):
-            def __init__( self, buildkit, name, objects, localLibraries ):
+            def __init__( self, buildkit, name, objects, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".dll" )
                 self.__objects = objects
@@ -67,7 +75,8 @@ class vs( ViDE.Buildkit.Buildkit ):
                     # @todo Put the .dll in bin, but the .lib and .exp in lib
                     files = [ self.__fileName, self.__buildkit.fileName( "bin", name + ".lib" ), self.__buildkit.fileName( "bin", name + ".exp" ) ],
                     objects = objects,
-                    localLibraries = localLibraries
+                    localLibraries = localLibraries,
+                    explicit = explicit
                 )
 
             def doGetProductionAction( self ):
@@ -80,7 +89,7 @@ class vs( ViDE.Buildkit.Buildkit ):
                 )
 
         class StaticLibraryBinary( ViDE.Project.Binary.StaticLibraryBinary ):
-            def __init__( self, buildkit, name, objects, localLibraries ):
+            def __init__( self, buildkit, name, objects, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "lib", name + ".lib" )
                 self.__objects = objects
@@ -90,7 +99,8 @@ class vs( ViDE.Buildkit.Buildkit ):
                     name = name + "_bin",
                     files = [ self.__fileName ],
                     objects = objects,
-                    localLibraries = localLibraries
+                    localLibraries = localLibraries,
+                    explicit = explicit
                 )
 
             def doGetProductionAction( self ):
