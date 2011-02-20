@@ -8,6 +8,23 @@ import ViDE
 from ViDE.Core.Action import CompoundException
 from ViDE.Shell.Shell import Shell
 
+buildkit = "gcc"
+
+def hppFile( name ):
+    return os.path.join( "build", buildkit, "inc", name + ".hpp" )
+
+def objFile( name ):
+    return os.path.join( "build", buildkit, "obj", name + ".cpp.o" )
+
+def dllFile( name ):
+    return os.path.join( "build", buildkit, "bin", name + ".dll" )
+
+def exeFile( name ):
+    return os.path.join( "build", buildkit, "bin", name + ".exe" )
+
+def libFile( name ):
+    return os.path.join( "build", buildkit, "lib", "lib" + name + ".a" )
+
 def allFilesIn( directory ):
     l = set()
     for path, dirs, files in os.walk( directory ):
@@ -20,13 +37,15 @@ class TestCompilationError( unittest.TestCase ):
         os.chdir( os.path.join( ViDE.rootDirectory, "TestProjects", "CompilationError" ) )
         shutil.rmtree( "build", True )
         shell = Shell()
-        shell.execute( [ "test", "--silent", "--buildkit", "gcc", "make", "-k" ] )
-        self.assertFalse( os.path.exists( os.path.join( "build", "gcc", "obj", "a.cpp.o" ) ) )
-        self.assertTrue( os.path.exists( os.path.join( "build", "gcc", "obj", "b.cpp.o" ) ) )
-        self.assertTrue( os.path.exists( os.path.join( "build", "gcc", "obj", "c.cpp.o" ) ) )
-        self.assertTrue( os.path.exists( os.path.join( "build", "gcc", "obj", "d.cpp.o" ) ) )
-        self.assertTrue( os.path.exists( os.path.join( "build", "gcc", "obj", "e.cpp.o" ) ) )
-        self.assertFalse( os.path.exists( os.path.join( "build", "gcc", "bin", "hello" ) ) )
+        shell.execute( [ "test", "--silent", "--buildkit", buildkit, "make", "-k" ] )
+        time.sleep( 0.5 )
+        self.assertFalse( os.path.exists( objFile( "a" ) ) )
+        self.assertTrue( os.path.exists( objFile( "b" ) ) )
+        self.assertTrue( os.path.exists( objFile( "c" ) ) )
+        self.assertTrue( os.path.exists( objFile( "d" ) ) )
+        self.assertTrue( os.path.exists( objFile( "e" ) ) )
+        self.assertTrue( os.path.exists( objFile( "main" ) ) )
+        self.assertFalse( os.path.exists( exeFile( "hello" ) ) )
 
 def TestMake( project, whatIfs ):
     shutil.rmtree( os.path.join( ViDE.rootDirectory, "TestProjects", project, "build" ), True )
@@ -36,10 +55,9 @@ def TestMake( project, whatIfs ):
             # unittest.TestCase.__init__( self )
 
         def setUp( self ):
-            print project
             os.chdir( os.path.join( ViDE.rootDirectory, "TestProjects", project ) )
             self.__shell = Shell()
-            self.__shell.execute( [ "test", "--silent", "--buildkit", "gcc", "make" ] )
+            self.__shell.execute( [ "test", "--silent", "--buildkit", buildkit, "make" ] )
             self.__targets = set()
             for source in whatIfs:
                 for target in whatIfs[ source ]:
@@ -54,7 +72,7 @@ def TestMake( project, whatIfs ):
                 before = dict()
                 for target in self.__targets:
                     before[ target ] = os.stat( target ).st_mtime
-                self.__shell.execute( [ "test", "--buildkit", "gcc", "make", "-t", "--new-file", source ] )
+                self.__shell.execute( [ "test", "--buildkit", buildkit, "make", "--touch", "--new-file", source ] )
                 after = dict()
                 for target in self.__targets:
                     after[ target ] = os.stat( target ).st_mtime
@@ -63,131 +81,131 @@ def TestMake( project, whatIfs ):
                 for target in self.__targets:
                     if after[ target ] != before[ target ]:
                         updatedTargets.add( target )
-                self.assertEquals( updatedTargets, whatIfs[source], project + " " + source + " " + str( updatedTargets ) + " != " + str( whatIfs[source] ) )
+                self.assertEquals( updatedTargets, set( whatIfs[source] ), project + " " + source + " " + str( updatedTargets ) + " != " + str( whatIfs[source] ) )
 
     return TestCase
             
 DynamicLibrary = TestMake( "DynamicLibrary", {
-    "lib.cpp": set( [ "build/gcc/bin/hello.dll", "build/gcc/obj/lib.cpp.o" ] ),
-    "lib.hpp": set( [ "build/gcc/bin/hello.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/lib.hpp", "build/gcc/obj/lib.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "lib.cpp": [ dllFile( "hello" ), objFile( "lib" ) ],
+    "lib.hpp": [ dllFile( "hello" ), exeFile( "hello" ), hppFile( "lib" ), objFile( "lib" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 DynamicLibraryDependingOnDynamicLibrary = TestMake( "DynamicLibraryDependingOnDynamicLibrary", {
-    "a.cpp": set( [ "build/gcc/bin/a.dll", "build/gcc/obj/a.cpp.o" ] ),
-    "a.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/bin/b.dll", "build/gcc/inc/a.hpp", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/obj/b.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.cpp": [ dllFile( "a" ), objFile( "a" ) ],
+    "a.hpp": [ dllFile( "a" ), dllFile( "b" ), hppFile( "a" ), objFile( "a" ), objFile( "b" ) ],
+    "b.cpp": [ dllFile( "b" ), objFile( "b" ) ],
+    "b.hpp": [ dllFile( "b" ), exeFile( "hello" ), hppFile( "b" ), objFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 DynamicLibraryDependingOnHeaderLibrary = TestMake( "DynamicLibraryDependingOnHeaderLibrary", {
-    "a.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/inc/a.hpp", "build/gcc/obj/b.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/obj/b.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.hpp": [ dllFile( "b" ), hppFile( "a" ), objFile( "b" ) ],
+    "b.cpp": [ dllFile( "b" ), objFile( "b" ) ],
+    "b.hpp": [ dllFile( "b" ), exeFile( "hello" ), hppFile( "b" ), objFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 DynamicLibraryDependingOnStaticLibrary = TestMake( "DynamicLibraryDependingOnStaticLibrary", {
-    "a.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/lib/liba.a", "build/gcc/obj/a.cpp.o" ] ),
-    "a.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/inc/a.hpp", "build/gcc/lib/liba.a", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/obj/b.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.cpp": [ dllFile( "b" ), libFile( "a" ), objFile( "a" ) ],
+    "a.hpp": [ dllFile( "b" ), hppFile( "a" ), libFile( "a" ), objFile( "a" ), objFile( "b" ) ],
+    "b.cpp": [ dllFile( "b" ), objFile( "b" ) ],
+    "b.hpp": [ dllFile( "b" ), exeFile( "hello" ), hppFile( "b" ), objFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 Executable = TestMake( "Executable", {
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 ExecutableWithManyHeaders = TestMake( "ExecutableWithManyHeaders", {
-    "a.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/a.cpp.o" ] ),
-    "a.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/a.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/b.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o", "build/gcc/obj/e.cpp.o" ] ),
-    "c.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/c.cpp.o" ] ),
-    "c.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/c.cpp.o" ] ),
-    "d.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/d.cpp.o" ] ),
-    "d.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/c.cpp.o", "build/gcc/obj/d.cpp.o" ] ),
-    "e.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/e.cpp.o" ] ),
-    "e.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/e.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.cpp": [ exeFile( "hello" ), objFile( "a" ) ],
+    "a.hpp": [ exeFile( "hello" ), objFile( "a" ), objFile( "main" ) ],
+    "b.cpp": [ exeFile( "hello" ), objFile( "b" ) ],
+    "b.hpp": [ exeFile( "hello" ), objFile( "a" ), objFile( "b" ), objFile( "e" ) ],
+    "c.cpp": [ exeFile( "hello" ), objFile( "c" ) ],
+    "c.hpp": [ exeFile( "hello" ), objFile( "c" ) ],
+    "d.cpp": [ exeFile( "hello" ), objFile( "d" ) ],
+    "d.hpp": [ exeFile( "hello" ), objFile( "c" ), objFile( "d" ) ],
+    "e.cpp": [ exeFile( "hello" ), objFile( "e" ) ],
+    "e.hpp": [ exeFile( "hello" ), objFile( "e" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 ExecutableWithManySourceFiles = TestMake( "ExecutableWithManySourceFiles", {
-    "a.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/a.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/b.cpp.o" ] ),
-    "c.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/c.cpp.o" ] ),
-    "d.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/d.cpp.o" ] ),
-    "e.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/e.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.cpp": [ exeFile( "hello" ), objFile( "a" ) ],
+    "b.cpp": [ exeFile( "hello" ), objFile( "b" ) ],
+    "c.cpp": [ exeFile( "hello" ), objFile( "c" ) ],
+    "d.cpp": [ exeFile( "hello" ), objFile( "d" ) ],
+    "e.cpp": [ exeFile( "hello" ), objFile( "e" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 HeaderLibrary = TestMake( "HeaderLibrary", {
-    "lib.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/lib.hpp", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "lib.hpp": [ exeFile( "hello" ), hppFile( "lib" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 HeaderLibraryDependingOnDynamicLibrary = TestMake( "HeaderLibraryDependingOnDynamicLibrary", {
-    "a.cpp": set( [ "build/gcc/bin/a.dll", "build/gcc/obj/a.cpp.o" ] ),
-    "a.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o", "build/gcc/bin/a.dll", "build/gcc/inc/a.hpp", "build/gcc/obj/a.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.cpp": [ dllFile( "a" ), objFile( "a" ) ],
+    "a.hpp": [ exeFile( "hello" ), objFile( "main" ), dllFile( "a" ), hppFile( "a" ), objFile( "a" ) ],
+    "b.hpp": [ exeFile( "hello" ), hppFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 HeaderLibraryDependingOnHeaderLibrary = TestMake( "HeaderLibraryDependingOnHeaderLibrary", {
-    "a.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o", "build/gcc/inc/a.hpp" ] ),
-    "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.hpp": [ exeFile( "hello" ), objFile( "main" ), hppFile( "a" ) ],
+    "b.hpp": [ exeFile( "hello" ), hppFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 HeaderLibraryDependingOnStaticLibrary = TestMake( "HeaderLibraryDependingOnStaticLibrary", {
-    "a.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/lib/liba.a", "build/gcc/obj/a.cpp.o" ] ),
-    "a.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o", "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", "build/gcc/lib/liba.a", "build/gcc/obj/a.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.cpp": [ exeFile( "hello" ), libFile( "a" ), objFile( "a" ) ],
+    "a.hpp": [ exeFile( "hello" ), objFile( "main" ), exeFile( "hello" ), hppFile( "a" ), libFile( "a" ), objFile( "a" ) ],
+    "b.hpp": [ exeFile( "hello" ), hppFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 StaticLibrary = TestMake( "StaticLibrary", {
-    "lib.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/lib/libhello.a", "build/gcc/obj/lib.cpp.o" ] ),
-    "lib.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/lib.hpp", "build/gcc/lib/libhello.a", "build/gcc/obj/lib.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "lib.cpp": [ exeFile( "hello" ), libFile( "hello" ), objFile( "lib" ) ],
+    "lib.hpp": [ exeFile( "hello" ), hppFile( "lib" ), libFile( "hello" ), objFile( "lib" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 StaticLibraryDependingOnDynamicLibrary = TestMake( "StaticLibraryDependingOnDynamicLibrary", {
-    "a.cpp": set( [ "build/gcc/bin/a.dll", "build/gcc/obj/a.cpp.o" ] ),
-    "a.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", "build/gcc/lib/libb.a", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/lib/libb.a", "build/gcc/obj/b.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/lib/libb.a", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.cpp": [ dllFile( "a" ), objFile( "a" ) ],
+    "a.hpp": [ dllFile( "a" ), exeFile( "hello" ), hppFile( "a" ), libFile( "b" ), objFile( "a" ), objFile( "b" ) ],
+    "b.cpp": [ exeFile( "hello" ), libFile( "b" ), objFile( "b" ) ],
+    "b.hpp": [ exeFile( "hello" ), hppFile( "b" ), libFile( "b" ), objFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 StaticLibraryDependingOnHeaderLibrary = TestMake( "StaticLibraryDependingOnHeaderLibrary", {
-    "a.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", "build/gcc/lib/libb.a", "build/gcc/obj/b.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/lib/libb.a", "build/gcc/obj/b.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/lib/libb.a", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.hpp": [ exeFile( "hello" ), hppFile( "a" ), libFile( "b" ), objFile( "b" ) ],
+    "b.cpp": [ exeFile( "hello" ), libFile( "b" ), objFile( "b" ) ],
+    "b.hpp": [ exeFile( "hello" ), hppFile( "b" ), libFile( "b" ), objFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 StaticLibraryDependingOnStaticLibrary = TestMake( "StaticLibraryDependingOnStaticLibrary", {
-    "a.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/lib/liba.a", "build/gcc/obj/a.cpp.o" ] ),
-    "a.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/a.hpp", "build/gcc/lib/liba.a", "build/gcc/lib/libb.a", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/lib/libb.a", "build/gcc/obj/b.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/inc/b.hpp", "build/gcc/lib/libb.a", "build/gcc/obj/b.cpp.o", "build/gcc/obj/main.cpp.o" ] ),
-    "main.cpp": set( [ "build/gcc/bin/hello.exe", "build/gcc/obj/main.cpp.o" ] ),
+    "a.cpp": [ exeFile( "hello" ), libFile( "a" ), objFile( "a" ) ],
+    "a.hpp": [ exeFile( "hello" ), hppFile( "a" ), libFile( "a" ), libFile( "b" ), objFile( "a" ), objFile( "b" ) ],
+    "b.cpp": [ exeFile( "hello" ), libFile( "b" ), objFile( "b" ) ],
+    "b.hpp": [ exeFile( "hello" ), hppFile( "b" ), libFile( "b" ), objFile( "b" ), objFile( "main" ) ],
+    "main.cpp": [ exeFile( "hello" ), objFile( "main" ) ],
 } )
 
 ComplexCopiedHeadersDependencies = TestMake( "ComplexCopiedHeadersDependencies", {
-    "hello1.cpp": set( [ "build/gcc/bin/hello1.exe", "build/gcc/obj/hello1.cpp.o" ] ),
-    "hello2.cpp": set( [ "build/gcc/bin/hello2.exe", "build/gcc/obj/hello2.cpp.o" ] ),
-    "a.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/bin/b.dll", "build/gcc/bin/hello2.exe", "build/gcc/inc/a.hpp", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o", "build/gcc/obj/hello2.cpp.o" ] ),
-    "a1.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/bin/b.dll", "build/gcc/inc/a1.hpp", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o" ] ),
-    "a2.hpp": set( [ "build/gcc/bin/a.dll", "build/gcc/bin/b.dll", "build/gcc/bin/hello2.exe", "build/gcc/inc/a2.hpp", "build/gcc/obj/a.cpp.o", "build/gcc/obj/b.cpp.o", "build/gcc/obj/hello2.cpp.o" ] ),
-    "a.cpp": set( [ "build/gcc/bin/a.dll", "build/gcc/obj/a.cpp.o" ] ),
-    "b.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello1.exe", "build/gcc/bin/hello2.exe", "build/gcc/inc/b.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/hello1.cpp.o", "build/gcc/obj/hello2.cpp.o" ] ),
-    "b1.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello1.exe", "build/gcc/inc/b1.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/hello1.cpp.o" ] ),
-    "b2.hpp": set( [ "build/gcc/bin/b.dll", "build/gcc/bin/hello2.exe", "build/gcc/inc/b2.hpp", "build/gcc/obj/b.cpp.o", "build/gcc/obj/hello2.cpp.o" ] ),
-    "b.cpp": set( [ "build/gcc/bin/b.dll", "build/gcc/obj/b.cpp.o" ] ),
+    "hello1.cpp": [ exeFile( "hello1" ), objFile( "hello1" ) ],
+    "hello2.cpp": [ exeFile( "hello2" ), objFile( "hello2" ) ],
+    "a.hpp": [ dllFile( "a" ), dllFile( "b" ), exeFile( "hello2" ), hppFile( "a" ), objFile( "a" ), objFile( "b" ), objFile( "hello2" ) ],
+    "a1.hpp": [ dllFile( "a" ), dllFile( "b" ), hppFile( "a1" ), objFile( "a" ), objFile( "b" ) ],
+    "a2.hpp": [ dllFile( "a" ), dllFile( "b" ), exeFile( "hello2" ), hppFile( "a2" ), objFile( "a" ), objFile( "b" ), objFile( "hello2" ) ],
+    "a.cpp": [ dllFile( "a" ), objFile( "a" ) ],
+    "b.hpp": [ dllFile( "b" ), exeFile( "hello1" ), exeFile( "hello2" ), hppFile( "b" ), objFile( "b" ), objFile( "hello1" ), objFile( "hello2" ) ],
+    "b1.hpp": [ dllFile( "b" ), exeFile( "hello1" ), hppFile( "b1" ), objFile( "b" ), objFile( "hello1" ) ],
+    "b2.hpp": [ dllFile( "b" ), exeFile( "hello2" ), hppFile( "b2" ), objFile( "b" ), objFile( "hello2" ) ],
+    "b.cpp": [ dllFile( "b" ), objFile( "b" ) ],
 } )
 
 unittest.main()
