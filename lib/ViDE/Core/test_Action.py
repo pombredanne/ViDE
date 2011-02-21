@@ -900,45 +900,4 @@ class DrawGraph( TestCase ):
         
         self.assertTrue( Graph.areSame( g1, g2 ) )
 
-class Prune( TestCase ):
-    def setUp( self ):
-        TestCase.setUp( self )
-        self.a1 = self.m.createMock( "self.a1", Action )
-        self.a2 = self.m.createMock( "self.a2", Action )
-        self.a3 = self.m.createMock( "self.a3", Action )
-    
-    def testNullActionWithNoPredecessors( self ):
-        self.m.startTest()
-        
-        action = NullAction()
-        prune = action.prune()
-        self.assertTrue( prune is None )
-
-    def testNullActionWithOnePredecessors( self ):
-        self.m.startTest()
-        
-        action = NullAction()
-        action.addPredecessor( self.a1 )
-        prune = action.prune()
-        self.assertTrue( prune is self.a1 )
-
-    def testNullActionWithTwoUnrelatedPredecessors( self ):
-        self.m.startTest()
-        
-        action = NullAction()
-        action.addPredecessor( self.a1 )
-        action.addPredecessor( self.a2 )
-        prune = action.prune()
-        self.assertTrue( prune is action )
-
-    def testNullActionWithTwoRelatedPredecessors( self ):
-        self.m.startTest()
-        
-        action = NullAction()
-        action.addPredecessor( self.a1 )
-        action.addPredecessor( self.a2 )
-        self.a2.addPredecessor( self.a1 )
-        prune = action.prune()
-        self.assertTrue( prune is self.a2 )
-
 unittest.main()

@@ -31,11 +31,7 @@ class Project( Descriptible ):
         action = NullAction()
         for artifact in self.__artifacts:
             action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld, touch = touch ) )
-        prunedAction = action.prune()
-        if prunedAction is None:
-            return NullAction()
-        else:
-            return prunedAction
+        return action
 
     def getGraph( self ):
         graph = Graphviz.Graph( "Project" )
