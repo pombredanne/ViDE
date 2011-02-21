@@ -116,15 +116,11 @@ class Action( CallOnceAndCache ):
         return self.getCached( "graphElements", self.computeGraphElements )
 
     def computeGraphElements( self ):
-        if self.isFullyNull():
-            return []
-        else:
-            graphElements = [ self.__getGraphNode() ]
-            for predecessor in self.__predecessors:
-                if not predecessor.isFullyNull():
-                    graphElements += predecessor.__getGraphElements()
-                    graphElements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
-            return graphElements
+        graphElements = [ self.__getGraphNode() ]
+        for predecessor in self.__predecessors:
+            graphElements += predecessor.__getGraphElements()
+            graphElements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
+        return graphElements
 
     ###################################################################### execution state
 
@@ -246,9 +242,6 @@ class Action( CallOnceAndCache ):
     def areSame( a, b ):
         return Graphviz.Graph.areSame( a.getGraph(), b.getGraph() )
 
-    def isFullyNull( self ):
-        return isinstance( self, NullAction ) and all( predecessor.isFullyNull() for predecessor in self.__predecessors )
-        
 class NullAction( Action ):
     def __init__( self, preview = "" ):
         Action.__init__( self )

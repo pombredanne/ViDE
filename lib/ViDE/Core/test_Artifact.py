@@ -165,6 +165,7 @@ class ProductionReasons( TestCase ):
         action = self.artifact.getProductionAction()
         model = Graph( "action" )
         model.nodeAttr[ "shape" ] = "box"
+        model.add( Node( "" ) )
         self.assertTrue( actionHasGraph( action, model ) )
 
     def testGetProductionActionWhenFileIsMissing( self ):
@@ -208,6 +209,7 @@ class ProductionReasons( TestCase ):
         action = self.artifact.getProductionAction()
         model = Graph( "action" )
         model.nodeAttr[ "shape" ] = "box"
+        model.add( Node( "" ) )
         self.assertTrue( actionHasGraph( action, model ) )
 
     def testGetProductionActionWhenOrderOnlyDependencyMustBeProduced( self ):
