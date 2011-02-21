@@ -3,13 +3,14 @@ import time
 
 from Misc import Graphviz
 
-from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction, TouchAction
 from ViDE import Log
+from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction, TouchAction
+from ViDE.Core.CallOnceAndCache import CallOnceAndCache
 
 class BuildEmptyArtifact( Exception ):
     pass
 
-class Artifact:
+class Artifact( CallOnceAndCache ):
     ###################################################################### virtuals to be implemented
     # computeGraphNode
     # computeGraphLinks
@@ -17,11 +18,8 @@ class Artifact:
     # computeProductionAction
     
     def __init__( self, name, explicit ):
+        CallOnceAndCache.__init__( self )
         self.__name = name
-        self.__cachedGraphNode = None
-        self.__cachedGraphLinks = None
-        self.__cachedProductionAction = dict()
-        self.__cachedMustBeProduced = dict()
         self.explicit = explicit
 
     @staticmethod
@@ -42,26 +40,16 @@ class Artifact:
         return self.__name
 
     def getGraphNode( self ):
-        if self.__cachedGraphNode is None:
-            self.__cachedGraphNode = self.computeGraphNode()
-        return self.__cachedGraphNode
+        return self.getCached( "graphNode", self.computeGraphNode )
 
     def getGraphLinks( self ):
-        if self.__cachedGraphLinks is None:
-            self.__cachedGraphLinks = self.computeGraphLinks()
-        return self.__cachedGraphLinks
+        return self.getCached( "graphLinks", self.computeGraphLinks )
 
     def getProductionAction( self, assumeNew = [], assumeOld = [], touch = False ):
-        key = ":".join( assumeNew ) + " " + ":".join( assumeOld ) + str( touch )
-        if not self.__cachedProductionAction.has_key( key ):
-            self.__cachedProductionAction[ key ] = self.computeProductionAction( assumeNew, assumeOld, touch )
-        return self.__cachedProductionAction[ key ]
+        return self.getCached( "productionAction", self.computeProductionAction, assumeNew, assumeOld, touch )
 
     def mustBeProduced( self, assumeNew, assumeOld, touch ):
-        key = ":".join( assumeNew ) + " " + ":".join( assumeOld ) + str( touch )
-        if not self.__cachedMustBeProduced.has_key( key ):
-            self.__cachedMustBeProduced[ key ] = self.computeIfMustBeProduced( assumeNew, assumeOld, touch )
-        return self.__cachedMustBeProduced[ key ]
+        return self.getCached( "mustBeProduced", self.computeIfMustBeProduced, assumeNew, assumeOld, touch )
 
 class InputArtifact( Artifact ):
     def __init__( self, name, files, explicit ):

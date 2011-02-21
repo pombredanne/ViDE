@@ -6,9 +6,6 @@ Automatic dependencies (from #include): use Boost.Wave ? In the same process => 
 Buildkits: gcc_cygwin msvc gcc_darwin gcc_linux gcc_mingw
 Fix division by zero in ExecutionReport.__computeOptimalTranscale when duration is null
 
-Call all "virtual" functions only once, using pattern: if toto is None: toto = computeToto; return toto
-Prune useless NullAction in Action before dump, execute, preview, getGraph
-
 Measure autotest coverage
 
 vide gen_makefile

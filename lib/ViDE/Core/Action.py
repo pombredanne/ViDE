@@ -11,6 +11,7 @@ import pickle
 from Misc import Graphviz
 
 from ViDE import Log
+from ViDE.Core.CallOnceAndCache import CallOnceAndCache
 
 class CompoundException( Exception ):
     def __init__( self, exceptions ):
@@ -19,7 +20,7 @@ class CompoundException( Exception ):
     def __str__( self ):
         return "CompoundException( [" + ", ".join( str( e ) for e in self.__exceptions ) + "] )"
 
-class Action:
+class Action( CallOnceAndCache ):
     ###################################################################### virtuals to be implemented
     # doExecute
     # computePreview
@@ -27,14 +28,12 @@ class Action:
     ###################################################################### construction
 
     def __init__( self ):
+        CallOnceAndCache.__init__( self )
         self.__predecessors = set()
         self.__previewed = False
         self.__executionState = Action.__Initial()
         self.__executionBegin = None
         self.__executionEnd = None
-        self.__graphNode = None
-        self.__graphElements = None
-        self.__cachedPreview = None
 
     def addPredecessor( self, p ):
         self.__predecessors.add( p )
@@ -84,9 +83,7 @@ class Action:
         return self.__preview()
 
     def getPreview( self ):
-        if self.__cachedPreview is None:
-            self.__cachedPreview = self.computePreview()
-        return self.__cachedPreview
+        return self.getCached( "graphElements", self.computePreview )
         
     def __preview( self ):
         preview = []
@@ -113,22 +110,22 @@ class Action:
         return g
     
     def __getGraphNode( self ):
-        if self.__graphNode is None:
-            self.__graphNode = Graphviz.Node( self.getPreview() )
-        return self.__graphNode
+        return self.getCached( "graphNode", lambda: Graphviz.Node( self.getPreview() ) )
     
     def __getGraphElements( self ):
-        if self.__graphElements is None:
-            if self.isFullyNull():
-                self.__graphElements = []
-            else:
-                self.__graphElements = [ self.__getGraphNode() ]
-                for predecessor in self.__predecessors:
-                    if not predecessor.isFullyNull():
-                        self.__graphElements += predecessor.__getGraphElements()
-                        self.__graphElements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
-        return self.__graphElements
-    
+        return self.getCached( "graphElements", self.computeGraphElements )
+
+    def computeGraphElements( self ):
+        if self.isFullyNull():
+            return []
+        else:
+            graphElements = [ self.__getGraphNode() ]
+            for predecessor in self.__predecessors:
+                if not predecessor.isFullyNull():
+                    graphElements += predecessor.__getGraphElements()
+                    graphElements.append( Graphviz.Link( self.__getGraphNode(), predecessor.__getGraphNode() ) )
+            return graphElements
+
     ###################################################################### execution state
 
     class __ExecutionState:
