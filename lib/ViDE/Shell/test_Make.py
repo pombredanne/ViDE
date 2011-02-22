@@ -37,6 +37,15 @@ def pyFile( name ):
 def pycFile( name ):
     return os.path.join( "build", buildkit, "pyd", name + ".pyc" )
 
+def genCppFile( name ):
+    return os.path.join( "build", buildkit, "gen", name + ".cpp" )
+
+def genHppFile( name ):
+    return os.path.join( "build", buildkit, "gen", name + ".hpp" )
+
+def genCppObjFile( name ):
+    return os.path.join( "build", buildkit, "obj", "build", buildkit, "gen", name + ".cpp.o" )
+
 def allFilesIn( directory ):
     l = set()
     for path, dirs, files in os.walk( directory ):
@@ -251,6 +260,11 @@ FortranExecutable = TestMake( "FortranExecutable", {
 FortranCalledFromCpp = TestMake( "FortranCalledFromCpp", {
     "main.cpp": [ exeFile( "hello" ), cppObjFile( "main" ) ],
     "sub.for": [ exeFile( "hello" ), forObjFile( "sub" ) ],
+} )
+
+ExecutableWithGeneratedSources = TestMake( "ExecutableWithGeneratedSources", {
+    "main.cpp": [ exeFile( "hello" ), cppObjFile( "main" ) ],
+    "a.xsd": [ genCppFile( "a.xsd" ), genHppFile( "a.xsd" ), genCppObjFile( "a.xsd" ), exeFile( "hello" ) ]
 } )
 
 unittest.main()

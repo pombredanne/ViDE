@@ -48,5 +48,5 @@ class Make( ICLP.Command ):
                 ctx.paint()
                 report.draw( ctx, 780, 580 )
                 img.write_to_png( buildkit.fileName( "action-execution.png" ) )
-                action.getGraph().drawTo( buildkit.fileName( "action-dependencies.png" ) )
-                project.getGraph().drawTo( buildkit.fileName( "project-artifacts.png" ) )
+        action.getGraph().drawTo( buildkit.fileName( "action-dependencies.png" ) )
+        project.getGraph().drawTo( buildkit.fileName( "project-artifacts.png" ) )

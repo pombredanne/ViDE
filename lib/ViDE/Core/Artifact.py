@@ -212,7 +212,7 @@ class CompoundArtifact( Artifact ):
     def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
         return any( c.mustBeProduced( assumeNew, assumeOld, touch ) for c in self.__componants )
 
-class SubatomitArtifact( Artifact ):
+class SubatomicArtifact( Artifact ):
     def __init__( self, name, atomicArtifact, files, explicit ):
         Artifact.__init__(
             self,
@@ -241,8 +241,8 @@ class SubatomitArtifact( Artifact ):
     def getAllFiles( self ):
         return self.__files
 
-    def computeIfMustBeProduced( self ):
-        return self.__atomicArtifact.mustBeProduced()
+    def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
+        return self.__atomicArtifact.mustBeProduced( assumeNew, assumeOld, touch )
 
-    def computeProductionAction( self ):
-        return self.__atomicArtifact.getProductionAction()
+    def computeProductionAction( self, assumeNew, assumeOld, touch ):
+        return self.__atomicArtifact.getProductionAction( assumeNew, assumeOld, touch )
