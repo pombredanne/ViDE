@@ -211,3 +211,38 @@ class CompoundArtifact( Artifact ):
         
     def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
         return any( c.mustBeProduced( assumeNew, assumeOld, touch ) for c in self.__componants )
+
+class SubatomitArtifact( Artifact ):
+    def __init__( self, name, atomicArtifact, files, explicit ):
+        Artifact.__init__(
+            self,
+            name,
+            explicit
+        )
+        self.__atomicArtifact = atomicArtifact
+        self.__files = files
+
+    def computeGraphNode( self ):
+        ### @todo Factorize with AtomicArtifact.computeGraphNode
+        if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
+            node = Graphviz.Node( self.getName() )
+        else:
+            node = Graphviz.Cluster( self.getName() )
+            node.attr[ "style" ] = "solid"
+            for f in self.__files:
+                node.add( Graphviz.Node( f ) )
+        if self.explicit:
+            node.attr[ "style" ] = "bold"
+        return node
+
+    def computeGraphLinks( self ):
+        return [ Graphviz.Link( self.getGraphNode(), self.__atomicArtifact.getGraphNode() ) ]
+
+    def getAllFiles( self ):
+        return self.__files
+
+    def computeIfMustBeProduced( self ):
+        return self.__atomicArtifact.mustBeProduced()
+
+    def computeProductionAction( self ):
+        return self.__atomicArtifact.getProductionAction()
