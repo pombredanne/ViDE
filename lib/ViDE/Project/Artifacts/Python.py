@@ -1,3 +1,4 @@
+import subprocess
 import os.path
 import py_compile
 
@@ -11,15 +12,20 @@ class Source( MonofileInputArtifact ):
 
 class Script( CopiedArtifact ):
     def __init__( self, buildkit, source, explicit ):
-        fileName = buildkit.fileName( "bin", os.path.basename( source.getFileName() ) )
+        self.__fileName = buildkit.fileName( "bin", os.path.basename( source.getFileName() ) )
+        self.__buildkit = buildkit
         CopiedArtifact.__init__(
             self,
             buildkit,
-            name = fileName,
+            name = self.__fileName,
             source = source,
-            destination = fileName,
+            destination = self.__fileName,
             explicit = explicit
         )
+
+    def run( self, arguments ):
+        os.environ[ "PYTHONPATH" ] = self.__buildkit.fileName( "pyd" )
+        subprocess.check_call( [ "python", self.__fileName ] + arguments )
 
 class PythonCompileAction( Action ):
     def __init__( self, source, destination ):

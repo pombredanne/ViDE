@@ -5,6 +5,7 @@ import cairo
 
 from Misc import InteractiveCommandLineProgram as ICLP
 from ViDE.Buildkit import Buildkit
+from ViDE.Project.Project import Project
 
 import ViDE
 from ViDE import Log
@@ -15,10 +16,8 @@ class Run( ICLP.Command ):
 
     def execute( self, args ):
         buildkit = Buildkit.load( self.program.buildkit )
-        self.__updateEnvironment( buildkit.getExecutionEnvironment() )
-        self.__updateEnvironment( { "PYTHONPATH" : buildkit.fileName( "pyd" ) } )
-        subprocess.check_call( args )
-
-    def __updateEnvironment( self, updates ):
-        for k in updates:
-            os.environ[ k ] = updates[ k ]
+        project = Project.load( buildkit )
+        artifact =  project.retrieveByName( args[0] )
+        if not hasattr( artifact, "run" ):
+            artifact =  project.retrieveByFile( buildkit.fileName( "bin", args[0] ) )
+        artifact.run( args[ 1: ] )

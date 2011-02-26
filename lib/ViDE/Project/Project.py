@@ -3,6 +3,7 @@ import os
 from Misc import Graphviz
 
 from ViDE.Core.Descriptible import Descriptible
+from ViDE.Core.Artifact import Artifact
 from ViDE.Core.Actions import NullAction
 
 class Project( Descriptible ):
@@ -19,6 +20,16 @@ class Project( Descriptible ):
         artifact = artifactClass( self.buildkit, *args )
         self.__addArtifact( artifact )
         return artifact
+
+    def retrieveByName( self, name, cls = Artifact ):
+        for artifact in self.__artifacts:
+            if isinstance( artifact, cls ) and artifact.getName() == name:
+                return artifact
+
+    def retrieveByFile( self, file, cls = Artifact ):
+        for artifact in self.__artifacts:
+            if isinstance( artifact, cls ) and file in artifact.getAllFiles():
+                return artifact
 
     def __addArtifact( self, artifact ):
         self.__artifacts.append( artifact )
