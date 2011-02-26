@@ -4,6 +4,7 @@ from ViDE import Log
 from ViDE.Shell.AutoTest import AutoTest
 from ViDE.Shell.Make import Make
 from ViDE.Shell.Run import Run
+from ViDE.Shell.Debug import Debug
 
 # Get from ViDE
 defaultToolset = "Toolset1"
@@ -11,6 +12,9 @@ availableToolsets = [ "Toolset1", "Toolset2", "Toolset3" ]
 
 defaultBuildkit = "gcc"
 availableBuildkits = [ "Buildkit1", "Buildkit2", "Buildkit3" ]
+
+defaultFlavour = "debug"
+availableFlavours = [ "debug", "test", "release" ]
 
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
     def __init__( self ):
@@ -29,11 +33,14 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
 
         self.buildkit = defaultBuildkit
         toolsChoice.addOption( "buildkit", "buildkit", InteractiveCommandLineProgram.StoreArgument( "BUILDKIT" ), "use buildkit BUILDKIT", InteractiveCommandLineProgram.StoreConstant( defaultBuildkit ), "use default buildkit" )
+        self.flavour = defaultFlavour
+        toolsChoice.addOption( "flavour", "flavour", InteractiveCommandLineProgram.StoreArgument( "FLAVOUR" ), "use flavour FLAVOUR", InteractiveCommandLineProgram.StoreConstant( defaultFlavour ), "use default flavour" )
 
         generation = self.createCommandGroup( "Artifact generation", "" )
         generation.addCommand( "make", Make, "build the project" )
         
         self.addCommand( "run", Run, "run an executable file" )
+        self.addCommand( "debug", Debug, "debug an executable file" )
         self.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
 
         self.addHelpCommand()

@@ -27,6 +27,10 @@ class Script( CopiedArtifact ):
         os.environ[ "PYTHONPATH" ] = self.__buildkit.fileName( "pyd" )
         subprocess.check_call( [ "python", self.__fileName ] + arguments )
 
+    def debug( self, arguments ):
+        os.environ[ "PYTHONPATH" ] = self.__buildkit.fileName( "pyd" )
+        subprocess.check_call( [ "python", "-mpdb", self.__fileName ] + arguments )
+
 class PythonCompileAction( Action ):
     def __init__( self, source, destination ):
         self.__source = source

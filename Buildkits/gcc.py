@@ -1,11 +1,13 @@
+import subprocess
+
 import ViDE.Project.Artifacts.CPlusPlus
 import ViDE.Project.Artifacts.Fortran
 import ViDE.Project.Artifacts.Binary
 import ViDE.Project.Artifacts.Python
 from ViDE.Core.Actions import SystemAction
-import ViDE.Buildkit
+from ViDE.Buildkit import Buildkit
 
-class gcc( ViDE.Buildkit.Buildkit ):
+class gcc( Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.Artifacts.CPlusPlus.Object ):
             def __init__( self, buildkit, source, additionalDefines, localLibraries, explicit ):
@@ -25,7 +27,8 @@ class gcc( ViDE.Buildkit.Buildkit ):
                 sourceName = self.getSource().getFileName()
                 return SystemAction(
                     [ "g++", "-c", sourceName ],
-                    [ "-I" + self.__buildkit.fileName( "inc" ), "-o" + self.__fileName ]
+                    self.__buildkit.getCompilationOptions()
+                    + [ "-I" + self.__buildkit.fileName( "inc" ), "-o" + self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
                     + [ "-I/usr/include/python2.6" ] # @todo Remove
                 )
@@ -81,6 +84,9 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                     + [ "-lgfortranbegin", "-lgfortran" ] # @todo Remove
                 )
+
+            def debug( self, arguments ):
+                subprocess.check_call( [ "gdb", self.__executableFile ] + arguments )
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, buildkit, name, objects, localLibraries, explicit ):
@@ -155,3 +161,18 @@ class gcc( ViDE.Buildkit.Buildkit ):
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                     + [ "-lpython2.6" ] # @todo Remove
                 )
+
+    def __init__( self, name, flavour ):
+        Buildkit.__init__( self, name )
+        self.__flavor = flavour
+
+    def getPreliminaryNameParts( self ):
+        return [ self.__flavor ]
+
+    def getCompilationOptions( self ):
+        if self.__flavor == "debug":
+            return [ "-g" ]
+        elif self.__flavor == "test":
+            return [ "-g", "coverage-options" ]
+        else:
+            return []

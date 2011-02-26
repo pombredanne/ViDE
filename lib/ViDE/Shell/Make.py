@@ -28,7 +28,7 @@ class Make( ICLP.Command ):
         ### @todo Add an option to build with all buildkits
         
     def execute( self, args ):
-        buildkit = Buildkit.load( self.program.buildkit )
+        buildkit = Buildkit.load( self.program.buildkit, self.program.flavour )
         project = Project.load( buildkit )
         action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
         # @todo project's include/import graph

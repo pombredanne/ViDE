@@ -1,9 +1,9 @@
 import ViDE.Project.Artifacts.CPlusPlus
 import ViDE.Project.Artifacts.Binary
 from ViDE.Core.Actions import SystemAction
-import ViDE.Buildkit
+from ViDE.Buildkit import Buildkit
 
-class vs( ViDE.Buildkit.Buildkit ):
+class vs( Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.Artifacts.CPlusPlus.Object ):
             def __init__( self, buildkit, source, additionalDefines, localLibraries, explicit ):
@@ -54,6 +54,9 @@ class vs( ViDE.Buildkit.Buildkit ):
                     + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
                     + [ lib.getLibName() + ".lib" for lib in self.getLibrariesToLink() ]
                 )
+
+            def debug( self, arguments ):
+                print "Debuging with Visual Studio is not supported yet"
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, buildkit, name, objects, localLibraries, explicit ):

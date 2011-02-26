@@ -148,7 +148,7 @@ class AtomicArtifact( Artifact ):
 
     def getAllFiles( self ):
         return self.__files
-        
+
     def computeGraphNode( self ):
         if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
             node = Graphviz.Node( self.getName() )
@@ -208,7 +208,7 @@ class CompoundArtifact( Artifact ):
         for c in self.__componants:
             links += c.getGraphLinks()
         return links
-        
+
     def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
         return any( c.mustBeProduced( assumeNew, assumeOld, touch ) for c in self.__componants )
 
