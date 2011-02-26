@@ -5,10 +5,6 @@ from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Project.Artifacts.BasicArtifacts import CopiedArtifact
 
 class CopiedHeader( CopiedArtifact ):
-    @staticmethod
-    def computeName( buildkit, header, stripHeaders, explicit ):
-        return buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
-
     def __init__( self, buildkit, header, stripHeaders, explicit ):
         fileName = buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
         CopiedArtifact.__init__(
@@ -29,10 +25,6 @@ class CopiedHeaders( CompoundArtifact ):
         return self.__copiedHeaders
 
 class Library( CompoundArtifact ):
-    @staticmethod
-    def computeName( buildkit, name, headers, binary, localLibraries, stripHeaders, explicit ):
-        return "lib" + name
-
     def __init__( self, buildkit, name, headers, binary, localLibraries, stripHeaders, explicit ):
         self.__libName = name
         self.__copiedHeaders = CopiedHeaders( buildkit, name, headers, stripHeaders, False )
@@ -64,10 +56,6 @@ class Library( CompoundArtifact ):
         return self.__localLibraries
 
 class HeaderLibrary( Library ):
-    @staticmethod
-    def computeName( buildkit, name, headers, localLibraries, stripHeaders, explicit ):
-        return Library.computeName( buildkit, name, headers, None, localLibraries, stripHeaders, explicit )
-
     def __init__( self, buildkit, name, headers, localLibraries, stripHeaders, explicit ):
         Library.__init__(
             self,

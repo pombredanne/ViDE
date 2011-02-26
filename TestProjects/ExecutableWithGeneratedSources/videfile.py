@@ -7,10 +7,6 @@ class XsdSchema( MonofileInputArtifact ):
     pass
 
 class XsdGeneratedSource( SubatomicArtifact ):
-    @staticmethod
-    def computeName( buildkit, fileName, atomicArtifact, explicit ):
-        return fileName
-
     def __init__( self, buildkit, fileName, atomicArtifact, explicit ):
         SubatomicArtifact.__init__(
             self,
@@ -25,10 +21,6 @@ class XsdGeneratedSource( SubatomicArtifact ):
         return self.__fileName
 
 class GeneratedSource( AtomicArtifact ):
-    @staticmethod
-    def computeName( buildkit, xsdSchema, explicit ):
-        return xsdSchema.getFileName() + "_tree"
-
     def __init__( self, buildkit, xsdSchema, explicit ):
         self.__hppFileName = buildkit.fileName( "gen", xsdSchema.getFileName() + ".hpp" )
         self.__cppFileName = buildkit.fileName( "gen", xsdSchema.getFileName() + ".cpp" )
@@ -41,16 +33,16 @@ class GeneratedSource( AtomicArtifact ):
             automaticDependencies = [],
             explicit = explicit
         )
-        
+
     def getSource( self ):
-        return self.getCached( "cpp", lambda: Project.inProgress.createOrRetrieve( XsdGeneratedSource, self.__cppFileName, self, False ) )
+        return self.getCached( "cpp", lambda: Project.inProgress.createArtifact( XsdGeneratedSource, self.__cppFileName, self, False ) )
 
     def doGetProductionAction( self ):
         return TouchAction( [ self.__hppFileName, self.__cppFileName ] )
 
 def Xsd( schema ):
-    schema = Project.inProgress.createOrRetrieve( XsdSchema, schema, False )
-    return Project.inProgress.createOrRetrieve( GeneratedSource, schema, True )
+    schema = Project.inProgress.createArtifact( XsdSchema, schema, False )
+    return Project.inProgress.createArtifact( GeneratedSource, schema, True )
 
 a = Xsd( "a.xsd" )
 

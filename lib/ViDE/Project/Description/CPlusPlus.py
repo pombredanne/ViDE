@@ -7,7 +7,7 @@ def __CppHeader( header, explicit = False ):
     if isArtifact( header ):
         return header
     else:
-        return Project.inProgress.createOrRetrieve( CPlusPlus.Header, header, explicit )
+        return Project.inProgress.createArtifact( CPlusPlus.Header, header, explicit )
 
 def __CppHeaders( headers ):
     return [ __CppHeader( header ) for header in headers ]
@@ -16,13 +16,13 @@ def __CppSource( source, explicit = False ):
     if isArtifact( source ):
         return source
     else:
-        return Project.inProgress.createOrRetrieve( CPlusPlus.Source, source, explicit )
+        return Project.inProgress.createArtifact( CPlusPlus.Source, source, explicit )
 
 def __CppSources( sources ):
     return [ __CppSource( source ) for source in sources ]
 
 def __CppObject( source, additionalDefines, localLibraries, explicit = False ):
-    return Project.inProgress.createOrRetrieve( Project.inProgress.buildkit.CPlusPlus.Object, source, additionalDefines, localLibraries, explicit )
+    return Project.inProgress.createArtifact( Project.inProgress.buildkit.CPlusPlus.Object, source, additionalDefines, localLibraries, explicit )
 
 def __CppObjects( sources, objects, additionalDefines, localLibraries ):
     return objects + [ __CppObject( source, additionalDefines, localLibraries ) for source in sources ]
@@ -41,11 +41,11 @@ def CppExecutable( name, sources = [], objects = [], localLibraries = [] ):
 
 def CppDynamicLibrary( name, headers, sources = [], objects = [], localLibraries = [], stripHeaders = identity ):
     binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, __CppObjects( __CppSources( sources ), objects, [ "BUILD_" + name.upper() ], localLibraries ), localLibraries, False )
-    return Project.inProgress.createOrRetrieve( Binary.DynamicLibrary, name, __CppHeaders( headers ), binary, localLibraries, stripHeaders, True )
+    return Project.inProgress.createArtifact( Binary.DynamicLibrary, name, __CppHeaders( headers ), binary, localLibraries, stripHeaders, True )
 
 def CppStaticLibrary( name, headers, sources = [], objects = [], localLibraries = [], stripHeaders = identity ):
     binary = Project.inProgress.buildkit.Binary.StaticLibraryBinary( Project.inProgress.buildkit, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries ), localLibraries, False )
-    return Project.inProgress.createOrRetrieve( Binary.StaticLibrary, name, __CppHeaders( headers ), binary, localLibraries, stripHeaders, True )
+    return Project.inProgress.createArtifact( Binary.StaticLibrary, name, __CppHeaders( headers ), binary, localLibraries, stripHeaders, True )
 
 def CppHeaderLibrary( name, headers, localLibraries = [], stripHeaders = identity ):
-    return Project.inProgress.createOrRetrieve( Binary.HeaderLibrary, name, __CppHeaders( headers ), localLibraries, stripHeaders, True )
+    return Project.inProgress.createArtifact( Binary.HeaderLibrary, name, __CppHeaders( headers ), localLibraries, stripHeaders, True )

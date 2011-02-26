@@ -10,10 +10,6 @@ class Source( MonofileInputArtifact ):
     pass
 
 class Script( CopiedArtifact ):
-    @staticmethod
-    def computeName(  buildkit, source, explicit ):
-        return buildkit.fileName( "bin", os.path.basename( source.getFileName() ) )
-
     def __init__( self, buildkit, source, explicit ):
         fileName = buildkit.fileName( "bin", os.path.basename( source.getFileName() ) )
         CopiedArtifact.__init__(
@@ -38,10 +34,6 @@ class PythonCompileAction( Action ):
         return "python -m py_compile " + self.__source
 
 class Module( AtomicArtifact ):
-    @staticmethod
-    def computeName( buildkit, source, strip, explicit ):
-        return strip( source.getFileName() ) + "c"
-
     def __init__( self, buildkit, source, strip, explicit ):
         self.__fileName = buildkit.fileName( "pyd", strip( source.getFileName() ) + "c" )
         self.__source = source
@@ -59,10 +51,6 @@ class Module( AtomicArtifact ):
         return PythonCompileAction( self.__source.getFileName(), self.__fileName )
 
 class Package( CompoundArtifact ):
-    @staticmethod
-    def computeName( buildkit, name, modules, explicit ):
-        return name
-
     def __init__( self, buildkit, name, modules, explicit ):
         CompoundArtifact.__init__(
             self,

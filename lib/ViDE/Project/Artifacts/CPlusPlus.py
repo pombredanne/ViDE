@@ -103,13 +103,13 @@ class ParseCppHeadersAction( Action ):
         copiedHeader = self.__candidateCopiedHeaders.find( header )
         headers.addAngleHeader( header )
         self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
-        
+
     def __handleAngleHeader( self, headers, header ):
         copiedHeader = self.__candidateCopiedHeaders.find( header )
         if copiedHeader is not None:
             headers.addAngleHeader( header )
             self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
-        
+
     def __doubleQuotedHeaderOnLine( self, line ):
         return self.__headerOnLine( line, "\s*#\s*include\s*\"(.*)\"" )
 
@@ -165,7 +165,7 @@ class Object( AtomicArtifact ):
     def __init__( self, buildkit, files, source, localLibraries, explicit ):
         candidateCopiedHeaders = CandidateCopiedHeaders( buildkit, localLibraries )
         headers = self.__parseCppHeaders( buildkit, source, candidateCopiedHeaders )
-        includedHeaders = [ Project.inProgress.createOrRetrieve( Header, header, False ) for header in headers.getDoubleQuotedHeaders() ]
+        includedHeaders = [ Project.inProgress.createArtifact( Header, header, False ) for header in headers.getDoubleQuotedHeaders() ]
         for searchedHeader in headers.getAngleHeaders():
             includedHeaders.append( candidateCopiedHeaders.find( searchedHeader ) )
         AtomicArtifact.__init__(

@@ -15,15 +15,11 @@ class Project( Descriptible ):
         self.buildkit = buildkit
         self.__artifacts = []
 
-    def createOrRetrieve( self, artifactClass, *args ):
-        name = artifactClass.computeName( self.buildkit, *args )
-        for artifact in self.__artifacts:
-            if artifact.getName() == name:
-                return artifact
+    def createArtifact( self, artifactClass, *args ):
         artifact = artifactClass( self.buildkit, *args )
         self.__addArtifact( artifact )
         return artifact
-        
+
     def __addArtifact( self, artifact ):
         self.__artifacts.append( artifact )
         

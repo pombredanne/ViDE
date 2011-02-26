@@ -38,6 +38,6 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
 
         self.addHelpCommand()
         self.addExitCommand()
-    
+
     def setVerbosity( self, verbosity ):
         Log.level = verbosity

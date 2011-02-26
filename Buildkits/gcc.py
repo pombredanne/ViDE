@@ -8,10 +8,6 @@ import ViDE.Buildkit
 class gcc( ViDE.Buildkit.Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.Artifacts.CPlusPlus.Object ):
-            @staticmethod
-            def computeName( buildkit, source, additionalDefines, localLibraries, explicit ):
-                return buildkit.fileName( "obj", source.getFileName() + ".o" )
-
             def __init__( self, buildkit, source, additionalDefines, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".o" )
@@ -39,10 +35,6 @@ class gcc( ViDE.Buildkit.Buildkit ):
 
     class Fortran:
         class Object( ViDE.Project.Artifacts.Fortran.Object ):
-            @staticmethod
-            def computeName( buildkit, source, explicit ):
-                return buildkit.fileName( "obj", source.getFileName() + ".o" )
-
             def __init__( self, buildkit, source, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".o" )
@@ -66,10 +58,6 @@ class gcc( ViDE.Buildkit.Buildkit ):
 
     class Binary:
         class Executable( ViDE.Project.Artifacts.Binary.Executable ):
-            @staticmethod
-            def computeName( buildkit, name, objects, localLibraries, explicit ):
-                return name
-
             def __init__( self, buildkit, name, objects, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
@@ -142,10 +130,6 @@ class gcc( ViDE.Buildkit.Buildkit ):
 
     class Python:
         class CModule( ViDE.Project.Artifacts.Python.CModule ):
-            @staticmethod
-            def computeName( buildkit, name, objects, localLibraries, explicit ):
-                return name
-
             def __init__( self, buildkit, name, objects, localLibraries, explicit ):
                 self.__buildkit = buildkit
                 names = name.split( "." )
