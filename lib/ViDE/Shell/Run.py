@@ -16,7 +16,7 @@ class Run( ICLP.Command ):
     def execute( self, args ):
         buildkit = Buildkit.load( self.program.buildkit )
         self.__updateEnvironment( buildkit.getExecutionEnvironment() )
-        self.__updateEnvironment( { "PYTHONPATH" : buildkit.fileName( "pyd" ) )
+        self.__updateEnvironment( { "PYTHONPATH" : buildkit.fileName( "pyd" ) } )
         subprocess.check_call( args )
 
     def __updateEnvironment( self, updates ):
