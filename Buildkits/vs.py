@@ -108,3 +108,8 @@ class vs( ViDE.Buildkit.Buildkit ):
                     [ "lib", "/OUT:" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
                 )
+
+    def getExecutionEnvironment( self ):
+        return {
+            "PATH": self.fileName( "bin" )
+        }
