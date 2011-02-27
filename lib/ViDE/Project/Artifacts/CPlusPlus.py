@@ -166,7 +166,7 @@ class Object( AtomicArtifact ):
     def __init__( self, buildkit, files, source, localLibraries, explicit ):
         candidateCopiedHeaders = CandidateCopiedHeaders( buildkit, localLibraries )
         headers = self.__parseCppHeaders( buildkit, source, candidateCopiedHeaders )
-        includedHeaders = [ Project.inProgress.createArtifact( Header, header, False ) for header in headers.getDoubleQuotedHeaders() ]
+        includedHeaders = [ self.__retrieveOrCreateHeader( header ) for header in headers.getDoubleQuotedHeaders() ]
         for searchedHeader in headers.getAngleHeaders():
             includedHeaders.append( candidateCopiedHeaders.find( searchedHeader ) )
         AtomicArtifact.__init__(
@@ -182,6 +182,12 @@ class Object( AtomicArtifact ):
 
     def getSource( self ):
         return self.__source
+
+    def __retrieveOrCreateHeader( self, header ):
+        artifact = Project.inProgress.retrieveByName( header )
+        if artifact is None:
+            artifact = Project.inProgress.createArtifact( Header, header, False )
+        return artifact
 
     def __parseCppHeaders( self, buildkit, source, candidateCopiedHeaders ):
         depFile = DepFile( buildkit, source, candidateCopiedHeaders )
