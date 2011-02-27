@@ -37,7 +37,8 @@ class Project( Descriptible ):
     def getBuildAction( self, assumeNew, assumeOld, touch ):
         action = NullAction()
         for artifact in self.__artifacts:
-            action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld, touch = touch ) )
+            if artifact.explicit:
+                action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld, touch = touch ) )
         return action
 
     def getGraph( self ):
