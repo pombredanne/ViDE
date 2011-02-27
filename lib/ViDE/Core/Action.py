@@ -83,7 +83,7 @@ class Action( CallOnceAndCache ):
         return self.__preview()
 
     def getPreview( self ):
-        return self.getCached( "graphElements", self.computePreview )
+        return self.getCached( "preview", self.computePreview )
         
     def __preview( self ):
         preview = []
