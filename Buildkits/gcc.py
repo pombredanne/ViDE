@@ -78,7 +78,8 @@ class gcc( Buildkit ):
             def doGetProductionAction( self ):
                 return SystemAction(
                     [ "g++", "-o" + self.__fileName ],
-                    [ o.getFileName() for o in self.__objects ]
+                    self.__buildkit.getLinkOptions()
+                    + [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
@@ -107,7 +108,8 @@ class gcc( Buildkit ):
                 # Build commands taken from http://www.cygwin.com/cygwin-ug-net/dll.html
                 return SystemAction(
                     [ "g++", "-shared", "-o" + self.__fileName ],
-                    [ o.getFileName() for o in self.__objects ]
+                    self.__buildkit.getLinkOptions()
+                    + [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
@@ -173,6 +175,14 @@ class gcc( Buildkit ):
         if self.__flavor == "debug":
             return [ "-g" ]
         elif self.__flavor == "test":
-            return [ "-g", "coverage-options" ]
-        else:
+            return [ "-g", "--coverage" ]
+        elif self.__flavor == "release":
+            return [ "-O3" ]
+
+    def getLinkOptions( self ):
+        if self.__flavor == "debug":
+            return [ "-g" ]
+        elif self.__flavor == "test":
+            return [ "-g", "--coverage" ]
+        elif self.__flavor == "release":
             return []
