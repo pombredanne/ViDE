@@ -45,8 +45,10 @@ class Artifact( CallOnceAndCache ):
     def getGraphLinks( self ):
         return self.getCached( "graphLinks", self.computeGraphLinks )
 
-    def getProductionAction( self, assumeNew = [], assumeOld = [], touch = False ):
-        return self.getCached( "productionAction", self.computeProductionAction, assumeNew, assumeOld, touch )
+    def getProductionAction( self, assumeNew = [], assumeOld = [], touch = False, createDirectoryActions = None ):
+        if createDirectoryActions is None:
+            createDirectoryActions = dict()
+        return self.getCached( "productionAction", lambda n, o, t: self.computeProductionAction( n, o, t, createDirectoryActions ), assumeNew, assumeOld, touch )
 
     def mustBeProduced( self, assumeNew, assumeOld, touch ):
         return self.getCached( "mustBeProduced", self.computeIfMustBeProduced, assumeNew, assumeOld, touch )
@@ -58,7 +60,7 @@ class InputArtifact( Artifact ):
         Artifact.__init__( self, name, explicit )
         self.__files = files
 
-    def computeProductionAction( self, assumeNew, assumeOld, touch ):
+    def computeProductionAction( self, assumeNew, assumeOld, touch, createDirectoryActions ):
         return NullAction()
 
     def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
@@ -93,7 +95,7 @@ class AtomicArtifact( Artifact ):
         self.__orderOnlyDependencies = orderOnlyDependencies
         self.__automaticDependencies = automaticDependencies
 
-    def computeProductionAction( self, assumeNew, assumeOld, touch ):
+    def computeProductionAction( self, assumeNew, assumeOld, touch, createDirectoryActions ):
         if self.mustBeProduced( assumeNew, assumeOld, touch ):
             if touch:
                 productionAction = TouchAction( self.__files )
@@ -101,7 +103,10 @@ class AtomicArtifact( Artifact ):
                 productionAction = self.doGetProductionAction()
             directories = set( os.path.dirname( f ) for f in self.__files )
             for d in directories:
-                productionAction.addPredecessor( CreateDirectoryAction( d ) )
+                if not d in createDirectoryActions:
+                    print "create", d
+                    createDirectoryActions[ d ] = CreateDirectoryAction( d )
+                productionAction.addPredecessor( createDirectoryActions[ d ] )
             if not touch:
                 for f in self.__files:
                     productionAction.addPredecessor( RemoveFileAction( f ) )
@@ -110,7 +115,7 @@ class AtomicArtifact( Artifact ):
             productionAction = NullAction()
         for d in self.__strongDependencies + self.__orderOnlyDependencies + self.__automaticDependencies:
             if d.mustBeProduced( assumeNew, assumeOld, touch ):
-                predecessorAction = d.getProductionAction( assumeNew, assumeOld, touch )
+                predecessorAction = d.getProductionAction( assumeNew, assumeOld, touch, createDirectoryActions )
                 productionAction.addPredecessor( predecessorAction )
         return productionAction
 
@@ -182,10 +187,10 @@ class CompoundArtifact( Artifact ):
         Artifact.__init__( self, name, explicit )
         self.__componants = componants
 
-    def computeProductionAction( self, assumeNew, assumeOld, touch ):
+    def computeProductionAction( self, assumeNew, assumeOld, touch, createDirectoryActions ):
         productionAction = NullAction()
         for c in self.__componants:
-            productionAction.addPredecessor( c.getProductionAction( assumeNew, assumeOld, touch ) )
+            productionAction.addPredecessor( c.getProductionAction( assumeNew, assumeOld, touch, createDirectoryActions ) )
         return productionAction
 
     def getAllFiles( self ):
@@ -244,5 +249,5 @@ class SubatomicArtifact( Artifact ):
     def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
         return self.__atomicArtifact.mustBeProduced( assumeNew, assumeOld, touch )
 
-    def computeProductionAction( self, assumeNew, assumeOld, touch ):
-        return self.__atomicArtifact.getProductionAction( assumeNew, assumeOld, touch )
+    def computeProductionAction( self, assumeNew, assumeOld, touch, createDirectoryActions ):
+        return self.__atomicArtifact.getProductionAction( assumeNew, assumeOld, touch, createDirectoryActions )

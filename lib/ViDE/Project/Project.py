@@ -35,10 +35,11 @@ class Project( Descriptible ):
         self.__artifacts.append( artifact )
         
     def getBuildAction( self, assumeNew, assumeOld, touch ):
+        createDirectoryActions = dict()
         action = NullAction()
         for artifact in self.__artifacts:
             if artifact.explicit:
-                action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld, touch = touch ) )
+                action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld, touch = touch, createDirectoryActions = createDirectoryActions ) )
         return action
 
     def getGraph( self ):
