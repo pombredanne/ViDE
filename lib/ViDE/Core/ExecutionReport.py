@@ -28,7 +28,7 @@ class ExecutionReport:
         self.__addAction( action )
         del self.theBigMap
         self.__computeDuration()
-        self.__pixelWidth = width
+        self.__pixelWidth = width - 20
         img = cairo.ImageSurface( cairo.FORMAT_RGB24, 1, 1 )
         self.ctx = cairo.Context( img )
         self.__computeCoordinates()
@@ -58,16 +58,18 @@ class ExecutionReport:
 
     def drawTo( self, file ):
         img = cairo.ImageSurface( cairo.FORMAT_RGB24, self.__pixelWidth + 20, self.__pixelHeight + 20 )
-        self.ctx = cairo.Context( img )
-        self.ctx.translate( 10, 10 )
-        self.ctx.set_source_rgb( .9, .9, .9 )
-        self.ctx.paint()
+        ctx = cairo.Context( img )
+        ctx.translate( 10, 10 )
+        ctx.set_source_rgb( .9, .9, .9 )
+        ctx.paint()
+        self.draw( ctx )
+        img.write_to_png( file )
 
+    def draw( self, ctx ):
+        self.ctx = ctx
         self.ctx.save()
         self.__drawEveryThing()
         self.ctx.restore()
-
-        img.write_to_png( file )
 
     ################################################################################ computation of coordinates
 

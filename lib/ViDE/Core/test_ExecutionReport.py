@@ -39,8 +39,7 @@ class Ordinates( TestCase ):
 
         self.m.startTest()
 
-        report = ExecutionReport( self.d )
-        report._ExecutionReport__computeOrdinates()
+        report = ExecutionReport( self.d, 800 )
         for action in report._ExecutionReport__actions:
             if action.text == "a":
                 self.assertEqual( action.y, 45 )
@@ -71,8 +70,7 @@ class Ordinates( TestCase ):
 
         self.m.startTest()
 
-        report = ExecutionReport( self.d )
-        report._ExecutionReport__computeOrdinates()
+        report = ExecutionReport( self.d, 800 )
         for action in report._ExecutionReport__actions:
             if action.text == "a":
                 self.assertEqual( action.y, 45 )
@@ -114,10 +112,10 @@ class GraduationLabels( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1.
 
         self.m.startTest()
 
-        report = ExecutionReport( self.a )
+        report = ExecutionReport( self.a, width )
         img = cairo.ImageSurface( cairo.FORMAT_RGB24, 1, 1 )
         ctx = cairo.Context( img )
-        report.draw( ctx, width, 100 )
+        report.draw( ctx )
 
         graduations = [ report._ExecutionReport__graduationLabel( g ) for g in report._ExecutionReport__graduationPoints ]
         previousGraduation = None
@@ -148,7 +146,7 @@ class HorizontalMargins( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1
         self.c.getPredecessors().returns( [] )
 
         self.m.startTest()
-        report = ExecutionReport( self.a )
+        report = ExecutionReport( self.a, width + 20 )
 
         marginSize = 10
         height = 100
@@ -157,7 +155,7 @@ class HorizontalMargins( TestCase, TestCaseWithDurationsAndWidths( [ 0.1, 0.9, 1
         ctx.set_source_rgb( 1, 1, 1 )
         ctx.paint()
         ctx.translate( marginSize, marginSize )
-        report.draw( ctx, width, height )
+        report.draw( ctx )
         leftMarginIsWhite, rightMarginIsWhite, drawingTouchesLeft, drawingTouchesRight = self.checkHorizontalMargins( img, marginSize, 0xFFFFFFFF )
         reason = ""
         if not leftMarginIsWhite:

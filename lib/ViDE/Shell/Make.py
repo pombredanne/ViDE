@@ -40,7 +40,7 @@ class Make( ICLP.Command ):
             except CompoundException, e:
                 Log.error( "build failed", e )
             finally:
-                report = ExecutionReport( action, 780 )
+                report = ExecutionReport( action, 800 )
                 report.drawTo( buildkit.fileName( "action-execution.png" ) )
         action.getGraph().drawTo( buildkit.fileName( "action-dependencies.png" ) )
         project.getGraph().drawTo( buildkit.fileName( "project-artifacts.png" ) )
