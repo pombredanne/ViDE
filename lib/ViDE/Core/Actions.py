@@ -3,7 +3,7 @@ import shutil
 import subprocess
 import time
 
-from ViDE.Core.Action import Action, LongAction, NullAction
+from ViDE.Core.Action import Action, NullAction
 from ViDE import Log
 
 class RemoveFileAction( Action ):
@@ -48,9 +48,9 @@ class CopyFileAction( Action ):
         # @todo Fix work-around
         time.sleep( 1 ) # Race condition ? Microsoft cl doesn't see the file when called just after the copy...
 
-class SystemAction( LongAction ):
+class SystemAction( Action ):
     def __init__( self, base, options = [] ):
-        LongAction.__init__( self )
+        Action.__init__( self )
         self.__base = base
         self.__options = options
     
