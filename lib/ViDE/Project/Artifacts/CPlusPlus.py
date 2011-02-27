@@ -79,36 +79,37 @@ class ParseCppHeadersAction( Action ):
 
     def doExecute( self ):
         headers = Headers()
-        self.__parse( headers, self.__source, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader )
+        self.__parse( headers, self.__source, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader, "" )
         headers.save( self.__depFile )
 
-    def __parse( self, headers, fileName, handleDoubleQuotedHeader ):
+    def __parse( self, headers, fileName, handleDoubleQuotedHeader, path ):
         f = open( fileName )
         for line in f:
             line = line.strip()
             header = self.__doubleQuotedHeaderOnLine( line )
             if header:
-                handleDoubleQuotedHeader( headers, fileName, header )
+                handleDoubleQuotedHeader( headers, fileName, header, path )
             header = self.__angleHeaderOnLine( line )
             if header:
-                self.__handleAngleHeader( headers, header )
+                self.__handleAngleHeader( headers, header, path )
         f.close()
 
-    def __handleDoubleQuotedHeaderFromDoubleQuotedHeader( self, headers, fileName, header ):
+    def __handleDoubleQuotedHeaderFromDoubleQuotedHeader( self, headers, fileName, header, path ):
         header = os.path.join( os.path.dirname( fileName ), header )
         headers.addDoubleQuotedHeader( header )
-        self.__parse( headers, header, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader )
+        self.__parse( headers, header, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader, path )
 
-    def __handleDoubleQuotedHeaderFromAngleHeader( self, headers, fileName, header ):
+    def __handleDoubleQuotedHeaderFromAngleHeader( self, headers, fileName, header, path ):
+        header = os.path.join( path, header )
         copiedHeader = self.__candidateCopiedHeaders.find( header )
         headers.addAngleHeader( header )
-        self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
+        self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader, path )
 
-    def __handleAngleHeader( self, headers, header ):
+    def __handleAngleHeader( self, headers, header, path ):
         copiedHeader = self.__candidateCopiedHeaders.find( header )
         if copiedHeader is not None:
             headers.addAngleHeader( header )
-            self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader )
+            self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader, os.path.join( path, os.path.dirname( header )  ) )
 
     def __doubleQuotedHeaderOnLine( self, line ):
         return self.__headerOnLine( line, "\s*#\s*include\s*\"(.*)\"" )

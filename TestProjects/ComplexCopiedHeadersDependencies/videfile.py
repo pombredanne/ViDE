@@ -24,3 +24,20 @@ CppExecutable(
     sources = [ "hello2.cpp" ],
     localLibraries = [ b ]
 )
+
+h = CppHeaderLibrary(
+    name = "h",
+    headers = [ "H/h1.hpp", "H/h2.hpp" ]
+)
+
+CppExecutable(
+    name = "hello3",
+    sources = [ "hello3.cpp" ],
+    localLibraries = [ h ]
+)
+
+CppExecutable(
+    name = "hello4",
+    sources = [ "hello4.cpp" ],
+    localLibraries = []
+)
