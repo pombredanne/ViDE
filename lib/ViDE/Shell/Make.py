@@ -40,13 +40,7 @@ class Make( ICLP.Command ):
             except CompoundException, e:
                 Log.error( "build failed", e )
             finally:
-                report = ExecutionReport( action )
-                img = cairo.ImageSurface( cairo.FORMAT_RGB24, 800, 600 )
-                ctx = cairo.Context( img )
-                ctx.translate( 10, 10 )
-                ctx.set_source_rgb( .9, .9, .9 )
-                ctx.paint()
-                report.draw( ctx, 780, 580 )
-                img.write_to_png( buildkit.fileName( "action-execution.png" ) )
+                report = ExecutionReport( action, 780 )
+                report.drawTo( buildkit.fileName( "action-execution.png" ) )
         action.getGraph().drawTo( buildkit.fileName( "action-dependencies.png" ) )
         project.getGraph().drawTo( buildkit.fileName( "project-artifacts.png" ) )

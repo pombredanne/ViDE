@@ -22,12 +22,16 @@ class ExecutionReport:
 
     ################################################################################ construction
 
-    def __init__( self, action ):
+    def __init__( self, action, width ):
         self.__actions = set()
         self.theBigMap = dict()
         self.__addAction( action )
         del self.theBigMap
         self.__computeDuration()
+        self.__pixelWidth = width
+        img = cairo.ImageSurface( cairo.FORMAT_RGB24, 1, 1 )
+        self.ctx = cairo.Context( img )
+        self.__computeCoordinates()
 
     def __addAction( self, action ):
         if action not in self.theBigMap:
@@ -52,15 +56,18 @@ class ExecutionReport:
 
     ################################################################################ drawing (public interface)
 
-    def draw( self, ctx, width, height ):
-        self.ctx = ctx
-        self.__pixelWidth = width
-        self.__pixelHeight = height
+    def drawTo( self, file ):
+        img = cairo.ImageSurface( cairo.FORMAT_RGB24, self.__pixelWidth + 20, self.__pixelHeight + 20 )
+        self.ctx = cairo.Context( img )
+        self.ctx.translate( 10, 10 )
+        self.ctx.set_source_rgb( .9, .9, .9 )
+        self.ctx.paint()
 
-        self.__computeCoordinates()
-        ctx.save()
+        self.ctx.save()
         self.__drawEveryThing()
-        ctx.restore()
+        self.ctx.restore()
+
+        img.write_to_png( file )
 
     ################################################################################ computation of coordinates
 
@@ -70,6 +77,7 @@ class ExecutionReport:
 
     def __computeOrdinates( self ):
         self.__nextOrdinate = len( self.__actions )
+        self.__pixelHeight = 30 + self.__nextOrdinate * 20
         while self.__setLeavesOrdinates():
             pass
         self.__horizontalAxisOrdinate = 25
