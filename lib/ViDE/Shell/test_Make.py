@@ -11,40 +11,40 @@ from ViDE.Shell.Shell import Shell
 buildkit = "gcc"
 
 def hppFile( name ):
-    return os.path.join( "build", buildkit, "inc", name + ".hpp" )
+    return os.path.join( "build", buildkit, "debug", "inc", name + ".hpp" )
 
 def cppObjFile( name ):
-    return os.path.join( "build", buildkit, "obj", name + ".cpp.o" )
+    return os.path.join( "build", buildkit, "debug", "obj", name + ".cpp.o" )
 
 def forObjFile( name ):
-    return os.path.join( "build", buildkit, "obj", name + ".for.o" )
+    return os.path.join( "build", buildkit, "debug", "obj", name + ".for.o" )
 
 def dllFile( name ):
-    return os.path.join( "build", buildkit, "bin", name + ".dll" )
+    return os.path.join( "build", buildkit, "debug", "bin", name + ".dll" )
 
 def modFile( name ):
-    return os.path.join( "build", buildkit, "pyd", name + ".dll" )
+    return os.path.join( "build", buildkit, "debug", "pyd", name + ".dll" )
 
 def exeFile( name ):
-    return os.path.join( "build", buildkit, "bin", name + ".exe" )
+    return os.path.join( "build", buildkit, "debug", "bin", name + ".exe" )
 
 def libFile( name ):
-    return os.path.join( "build", buildkit, "lib", "lib" + name + ".a" )
+    return os.path.join( "build", buildkit, "debug", "lib", "lib" + name + ".a" )
 
 def pyFile( name ):
-    return os.path.join( "build", buildkit, "bin", name + ".py" )
+    return os.path.join( "build", buildkit, "debug", "bin", name + ".py" )
 
 def pycFile( name ):
-    return os.path.join( "build", buildkit, "pyd", name + ".pyc" )
+    return os.path.join( "build", buildkit, "debug", "pyd", name + ".pyc" )
 
 def genCppFile( name ):
-    return os.path.join( "build", buildkit, "gen", name + ".cpp" )
+    return os.path.join( "build", buildkit, "debug", "gen", name + ".cpp" )
 
 def genHppFile( name ):
-    return os.path.join( "build", buildkit, "gen", name + ".hpp" )
+    return os.path.join( "build", buildkit, "debug", "gen", name + ".hpp" )
 
 def genCppObjFile( name ):
-    return os.path.join( "build", buildkit, "obj", "build", buildkit, "gen", name + ".cpp.o" )
+    return os.path.join( "build", buildkit, "debug", "obj", "build", buildkit, "debug", "gen", name + ".cpp.o" )
 
 def allFilesIn( directory ):
     l = set()
