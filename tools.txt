@@ -1,0 +1,20 @@
+Tools:
+    installation, utilisation ($PATH, link edition)
+    différentes versions
+
+Tool = un truc qui s'installe ou un ensemble de trucs qui s'installent (très liés en dépendences ou fonctionellement)
+    avec une procédure d'install pour chaque buildkit, chaque version du tool, chaque target
+    probablement divisée en download puis install, lui-même probablement divisé en build puis install
+    avec pour chaque version une dépendence vers des tools et les versions acceptables
+        => RequireTool( "name", AcceptedVersions ): chaque version de tool dit avece quelles versions de quels tools elle puet travailler
+        De meme, les projects font un RequireToolset sur les toolsets dont ils ont besoin.
+        Donc on peut implementer "vide install-tools --required" dans un project, ou "vide install-tools name"
+    Un tool renvoit un Artifact pour s'installer, Artifact reprenant la logique des étapes de l'install, et dépendant de l'Artifact de download
+    Parfois, un marqueur sera necessaire, par exemple pour marquer la date de dernier "svn up" et le refaire chaque jour/heure/... ou marquer que "make" a été lancé.
+    D'autre fois, on utilisera les fichiers naturelement produit par ces opérations.
+    Un tool composite pourra renvoyer un CompositeArtifact
+Toolset = ensemble de versions de Tools, cohérentes entre elles (vérifié par les dépendences de Tool)
+on installe les tools à la demande, avec une option --toolset (exactement parallele à l'option --buildkit) pour connaitre leur version.
+on met le nom du toolset dans le path build/buildkit/toolset/target/flavour/*
+
+Les options --buildkit et --toolset peuvent prendre une liste séparée par des virgules, et on boucle dessus dans les commandes pour lesquelles ça a du sens
