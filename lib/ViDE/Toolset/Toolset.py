@@ -7,10 +7,10 @@ from ViDE.Core.Artifact import CompoundArtifact
 
 class Toolset:
     @classmethod
-    def load( cls, toolsetName ):
+    def load( cls, toolsetName, *args ):
         oldSysPath = sys.path
         sys.path.append( ViDE.toolsDirectory )
-        toolset = getattr( imp.load_source( toolsetName, os.path.join( ViDE.toolsetsDirectory, toolsetName + ".py" ) ), toolsetName )
+        toolset = getattr( imp.load_source( toolsetName, os.path.join( ViDE.toolsetsDirectory, toolsetName + ".py" ) ), toolsetName )( toolsetName, *args )
         sys.path = oldSysPath
         return toolset
 
@@ -19,6 +19,6 @@ class Toolset:
 
     def getFetchArtifact( self ):
         componants = []
-        for tool in self.__tools:
+        for tool in self.getTools():
             componants.append( tool.getFetchArtifact() )
         return CompoundArtifact( "tools", componants, False )

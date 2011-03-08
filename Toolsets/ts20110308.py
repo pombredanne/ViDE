@@ -1,7 +1,12 @@
 from ViDE.Toolset import Toolset
 
-from Cairo import Cairo
+from Cairo import Pixman, Cairo, Cairomm, PyCairo
 
-ts20110308 = Toolset( [
-    Cairo( "1.10.2" )
-] )
+class ts20110308( Toolset ):
+    def getTools( self ):
+        return [
+            Pixman( "0.21.6" ),
+            Cairo( "1.10.2" ),
+            Cairomm( "1.9.8" ),
+            PyCairo( "1.8.10" )
+        ]

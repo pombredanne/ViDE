@@ -17,10 +17,15 @@ class InstallTools( ICLP.Command ):
         self.addOption( [ "k", "keep-going" ], "keepGoing", ICLP.StoreConstant( True ), "keep going in case of failure" )
         self.dryRun = False
         self.addOption( [ "n", "dry-run" ], "dryRun", ICLP.StoreConstant( True ), "print commands instead of executing them" )
+        self.downloadOnly = False
+        self.addOption( [ "d", "dl-only" ], "downloadOnly", ICLP.StoreConstant( True ), "only do the part of installation which needs internet access" )
         
     def execute( self, args ):
         toolset = Toolset.load( self.program.toolset )
-        action = toolset.getFetchArtifact().getProductionAction()
+        if self.downloadOnly:
+            action = toolset.getFetchArtifact().getProductionAction()
+        else:
+            action = toolset.getInstallArtifact().getProductionAction()
         if self.dryRun:
             print "\n".join( action.preview() )
         else:

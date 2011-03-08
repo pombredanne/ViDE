@@ -1,40 +1,24 @@
 from ViDE.Core.Artifact import CompoundArtifact
 from ViDE.Toolset import Tool, DownloadedArchive
 
-class Cairo( Tool ):
-    availableVersions = {
-        "scm": None,
-        "1.10.2": ( "0.20.2" )
-    }
-
-    @staticmethod
-    def getAvailableVersions():
-        return Cairo.availableVersions.keys()
-    
-    def getToolDependencies( self ):
-        return []
-
+class Pixman( Tool ):
     def getFetchArtifact( self ):
-        if self.version == "scm":
-            return blah
-        else:
-            cairoVersion = self.version
-            pixmanVersion = Cairo.availableVersions[ self.version ]
-            return CompoundArtifact(
-                name = "packages",
-                componants = [
-                    DownloadedArchive( "http://www.cairographics.org/releases/cairo-" + cairoVersion + ".tar.gz" ),
-                    DownloadedArchive( "http://www.cairographics.org/releases/pixman-" + pixmanVersion + ".tar.gz" )
-                ],
-                explicit = False
-            )
+        return DownloadedArchive( "http://www.cairographics.org/releases/pixman-" + self.version + ".tar.gz" )
 
     def getInstallArtifact( self ):
-        if self.version == "scm":
-            return blih
-        else:
-            return UnarchiveConfigureMakeMakeinstall( configureOptions = [ "--with-shared" ] )
+        return UnarchiveConfigureMakeMakeinstall( configureOptions = [ "--with-shared" ] )
+
+class Cairo( Tool ):
+    def getFetchArtifact( self ):
+        return DownloadedArchive( "http://www.cairographics.org/releases/cairo-" + self.version + ".tar.gz" )
 
 class Cairomm( Tool ):
-    def getToolDependencies( self ):
-        return [ ( Cairo, Either( Interval( "1.15", "1.19" ), Set( "scm", "scm-stable" ) ) ) ]
+    def getFetchArtifact( self ):
+        return DownloadedArchive( "http://www.cairographics.org/releases/cairomm-" + self.version + ".tar.gz" )
+
+class PyCairo( Tool ):
+    def getFetchArtifact( self ):
+        # Python 2
+        return DownloadedArchive( "http://www.cairographics.org/releases/py2cairo-" + self.version + ".tar.gz" )
+        # Python 3
+        # return DownloadedArchive( "http://www.cairographics.org/releases/pycairo-" + self.version + ".tar.bz2" )
