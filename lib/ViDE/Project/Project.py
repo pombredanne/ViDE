@@ -3,7 +3,7 @@ import os
 from Misc import Graphviz
 
 from ViDE.Core.Descriptible import Descriptible
-from ViDE.Core.Artifact import Artifact
+from ViDE.Core.Artifact import Artifact, CompoundArtifact
 from ViDE.Core.Actions import NullAction
 
 class Project( Descriptible ):
@@ -34,20 +34,16 @@ class Project( Descriptible ):
     def __addArtifact( self, artifact ):
         self.__artifacts.append( artifact )
 
+    def __getArtifact( self, filter = lambda artifact: True ):
+        return CompoundArtifact(
+            name = "Project",
+            componants = [ artifact for artifact in self.__artifacts if filter( artifact ) ],
+            explicit = False
+        )
+
     def getBuildAction( self, assumeNew, assumeOld, touch ):
         createDirectoryActions = dict()
-        action = NullAction()
-        for artifact in self.__artifacts:
-            if artifact.explicit:
-                action.addPredecessor( artifact.getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld, touch = touch, createDirectoryActions = createDirectoryActions ) )
-        return action
+        return self.__getArtifact( filter = lambda artifact: artifact.explicit ).getProductionAction( assumeNew = assumeNew, assumeOld = assumeOld, touch = touch, createDirectoryActions = createDirectoryActions )
 
     def getGraph( self ):
-        graph = Graphviz.Graph( "Project" )
-        graph.attr[ "ranksep" ] = "1"
-        graph.nodeAttr[ "shape" ] = "box"
-        for artifact in self.__artifacts:
-            graph.add( artifact.getGraphNode() )
-            for link in artifact.getGraphLinks():
-                graph.add( link )
-        return graph
+        return self.__getArtifact().getGraph()

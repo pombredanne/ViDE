@@ -39,6 +39,15 @@ class Artifact( CallOnceAndCache ):
     def getName( self ):
         return self.__name
 
+    def getGraph( self ):
+        graph = Graphviz.Graph( "artifact" )
+        graph.attr[ "ranksep" ] = "1"
+        graph.nodeAttr[ "shape" ] = "box"
+        graph.add( self.getGraphNode() )
+        for link in self.getGraphLinks():
+            graph.add( link )
+        return graph
+
     def getGraphNode( self ):
         return self.getCached( "graphNode", self.computeGraphNode )
 
