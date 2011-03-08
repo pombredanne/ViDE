@@ -23,9 +23,10 @@ class InstallTools( ICLP.Command ):
     def execute( self, args ):
         toolset = Toolset.load( self.program.toolset )
         if self.downloadOnly:
-            action = toolset.getFetchArtifact().getProductionAction()
+            artifact = toolset.getFetchArtifact()
         else:
-            action = toolset.getInstallArtifact().getProductionAction()
+            artifact = toolset.getInstallArtifact()
+        action = artifact.getProductionAction()
         if self.dryRun:
             print "\n".join( action.preview() )
         else:
@@ -37,3 +38,5 @@ class InstallTools( ICLP.Command ):
                 report = ExecutionReport( action, 800 )
                 #report.drawTo( toolset.fileName( "installation-report.png" ) )
                 report.drawTo( "installation-report.png" )
+        artifact.getGraph().drawTo( "installation-artifacts.png" )
+        action.getGraph().drawTo( "installation-dependencies.png" )
