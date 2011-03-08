@@ -8,4 +8,6 @@ buildkitsDirectory = os.path.join( rootDirectory, "Buildkits" )
 
 toolsetsDirectory = os.path.join( rootDirectory, "Toolsets" )
 
-toolsDirectory = os.path.join( rootDirectory, "Toolsets", "Tools" )
+toolsDirectory = os.path.join( toolsetsDirectory, "Tools" )
+
+toolsCacheDirectory = os.path.join( toolsDirectory, "Cache" )

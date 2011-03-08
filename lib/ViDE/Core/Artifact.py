@@ -104,7 +104,6 @@ class AtomicArtifact( Artifact ):
             directories = set( os.path.dirname( f ) for f in self.__files )
             for d in directories:
                 if not d in createDirectoryActions:
-                    print "create", d
                     createDirectoryActions[ d ] = CreateDirectoryAction( d )
                 productionAction.addPredecessor( createDirectoryActions[ d ] )
             if not touch:

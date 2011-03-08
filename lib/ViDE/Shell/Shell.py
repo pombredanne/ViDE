@@ -5,6 +5,7 @@ from ViDE.Shell.AutoTest import AutoTest
 from ViDE.Shell.Make import Make
 from ViDE.Shell.Run import Run
 from ViDE.Shell.Debug import Debug
+from ViDE.Shell.InstallTools import InstallTools
 
 # Get from ViDE
 defaultToolset = "ts20110308"
@@ -37,6 +38,7 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         self.addCommand( "run", Run, "run an executable file" )
         self.addCommand( "debug", Debug, "debug an executable file" )
         self.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
+        self.addCommand( "install-tools", InstallTools, "install tools" )
 
         self.addHelpCommand()
         self.addExitCommand()

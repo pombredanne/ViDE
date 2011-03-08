@@ -2,6 +2,8 @@ import os
 import shutil
 import subprocess
 import time
+import sys
+import urllib
 
 from ViDE.Core.Action import Action, NullAction
 from ViDE import Log
@@ -27,7 +29,7 @@ class CreateDirectoryAction( Action ):
 
     def computePreview( self ):
         return "mkdir -p " + self.__directory
-        
+
     def doExecute( self ):
         try:
             os.makedirs( self.__directory )
@@ -42,21 +44,49 @@ class CopyFileAction( Action ):
 
     def computePreview( self ):
         return "cp " + self.__originFile + " " + self.__destinationFile
-        
+
     def doExecute( self ):
         shutil.copyfile( self.__originFile, self.__destinationFile )
         # @todo Fix work-around
         time.sleep( 1 ) # Race condition ? Microsoft cl doesn't see the file when called just after the copy...
+
+class DownloadFileAction( Action ):
+    class Hook:
+        def __init__( self ):
+            self.__partTransfered = 0
+
+        def __call__( self, transferedBlocks, blockSize, totalSize ):
+            newPart = self.__part( transferedBlocks, blockSize, totalSize )
+            if newPart != self.__partTransfered:
+                sys.stdout.write( "-" )
+                sys.stdout.flush()
+            self.__partTransfered = newPart
+
+        def __part( self, transferedBlocks, blockSize, totalSize ):
+            return 80 * transferedBlocks * blockSize / totalSize
+
+    def __init__( self, originUrl, destinationFile ):
+        Action.__init__( self )
+        self.__originUrl = originUrl
+        self.__destinationFile = destinationFile
+
+    def computePreview( self ):
+        return "wget " + self.__originUrl
+
+    def doExecute( self ):
+        Log.info( self.computePreview() )
+        urllib.urlretrieve( self.__originUrl, self.__destinationFile, DownloadFileAction.Hook() )
+        print
 
 class SystemAction( Action ):
     def __init__( self, base, options = [] ):
         Action.__init__( self )
         self.__base = base
         self.__options = options
-    
+
     def computePreview( self ):
         return " ".join( self.__base )
-        
+
     def doExecute( self ):
         Log.info( self.computePreview() )
         Log.debug( " ".join( self.__base + self.__options ) )

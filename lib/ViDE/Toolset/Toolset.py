@@ -3,6 +3,7 @@ import sys
 import os.path
 
 import ViDE
+from ViDE.Core.Artifact import CompoundArtifact
 
 class Toolset:
     @classmethod
@@ -13,5 +14,11 @@ class Toolset:
         sys.path = oldSysPath
         return toolset
 
-    def __init__( self, *tools ):
+    def __init__( self, tools ):
         self.__tools = tools
+
+    def getFetchArtifact( self ):
+        componants = []
+        for tool in self.__tools:
+            componants.append( tool.getFetchArtifact() )
+        return CompoundArtifact( "tools", componants, False )
