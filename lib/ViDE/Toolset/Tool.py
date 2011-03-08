@@ -13,5 +13,7 @@ class Tool( CallOnceAndCache ):
 
     def __computeInstallArtifact( self ):
         # How do I ensure that the installArtifact depends on the fetchArtifact ?
+        # Adding fetchArtifact as a dependency to installArtifact is not enough:
+        # the *deepest* componants of installArtifact have to depend on fetchArtifact
         fetch = self.getFetchArtifact()
         return self.computeInstallArtifact()
