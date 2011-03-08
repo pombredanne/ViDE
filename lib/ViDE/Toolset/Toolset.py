@@ -22,3 +22,9 @@ class Toolset:
         for tool in self.getTools():
             componants.append( tool.getFetchArtifact() )
         return CompoundArtifact( "tools", componants, False )
+
+    def getInstallArtifact( self ):
+        componants = []
+        for tool in self.getTools():
+            componants.append( tool.getInstallArtifact() )
+        return CompoundArtifact( "tools", componants, False )
