@@ -5,3 +5,7 @@ rootDirectory = os.path.dirname( os.path.dirname( os.path.dirname( os.path.realp
 libDirectory = os.path.join( rootDirectory, "lib" )
 
 buildkitsDirectory = os.path.join( rootDirectory, "Buildkits" )
+
+toolsetsDirectory = os.path.join( rootDirectory, "Toolsets" )
+
+toolsDirectory = os.path.join( rootDirectory, "Toolsets", "Tools" )

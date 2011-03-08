@@ -8,6 +8,7 @@ from ViDE.Core.Action import CompoundException
 from ViDE.Core.ExecutionReport import ExecutionReport
 from ViDE.Project.Project import Project
 from ViDE.Buildkit import Buildkit
+from ViDE.Toolset import Toolset
 
 class Make( ICLP.Command ):
     def __init__( self, program ):
@@ -29,7 +30,8 @@ class Make( ICLP.Command ):
         
     def execute( self, args ):
         buildkit = Buildkit.load( self.program.buildkit, self.program.flavour )
-        project = Project.load( buildkit )
+        toolset = Toolset.load( self.program.toolset )
+        project = Project.load( buildkit, toolset )
         action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
         # @todo project's include/import graph
         if self.dryRun:

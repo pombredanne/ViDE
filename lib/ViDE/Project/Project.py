@@ -8,10 +8,10 @@ from ViDE.Core.Actions import NullAction
 
 class Project( Descriptible ):
     @classmethod
-    def load( cls, buildkit, projectDirectory = "." ):
-        return Project.loadFromDescription( os.path.join( projectDirectory, "videfile.py" ), buildkit )
+    def load( cls, buildkit, toolset, projectDirectory = "." ):
+        return Project.loadFromDescription( os.path.join( projectDirectory, "videfile.py" ), buildkit, toolset )
 
-    def __init__( self, buildkit ):
+    def __init__( self, buildkit, toolset ):
         Descriptible.__init__( self )
         self.buildkit = buildkit
         self.__artifacts = []
@@ -33,7 +33,7 @@ class Project( Descriptible ):
 
     def __addArtifact( self, artifact ):
         self.__artifacts.append( artifact )
-        
+
     def getBuildAction( self, assumeNew, assumeOld, touch ):
         createDirectoryActions = dict()
         action = NullAction()

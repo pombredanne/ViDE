@@ -1,0 +1,3 @@
+scm = Toolset( [
+    Cairo( "scm" )
+] )

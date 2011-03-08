@@ -7,14 +7,9 @@ from ViDE.Shell.Run import Run
 from ViDE.Shell.Debug import Debug
 
 # Get from ViDE
-defaultToolset = "Toolset1"
-availableToolsets = [ "Toolset1", "Toolset2", "Toolset3" ]
-
+defaultToolset = "ts20110308"
 defaultBuildkit = "gcc"
-availableBuildkits = [ "Buildkit1", "Buildkit2", "Buildkit3" ]
-
 defaultFlavour = "debug"
-availableFlavours = [ "debug", "test", "release" ]
 
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
     def __init__( self ):
