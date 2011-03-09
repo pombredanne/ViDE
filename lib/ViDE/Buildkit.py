@@ -2,14 +2,11 @@ import imp
 import os.path
 
 import ViDE
+from ViDE.Core.Loadable import Loadable
 
-class Buildkit:
-    @classmethod
-    def load( cls, buildkitName, *args ):
-        return getattr( imp.load_source( buildkitName, os.path.join( ViDE.buildkitsDirectory, buildkitName + ".py" ) ), buildkitName )( buildkitName, *args )
-
-    def __init__( self, name ):
-        self.__name = name
+class Buildkit( Loadable ):
+    def __init__( self ):
+        Loadable.__init__( self )
         
     def fileName( self, *nameParts ):
-        return os.path.join( "build", self.__name, *( self.getPreliminaryNameParts() + list( nameParts ) ) )
+        return os.path.join( "build", self.name, *( self.getPreliminaryNameParts() + list( nameParts ) ) )

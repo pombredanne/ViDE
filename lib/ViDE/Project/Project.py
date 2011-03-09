@@ -3,7 +3,6 @@ import imp
 
 from Misc import Graphviz
 
-from ViDE.Core.Descriptible import Descriptible
 from ViDE.Core.Artifact import Artifact, CompoundArtifact
 from ViDE.Core.Actions import NullAction
 

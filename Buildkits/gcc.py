@@ -164,8 +164,8 @@ class gcc( Buildkit ):
                     + [ "-lpython2.6" ] # @todo Remove
                 )
 
-    def __init__( self, name, flavour ):
-        Buildkit.__init__( self, name )
+    def __init__( self, flavour ):
+        Buildkit.__init__( self )
         self.__flavor = flavour
 
     def getPreliminaryNameParts( self ):

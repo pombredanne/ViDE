@@ -4,18 +4,11 @@ import os.path
 
 import ViDE
 from ViDE.Core.Artifact import CompoundArtifact
+from ViDE.Core.Loadable import Loadable
 
-class Toolset:
-    @classmethod
-    def load( cls, toolsetName, *args ):
-        oldSysPath = sys.path
-        sys.path.append( ViDE.toolsDirectory )
-        toolset = getattr( imp.load_source( toolsetName, os.path.join( ViDE.toolsetsDirectory, toolsetName + ".py" ) ), toolsetName )( toolsetName, *args )
-        sys.path = oldSysPath
-        return toolset
-
-    def __init__( self, tools ):
-        self.__tools = tools
+class Toolset( Loadable ):
+    def __init__( self ):
+        Loadable.__init__( self )
 
     def getFetchArtifact( self ):
         componants = []
