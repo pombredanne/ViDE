@@ -1,4 +1,5 @@
 import os
+import imp
 
 from Misc import Graphviz
 
@@ -6,13 +7,20 @@ from ViDE.Core.Descriptible import Descriptible
 from ViDE.Core.Artifact import Artifact, CompoundArtifact
 from ViDE.Core.Actions import NullAction
 
-class Project( Descriptible ):
+class Project:
     @classmethod
     def load( cls, buildkit, toolset, projectDirectory = "." ):
-        return Project.loadFromDescription( os.path.join( projectDirectory, "videfile.py" ), buildkit, toolset )
+        descriptionFile = os.path.join( projectDirectory, "videfile.py" )
+
+        instance = Project( buildkit, toolset )
+
+        Project.inProgress = instance
+        imp.load_source( "description", descriptionFile )
+        del Project.inProgress
+
+        return instance
 
     def __init__( self, buildkit, toolset ):
-        Descriptible.__init__( self )
         self.buildkit = buildkit
         self.__artifacts = []
 
