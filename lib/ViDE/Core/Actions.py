@@ -122,3 +122,26 @@ class TouchAction( Action ):
             except os.error:
                 open( file, "w" ).close()
                 os.utime( file, ( now, now ) )
+
+class ActionSequence( Action ):
+    def __init__( self, actions ):
+        Action.__init__( self )
+        self.__actions = actions
+
+    def computePreview( self ):
+        return "; ".join( a.getPreview() for a in self.__actions )
+
+    def doExecute( self ):
+        for a in self.__actions:
+            a.doExecute()
+
+class UnarchiveAction( Action ):
+    def __init__( self, archive ):
+        Action.__init__( self )
+        self.__archive = archive
+        
+    def computePreview( self ):
+        return "unzip " + self.__archive
+
+    def doExecute( self ):
+        pass

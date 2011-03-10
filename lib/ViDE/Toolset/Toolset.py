@@ -17,7 +17,10 @@ class Toolset( Loadable ):
         return CompoundArtifact( "tools", componants, False )
 
     def getInstallArtifact( self ):
-        componants = []
+        artifacts = []
+        artifact = None
         for tool in self.getTools():
-            componants.append( tool.getInstallArtifact() )
-        return CompoundArtifact( "tools", componants, False )
+            # The strongDependencies argument to Tool.getInstallArtifact should be computed with tool dependencies instead
+            artifact = tool.getInstallArtifact( [] if artifact is None else [ artifact ] )
+            artifacts.append( artifact )
+        return CompoundArtifact( "tools", artifacts, False )
