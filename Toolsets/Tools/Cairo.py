@@ -6,12 +6,16 @@ class Pixman( Tool ):
         return DownloadedArchive( "http://www.cairographics.org/releases/pixman-" + self.version + ".tar.gz" )
 
     def computeInstallArtifact( self, strongDependencies ):
+        print strongDependencies
         return UnarchiveConfigureMakeMakeinstall(
             archive = "pixman-" + self.version + ".tar.gz",
             file = "libpixman.so",
             strongDependencies = strongDependencies,
             configureOptions = [ "--whit-shared" ]
         )
+
+    def getDependencies( self ):
+        return []
 
 class Cairo( Tool ):
     def computeFetchArtifact( self ):
@@ -25,6 +29,10 @@ class Cairo( Tool ):
             configureOptions = [ "--whit-shared" ]
         )
 
+
+    def getDependencies( self ):
+        return [ Pixman ]
+
 class Cairomm( Tool ):
     def computeFetchArtifact( self ):
         return DownloadedArchive( "http://www.cairographics.org/releases/cairomm-" + self.version + ".tar.gz" )
@@ -36,6 +44,9 @@ class Cairomm( Tool ):
             strongDependencies = strongDependencies,
             configureOptions = [ "--whit-shared" ]
         )
+
+    def getDependencies( self ):
+        return [ Cairo ]
 
 class PyCairo( Tool ):
     def computeFetchArtifact( self ):
@@ -51,3 +62,6 @@ class PyCairo( Tool ):
             strongDependencies = strongDependencies,
             configureOptions = [ "--whit-shared" ]
         )
+
+    def getDependencies( self ):
+        return [ Cairo ]
