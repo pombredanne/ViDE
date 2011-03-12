@@ -41,4 +41,10 @@ class Toolset( Loadable, CallOnceAndCache ):
     def __computeToolInstallArtifact( self, tool ):
         strongDependencies = [ self.__getToolInstallArtifact( self.__toolsByClass[ dep ] ) for dep in tool.getDependencies() ]
         strongDependencies.append( tool.getFetchArtifact() )
-        return tool.getInstallArtifact( strongDependencies )
+        return tool.getInstallArtifact( self, strongDependencies )
+
+    def getTempDirectory( self ):
+        return os.path.join( ViDE.toolsetsTmpDirectory, self.__class__.__name__ )
+
+    def getInstallDirectory( self ):
+        return os.path.join( ViDE.toolsetsInstallDirectory, self.__class__.__name__ )

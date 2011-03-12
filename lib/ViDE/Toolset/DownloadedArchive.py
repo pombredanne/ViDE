@@ -18,6 +18,6 @@ class DownloadedArchive( AtomicArtifact ):
             automaticDependencies = [],
             explicit = False
         )
-        
+
     def doGetProductionAction( self ):
         return DownloadFileAction( self.__url, self.__file )

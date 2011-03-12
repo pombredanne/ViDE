@@ -8,5 +8,5 @@ class Tool( CallOnceAndCache ):
     def getFetchArtifact( self ):
         return self.getCached( "fetchArtifact", self.computeFetchArtifact )
 
-    def getInstallArtifact( self, previous ):
-        return self.getCached( "installArtifact", self.computeInstallArtifact, previous )
+    def getInstallArtifact( self, toolset, previous ):
+        return self.getCached( "installArtifact", self.computeInstallArtifact, toolset, previous )

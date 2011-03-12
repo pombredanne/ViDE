@@ -1,10 +1,13 @@
 import os
+import stat
 import shutil
 import subprocess
 import time
 import sys
 import urlparse
 import urllib
+import tarfile
+import zipfile
 
 from ViDE.Core.Action import Action, NullAction
 from ViDE import Log
@@ -81,10 +84,11 @@ class DownloadFileAction( Action ):
         print
 
 class SystemAction( Action ):
-    def __init__( self, base, options = [] ):
+    def __init__( self, base, options = [], wd = None ):
         Action.__init__( self )
         self.__base = base
         self.__options = options
+        self.__wd = wd
 
     def computePreview( self ):
         return " ".join( self.__base )
@@ -92,14 +96,19 @@ class SystemAction( Action ):
     def doExecute( self ):
         Log.info( self.computePreview() )
         Log.debug( " ".join( self.__base + self.__options ) )
-        p = subprocess.Popen( self.__base + self.__options, stdout = subprocess.PIPE, stderr = subprocess.PIPE )
-        stdoutdata, stderrdata = p.communicate()
-        stdoutdata = stdoutdata.strip()
-        stderrdata = stderrdata.strip()
-        if stdoutdata != "":
-            Log.info( stdoutdata )
-        if stderrdata != "":
-            Log.error( stderrdata )
+        if self.__wd is not None:
+            oldWorkingDirectory = os.getcwd()
+            os.chdir( self.__wd )
+        stdout = None
+        if Log.level < 1:
+            stdout = subprocess.PIPE
+        stderr = None
+        if Log.level < 0:
+            stderr = subprocess.PIPE
+        p = subprocess.Popen( self.__base + self.__options, stdout = stdout, stderr = stderr )
+        p.communicate()
+        if self.__wd is not None:
+            os.chdir( oldWorkingDirectory )
         if p.returncode == 0:
             Log.verbose( "End of", self.computePreview() )
         else:
@@ -138,12 +147,26 @@ class ActionSequence( Action ):
             a.doExecute()
 
 class UnarchiveAction( Action ):
-    def __init__( self, archive ):
+    def __init__( self, archive, destination ):
         Action.__init__( self )
         self.__archive = archive
+        self.__destination = destination
         
     def computePreview( self ):
         return "unzip " + self.__archive
 
     def doExecute( self ):
-        pass
+        buildDirectory = os.path.dirname( self.__destination )
+        if tarfile.is_tarfile( self.__archive ):
+            archive = tarfile.open( self.__archive )
+            unarchiveDirectory = os.path.join( buildDirectory, os.path.commonprefix( [ m.name for m in archive.getmembers() if m.name.find( "PaxHeader" ) == -1 ] ) )
+            archive.extractall( buildDirectory )
+        elif zipfile.is_zipfile( self.__archive ):
+            archive = zipfile.ZipFile( self.__archive )
+            unarchiveDirectory = os.path.join( buildDirectory, os.path.commonprefix( archive.namelist() ) )
+            archive.extractall( buildDirectory )
+        else:
+            raise Exception( "Don't know how to extract " + self.__archive )
+        os.rename( unarchiveDirectory, self.__destination )
+        os.chmod( self.__destination, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH )
+        os.utime( self.__destination, None )
