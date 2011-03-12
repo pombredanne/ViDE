@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import time
 import sys
+import urlparse
 import urllib
 
 from ViDE.Core.Action import Action, NullAction
@@ -71,7 +72,8 @@ class DownloadFileAction( Action ):
         self.__destinationFile = destinationFile
 
     def computePreview( self ):
-        return "wget " + self.__originUrl
+        urlComponents = urlparse.urlparse( self.__originUrl )
+        return "wget " + urlComponents.scheme + "://" + urlComponents.netloc + "/[...]/" + os.path.basename( urlComponents.path )
 
     def doExecute( self ):
         Log.info( self.computePreview() )
