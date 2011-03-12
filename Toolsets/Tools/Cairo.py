@@ -6,7 +6,6 @@ class Pixman( Tool ):
         return DownloadedArchive( "http://www.cairographics.org/releases/pixman-" + self.version + ".tar.gz" )
 
     def computeInstallArtifact( self, strongDependencies ):
-        print strongDependencies
         return UnarchiveConfigureMakeMakeinstall(
             archive = "pixman-" + self.version + ".tar.gz",
             file = "libpixman.so",

@@ -17,23 +17,28 @@ class Toolset( Loadable, CallOnceAndCache ):
                 raise Exception( "Same tool two times in toolset" )
             self.__toolsByClass[ tool.__class__ ] = tool
 
+    def getTools( self ):
+        return self.getCached( "tools", self.computeTools )
+
     def getFetchArtifact( self ):
-        componants = []
-        for tool in self.getTools():
-            componants.append( tool.getFetchArtifact() )
+        return self.getCached( "fetchArtifact", self.__computeFetchArtifact )
+
+    def __computeFetchArtifact( self ):
+        componants = [ tool.getFetchArtifact() for tool in self.getTools() ]
         return CompoundArtifact( "tools", componants, False )
 
     def getInstallArtifact( self ):
-        artifacts = []
-        for tool in self.getTools():
-            artifacts += self.__getInstallArtifacts( tool )
-        return CompoundArtifact( "tools", artifacts, False )
+        return self.getCached( "installArtifact", self.__computeInstallArtifact )
 
-    def __getInstallArtifacts( self, tool ):
-        return self.getCached( "fetchArtifact", self.__computeInstallArtifacts, tool )
-        
-    def __computeInstallArtifacts( self, tool ):
-        strongDependencies = []
-        for dep in tool.getDependencies():
-            strongDependencies += self.__getInstallArtifacts( self.__toolsByClass[ dep ] )
-        return [ tool.getInstallArtifact( strongDependencies ) ] + strongDependencies
+    def __computeInstallArtifact( self ):
+        componants = [ self.__getToolInstallArtifact( tool ) for tool in self.getTools() ]
+        componants += [ tool.getFetchArtifact() for tool in self.getTools() ]
+        return CompoundArtifact( "tools", componants, False )
+
+    def __getToolInstallArtifact( self, tool ):
+        return self.getCached( "installArtifacts", self.__computeToolInstallArtifact, tool )
+
+    def __computeToolInstallArtifact( self, tool ):
+        strongDependencies = [ self.__getToolInstallArtifact( self.__toolsByClass[ dep ] ) for dep in tool.getDependencies() ]
+        strongDependencies.append( tool.getFetchArtifact() )
+        return tool.getInstallArtifact( strongDependencies )

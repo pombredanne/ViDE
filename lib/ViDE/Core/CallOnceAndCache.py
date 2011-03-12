@@ -1,3 +1,5 @@
+from ViDE import Log
+
 class CallOnceAndCache:
     def __init__( self ):
         self.__cachedValues = dict()
@@ -6,5 +8,8 @@ class CallOnceAndCache:
         key += "#" + "*".join( str( arg ) for arg in args )
         key += "#" + "*".join( str( k ) + ":" + str( kwargs[ k ] ) for k in kwargs )
         if not self.__cachedValues.has_key( key ):
+            Log.debug( "miss", function, args, kwargs )
             self.__cachedValues[ key ] = function( *args, **kwargs )
+        else:
+            Log.debug( "hit ", function, args, kwargs )
         return self.__cachedValues[ key ]
