@@ -30,5 +30,5 @@ def PythonPackage( name, sources = [], modules = [], strip = identity ):
 def PythonScript( source ):
     return Project.inProgress.createArtifact( Python.Script, __PythonSource( source ), True )
 
-def CppPythonModule( name, sources = [], objects = [], localLibraries = [] ):
-    return Project.inProgress.createArtifact( Project.inProgress.buildkit.Python.CModule, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries ), localLibraries, True )
+def CppPythonModule( name, sources = [], objects = [], localLibraries = [], externalLibraries = [] ):
+    return Project.inProgress.createArtifact( Project.inProgress.buildkit.Python.CModule, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries, externalLibraries ), localLibraries, externalLibraries, True )

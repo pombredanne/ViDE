@@ -15,7 +15,7 @@ def __FortranSources( sources ):
 def __FortranObject( source, explicit = False ):
     return Project.inProgress.createArtifact( Project.inProgress.buildkit.Fortran.Object, source, explicit )
 
-def __FortranObjects( sources, objects,  ):
+def __FortranObjects( sources, objects ):
     return objects + [ __FortranObject( source ) for source in sources ]
 
 def FortranSource( source ):
@@ -24,5 +24,5 @@ def FortranSource( source ):
 def FortranObject( source, additionalDefines = [] ):
     return __FortranObject( __FortranSource( source, False ), True )
 
-def FortranExecutable( name, sources = [], objects = [], localLibraries = [] ):
-    return __Executable( name, __FortranObjects( __FortranSources( sources ), objects ), localLibraries, True )
+def FortranExecutable( name, sources = [], objects = [], localLibraries = [], externalLibraries = [] ):
+    return __Executable( name, __FortranObjects( __FortranSources( sources ), objects ), localLibraries, externalLibraries, True )

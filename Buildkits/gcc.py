@@ -9,7 +9,7 @@ from ViDE.Buildkit import Buildkit
 class gcc( Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.Artifacts.CPlusPlus.Object ):
-            def __init__( self, buildkit, source, additionalDefines, localLibraries, explicit ):
+            def __init__( self, buildkit, source, additionalDefines, localLibraries, externalLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".o" )
                 self.__additionalDefines = additionalDefines
@@ -19,6 +19,7 @@ class gcc( Buildkit ):
                     files = [ self.__fileName ],
                     source = source,
                     localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
                     explicit = explicit
                 )
 
@@ -30,6 +31,7 @@ class gcc( Buildkit ):
                     + [ "-I" + self.__buildkit.fileName( "inc" ), "-o" + self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
                     + [ "-I/usr/include/python2.6" ] # @todo Remove
+                    + [ "-I" + d for d in self.getIncludeDirectories() ]
                 )
 
             def getFileName( self ):
@@ -60,7 +62,7 @@ class gcc( Buildkit ):
 
     class Binary:
         class Executable( ViDE.Project.Artifacts.Binary.Executable ):
-            def __init__( self, buildkit, name, objects, localLibraries, explicit ):
+            def __init__( self, buildkit, name, objects, localLibraries, externalLibraries, explicit ):
                 self.__buildkit = buildkit
                 self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
                 self.__objects = objects
@@ -71,6 +73,7 @@ class gcc( Buildkit ):
                     files = [ self.__fileName ],
                     objects = objects,
                     localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
                     explicit = explicit
                 )
 

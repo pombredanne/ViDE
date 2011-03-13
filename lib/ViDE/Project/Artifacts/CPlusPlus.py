@@ -163,7 +163,7 @@ class DepFile( AtomicArtifact ):
         return self.__fileName
 
 class Object( AtomicArtifact ):
-    def __init__( self, buildkit, files, source, localLibraries, explicit ):
+    def __init__( self, buildkit, files, source, localLibraries, externalLibraries, explicit ):
         candidateCopiedHeaders = CandidateCopiedHeaders( buildkit, localLibraries )
         headers = self.__parseCppHeaders( buildkit, source, candidateCopiedHeaders )
         includedHeaders = [ self.__retrieveOrCreateHeader( header ) for header in headers.getDoubleQuotedHeaders() ]
@@ -193,3 +193,13 @@ class Object( AtomicArtifact ):
         depFile = DepFile( buildkit, source, candidateCopiedHeaders )
         depFile.getProductionAction().execute( False, 1 )
         return Headers.load( depFile.getFileName() )
+
+    def getIncludeDirectories( self ):
+        return [
+            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/cairomm-1.0",
+            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/sigc++-2.0",
+            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/cairo",
+            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/freetype2",
+            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib/cairomm-1.0/include",
+            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib/sigc++-2.0/include",
+        ]

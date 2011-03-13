@@ -21,11 +21,11 @@ def __CppSource( source, explicit = False ):
 def __CppSources( sources ):
     return [ __CppSource( source ) for source in sources ]
 
-def __CppObject( source, additionalDefines, localLibraries, explicit = False ):
-    return Project.inProgress.createArtifact( Project.inProgress.buildkit.CPlusPlus.Object, source, additionalDefines, localLibraries, explicit )
+def __CppObject( source, additionalDefines, localLibraries, externalLibraries, explicit = False ):
+    return Project.inProgress.createArtifact( Project.inProgress.buildkit.CPlusPlus.Object, source, additionalDefines, localLibraries, externalLibraries, explicit )
 
-def __CppObjects( sources, objects, additionalDefines, localLibraries ):
-    return objects + [ __CppObject( source, additionalDefines, localLibraries ) for source in sources ]
+def __CppObjects( sources, objects, additionalDefines, localLibraries, externalLibraries ):
+    return objects + [ __CppObject( source, additionalDefines, localLibraries, externalLibraries ) for source in sources ]
 
 def CppHeader( header ):
     return __CppHeader( header, True )
@@ -33,21 +33,21 @@ def CppHeader( header ):
 def CppSource( source ):
     return __CppSource( source, True )
 
-def CppObject( source, additionalDefines = [], localLibraries = [] ):
-    return __CppObject( __CppSource( source, False ), additionalDefines, localLibraries, True )
+def CppObject( source, additionalDefines = [], localLibraries = [], externalLibraries = [] ):
+    return __CppObject( __CppSource( source, False ), additionalDefines, localLibraries, externalLibraries, True )
 
-def CppExecutable( name, sources = [], objects = [], localLibraries = [] ):
-    return __Executable( name, __CppObjects( __CppSources( sources ), objects, [], localLibraries ), localLibraries, True )
+def CppExecutable( name, sources = [], objects = [], localLibraries = [], externalLibraries = [] ):
+    return __Executable( name, __CppObjects( __CppSources( sources ), objects, [], localLibraries, externalLibraries ), localLibraries, externalLibraries, True )
 
-def CppDynamicLibrary( name, headers, sources = [], objects = [], localLibraries = [], stripHeaders = identity ):
+def CppDynamicLibrary( name, headers, sources = [], objects = [], localLibraries = [], externalLibraries = [], stripHeaders = identity ):
     headers = __CppHeaders( headers )
-    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, __CppObjects( __CppSources( sources ), objects, [ "BUILD_" + name.upper() ], localLibraries ), localLibraries, False )
-    return Project.inProgress.createArtifact( Binary.DynamicLibrary, name, headers, binary, localLibraries, stripHeaders, True )
+    binary = Project.inProgress.buildkit.Binary.DynamicLibraryBinary( Project.inProgress.buildkit, name, __CppObjects( __CppSources( sources ), objects, [ "BUILD_" + name.upper() ], localLibraries, externalLibraries ), localLibraries, externalLibraries, False )
+    return Project.inProgress.createArtifact( Binary.DynamicLibrary, name, headers, binary, localLibraries, externalLibraries, stripHeaders, True )
 
-def CppStaticLibrary( name, headers, sources = [], objects = [], localLibraries = [], stripHeaders = identity ):
+def CppStaticLibrary( name, headers, sources = [], objects = [], localLibraries = [], externalLibraries = [], stripHeaders = identity ):
     headers = __CppHeaders( headers )
-    binary = Project.inProgress.buildkit.Binary.StaticLibraryBinary( Project.inProgress.buildkit, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries ), localLibraries, False )
-    return Project.inProgress.createArtifact( Binary.StaticLibrary, name, headers, binary, localLibraries, stripHeaders, True )
+    binary = Project.inProgress.buildkit.Binary.StaticLibraryBinary( Project.inProgress.buildkit, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries, externalLibraries ), localLibraries, externalLibraries, False )
+    return Project.inProgress.createArtifact( Binary.StaticLibrary, name, headers, binary, localLibraries, externalLibraries, stripHeaders, True )
 
-def CppHeaderLibrary( name, headers, localLibraries = [], stripHeaders = identity ):
-    return Project.inProgress.createArtifact( Binary.HeaderLibrary, name, __CppHeaders( headers ), localLibraries, stripHeaders, True )
+def CppHeaderLibrary( name, headers, localLibraries = [], externalLibraries = [], stripHeaders = identity ):
+    return Project.inProgress.createArtifact( Binary.HeaderLibrary, name, __CppHeaders( headers ), localLibraries, externalLibraries, stripHeaders, True )

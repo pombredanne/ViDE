@@ -1,8 +1,8 @@
 from ViDE.Toolset import Toolset
 
-from PkgConfig import PkgConfig
-from LibSigCpp import LibSigCpp
-from Cairo import Pixman, FreeType, FontConfig, LibPng, Cairo, Cairomm, PyCairo
+from Tools.PkgConfig import PkgConfig
+from Tools.LibSigCpp import LibSigCpp
+from Tools.Cairo import Pixman, FreeType, FontConfig, LibPng, Cairo, Cairomm, PyCairo
 
 class ts20110308( Toolset ):
     def computeTools( self ):

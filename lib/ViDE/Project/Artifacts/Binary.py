@@ -26,7 +26,7 @@ class CopiedHeaders( CompoundArtifact ):
         return self.__copiedHeaders
 
 class Library( CompoundArtifact ):
-    def __init__( self, buildkit, name, headers, binary, localLibraries, stripHeaders, explicit ):
+    def __init__( self, buildkit, name, headers, binary, localLibraries, externalLibraries, stripHeaders, explicit ):
         self.__libName = name
         self.__copiedHeaders = CopiedHeaders( buildkit, name, headers, stripHeaders, False )
         self.__binary = binary
@@ -57,7 +57,7 @@ class Library( CompoundArtifact ):
         return self.__localLibraries
 
 class HeaderLibrary( Library ):
-    def __init__( self, buildkit, name, headers, localLibraries, stripHeaders, explicit ):
+    def __init__( self, buildkit, name, headers, localLibraries, externalLibraries, stripHeaders, explicit ):
         Library.__init__(
             self,
             buildkit = buildkit,
@@ -76,7 +76,7 @@ class StaticLibrary( Library ):
     pass
 
 class StaticLibraryBinary( AtomicArtifact ):
-    def __init__( self, buildkit, name, files, objects, localLibraries, explicit ):
+    def __init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit ):
         AtomicArtifact.__init__(
             self,
             name = name,
@@ -88,7 +88,7 @@ class StaticLibraryBinary( AtomicArtifact ):
         )
 
 class LinkedBinary( AtomicArtifact ):
-    def __init__( self, buildkit, name, files, objects, localLibraries, explicit ):
+    def __init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit ):
         self.__librariesToLink, staticLibraryBinaries, dynamicLibraryBinaries = LinkedBinary.__extractLibraries( localLibraries )
         AtomicArtifact.__init__(
             self,
@@ -128,8 +128,8 @@ class LinkedBinary( AtomicArtifact ):
         return self.__librariesToLink
 
 class Executable( LinkedBinary ):
-    def __init__( self, buildkit, name, files, objects, localLibraries, explicit ):
-        LinkedBinary.__init__( self, buildkit, name, files, objects, localLibraries, explicit )
+    def __init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit ):
+        LinkedBinary.__init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit )
         self.__executableFile = files[ 0 ]
 
     def run( self, arguments ):
