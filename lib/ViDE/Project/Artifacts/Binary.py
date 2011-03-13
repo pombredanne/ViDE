@@ -1,6 +1,6 @@
 import os.path
-import subprocess
 
+from ViDE.Core import Subprocess
 from ViDE.Core.Actions import CopyFileAction
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Project.Artifacts.BasicArtifacts import CopiedArtifact
@@ -133,7 +133,7 @@ class Executable( LinkedBinary ):
         self.__executableFile = files[ 0 ]
 
     def run( self, arguments ):
-        subprocess.check_call( [ self.__executableFile ] + arguments )
+        Subprocess.execute( [ self.__executableFile ] + arguments )
 
 class DynamicLibraryBinary( LinkedBinary ):
     pass

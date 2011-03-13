@@ -1,64 +1,96 @@
 from ViDE.Core.Artifact import CompoundArtifact
-from ViDE.Toolset import Tool, DownloadedArchive, UnarchiveConfigureMakeMakeinstall
+from ViDE.Toolset import Tool, DownloadUnarchiveConfigureMakeMakeinstall
+
+from PkgConfig import PkgConfig
+from LibSigCpp import LibSigCpp
 
 class Pixman( Tool ):
-    def computeFetchArtifact( self ):
-        return DownloadedArchive( "http://www.cairographics.org/releases/pixman-" + self.version + ".tar.gz" )
-
-    def computeInstallArtifact( self, toolset, strongDependencies ):
-        return UnarchiveConfigureMakeMakeinstall(
+    def computeInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
+        return DownloadUnarchiveConfigureMakeMakeinstall(
             toolset = toolset,
+            downloadOnly = downloadOnly,
             toolName = "pixman",
-            archive = "pixman-" + self.version + ".tar.gz",
+            archiveUrl = "http://www.cairographics.org/releases/pixman-" + self.version + ".tar.gz",
             strongDependencies = strongDependencies
         )
 
     def getDependencies( self ):
         return []
 
-class Cairo( Tool ):
-    def computeFetchArtifact( self ):
-        return DownloadedArchive( "http://www.cairographics.org/releases/cairo-" + self.version + ".tar.gz" )
-
-    def computeInstallArtifact( self, strongDependencies ):
-        return UnarchiveConfigureMakeMakeinstall(
-            archive = "cairo-" + self.version + ".tar.gz",
-            file = "libcairo.so",
-            strongDependencies = strongDependencies,
-            configureOptions = [ "--whit-shared" ]
+class LibPng( Tool ):
+    def computeInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
+        return DownloadUnarchiveConfigureMakeMakeinstall(
+            toolset = toolset,
+            downloadOnly = downloadOnly,
+            toolName = "libpng",
+            archiveUrl = "ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng-" + self.version + ".tar.gz",
+            strongDependencies = strongDependencies
         )
 
     def getDependencies( self ):
-        return [ Pixman ]
+        return []
+
+class FreeType( Tool ):
+    def computeInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
+        return DownloadUnarchiveConfigureMakeMakeinstall(
+            toolset = toolset,
+            downloadOnly = downloadOnly,
+            toolName = "freetype",
+            archiveUrl = "http://download.savannah.gnu.org/releases/freetype/freetype-" + self.version + ".tar.bz2",
+            strongDependencies = strongDependencies
+        )
+
+    def getDependencies( self ):
+        return []
+
+class FontConfig( Tool ):
+    def computeInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
+        return DownloadUnarchiveConfigureMakeMakeinstall(
+            toolset = toolset,
+            downloadOnly = downloadOnly,
+            toolName = "fontconfig",
+            archiveUrl = "http://www.freedesktop.org/software/fontconfig/release/fontconfig-" + self.version + ".tar.gz",
+            strongDependencies = strongDependencies
+        )
+
+    def getDependencies( self ):
+        return [ FreeType ]
+
+class Cairo( Tool ):
+    def computeInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
+        return DownloadUnarchiveConfigureMakeMakeinstall(
+            toolset = toolset,
+            downloadOnly = downloadOnly,
+            toolName = "cairo",
+            archiveUrl = "http://www.cairographics.org/releases/cairo-" + self.version + ".tar.gz",
+            strongDependencies = strongDependencies
+        )
+
+    def getDependencies( self ):
+        return [ Pixman, PkgConfig, LibPng, FontConfig ]
 
 class Cairomm( Tool ):
-    def computeFetchArtifact( self ):
-        return DownloadedArchive( "http://www.cairographics.org/releases/cairomm-" + self.version + ".tar.gz" )
-
-    def computeInstallArtifact( self, strongDependencies ):
-        return UnarchiveConfigureMakeMakeinstall(
-            archive = "cairomm-" + self.version + ".tar.gz",
-            file = "libcairomm.so",
-            strongDependencies = strongDependencies,
-            configureOptions = [ "--whit-shared" ]
+    def computeInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
+        return DownloadUnarchiveConfigureMakeMakeinstall(
+            toolset = toolset,
+            downloadOnly = downloadOnly,
+            toolName = "cairomm",
+            archiveUrl = "http://www.cairographics.org/releases/cairomm-" + self.version + ".tar.gz",
+            strongDependencies = strongDependencies
         )
 
     def getDependencies( self ):
-        return [ Cairo ]
+        return [ Cairo, LibSigCpp ]
 
 class PyCairo( Tool ):
-    def computeFetchArtifact( self ):
-        # Python 2
-        return DownloadedArchive( "http://www.cairographics.org/releases/py2cairo-" + self.version + ".tar.gz" )
-        # Python 3
-        # return DownloadedArchive( "http://www.cairographics.org/releases/pycairo-" + self.version + ".tar.bz2" )
-
-    def computeInstallArtifact( self, strongDependencies ):
-        return UnarchiveConfigureMakeMakeinstall(
-            archive = "py2cairo-" + self.version + ".tar.gz",
-            file = "pycairo",
-            strongDependencies = strongDependencies,
-            configureOptions = [ "--whit-shared" ]
+    def computeInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
+        return DownloadUnarchiveConfigureMakeMakeinstall(
+            toolset = toolset,
+            downloadOnly = downloadOnly,
+            toolName = "pycairo",
+            archiveUrl = "http://www.cairographics.org/releases/py2cairo-" + self.version + ".tar.gz", # Python 2
+            # archiveUrl = "http://www.cairographics.org/releases/pycairo-" + self.version + ".tar.bz2", # Python 3
+            strongDependencies = strongDependencies
         )
 
     def getDependencies( self ):

@@ -1,7 +1,6 @@
 import os
 import stat
 import shutil
-import subprocess
 import time
 import sys
 import urlparse
@@ -10,6 +9,7 @@ import tarfile
 import zipfile
 
 from ViDE.Core.Action import Action, NullAction
+from ViDE.Core import Subprocess
 from ViDE import Log
 
 class RemoveFileAction( Action ):
@@ -75,6 +75,7 @@ class DownloadFileAction( Action ):
         self.__destinationFile = destinationFile
 
     def computePreview( self ):
+        #return "wget " + self.__originUrl
         urlComponents = urlparse.urlparse( self.__originUrl )
         return "wget " + urlComponents.scheme + "://" + urlComponents.netloc + "/[...]/" + os.path.basename( urlComponents.path )
 
@@ -84,36 +85,19 @@ class DownloadFileAction( Action ):
         print
 
 class SystemAction( Action ):
-    def __init__( self, base, options = [], wd = None ):
+    def __init__( self, base, options = [], wd = None, buildkit = None, toolset = None ):
         Action.__init__( self )
         self.__base = base
         self.__options = options
         self.__wd = wd
+        self.__buildkit = buildkit
+        self.__toolset = toolset
 
     def computePreview( self ):
         return " ".join( self.__base )
 
     def doExecute( self ):
-        Log.info( self.computePreview() )
-        Log.debug( " ".join( self.__base + self.__options ) )
-        if self.__wd is not None:
-            oldWorkingDirectory = os.getcwd()
-            os.chdir( self.__wd )
-        stdout = None
-        if Log.level < 1:
-            stdout = subprocess.PIPE
-        stderr = None
-        if Log.level < 0:
-            stderr = subprocess.PIPE
-        p = subprocess.Popen( self.__base + self.__options, stdout = stdout, stderr = stderr )
-        p.communicate()
-        if self.__wd is not None:
-            os.chdir( oldWorkingDirectory )
-        if p.returncode == 0:
-            Log.verbose( "End of", self.computePreview() )
-        else:
-            Log.verbose( "Error during", self.computePreview() )
-            raise Exception( "Error during " + self.computePreview() )
+        Subprocess.execute( self.__base, self.__options, self.__wd, self.__buildkit, self.__toolset )
 
 class TouchAction( Action ):
     def __init__( self, files ):
@@ -145,6 +129,9 @@ class ActionSequence( Action ):
     def doExecute( self ):
         for a in self.__actions:
             a.doExecute()
+
+def ActionAndTouch( action, marker ):
+    return ActionSequence( [ action, TouchAction( [ marker ] ) ] )
 
 class UnarchiveAction( Action ):
     def __init__( self, archive, destination ):

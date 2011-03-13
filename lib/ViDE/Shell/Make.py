@@ -43,6 +43,6 @@ class Make( ICLP.Command ):
                 Log.error( "build failed", e )
             finally:
                 report = ExecutionReport( action, 800 )
-                report.drawTo( buildkit.fileName( "action-execution.png" ) )
-        action.getGraph().drawTo( buildkit.fileName( "action-dependencies.png" ) )
-        project.getGraph().drawTo( buildkit.fileName( "project-artifacts.png" ) )
+                report.drawTo( buildkit.fileName( "make-report.png" ) )
+        action.getGraph().drawTo( buildkit.fileName( "make-actions.png" ) )
+        project.getGraph().drawTo( buildkit.fileName( "make-artifacts.png" ) )

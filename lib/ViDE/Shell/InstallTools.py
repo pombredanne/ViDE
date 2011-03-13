@@ -38,5 +38,7 @@ class InstallTools( ICLP.Command ):
                 report = ExecutionReport( action, 800 )
                 #report.drawTo( toolset.fileName( "installation-report.png" ) )
                 report.drawTo( "installation-report.png" )
+        #print 
+        artifact.getGraph().dotString()
         artifact.getGraph().drawTo( "installation-artifacts.png" )
-        action.getGraph().drawTo( "installation-dependencies.png" )
+        action.getGraph().drawTo( "installation-actions.png" )

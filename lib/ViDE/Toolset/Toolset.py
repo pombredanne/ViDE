@@ -21,30 +21,30 @@ class Toolset( Loadable, CallOnceAndCache ):
         return self.getCached( "tools", self.computeTools )
 
     def getFetchArtifact( self ):
-        return self.getCached( "fetchArtifact", self.__computeFetchArtifact )
-
-    def __computeFetchArtifact( self ):
-        componants = [ tool.getFetchArtifact() for tool in self.getTools() ]
-        return CompoundArtifact( "tools", componants, False )
+        return self.getCached( "fetchArtifact", self.__computeInstallArtifact, downloadOnly = True )
 
     def getInstallArtifact( self ):
-        return self.getCached( "installArtifact", self.__computeInstallArtifact )
+        return self.getCached( "installArtifact", self.__computeInstallArtifact, downloadOnly = False )
 
-    def __computeInstallArtifact( self ):
-        componants = [ self.__getToolInstallArtifact( tool ) for tool in self.getTools() ]
-        componants += [ tool.getFetchArtifact() for tool in self.getTools() ]
+    def __computeInstallArtifact( self, downloadOnly ):
+        componants = [ self.__getToolInstallArtifact( tool, downloadOnly ) for tool in self.getTools() ]
         return CompoundArtifact( "tools", componants, False )
 
-    def __getToolInstallArtifact( self, tool ):
-        return self.getCached( "installArtifacts", self.__computeToolInstallArtifact, tool )
+    def __getToolInstallArtifact( self, tool, downloadOnly ):
+        return self.getCached( "installArtifacts", self.__computeToolInstallArtifact, tool, downloadOnly )
 
-    def __computeToolInstallArtifact( self, tool ):
-        strongDependencies = [ self.__getToolInstallArtifact( self.__toolsByClass[ dep ] ) for dep in tool.getDependencies() ]
-        strongDependencies.append( tool.getFetchArtifact() )
-        return tool.getInstallArtifact( self, strongDependencies )
+    def __computeToolInstallArtifact( self, tool, downloadOnly ):
+        if downloadOnly:
+            strongDependencies = []
+        else:
+            strongDependencies = [ self.__getToolInstallArtifact( self.__toolsByClass[ dep ], downloadOnly ) for dep in tool.getDependencies() ]
+        return tool.getInstallArtifact( self, downloadOnly, strongDependencies )
 
     def getTempDirectory( self ):
         return os.path.join( ViDE.toolsetsTmpDirectory, self.__class__.__name__ )
 
     def getInstallDirectory( self ):
         return os.path.join( ViDE.toolsetsInstallDirectory, self.__class__.__name__ )
+
+    def getMarkerDirectory( self ):
+        return os.path.join( ViDE.toolsetsMarkerDirectory, self.__class__.__name__ )

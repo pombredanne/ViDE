@@ -1,7 +1,7 @@
-import subprocess
 import os.path
 import py_compile
 
+from ViDE.Core import Subprocess
 from ViDE.Core.Action import Action
 from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact, CopiedArtifact
@@ -24,12 +24,10 @@ class Script( CopiedArtifact ):
         )
 
     def run( self, arguments ):
-        os.environ[ "PYTHONPATH" ] = self.__buildkit.fileName( "pyd" )
-        subprocess.check_call( [ "python", self.__fileName ] + arguments )
+        Subprocess.execute( [ "python", self.__fileName ] + arguments, buildkit = self.__buildkit )
 
     def debug( self, arguments ):
-        os.environ[ "PYTHONPATH" ] = self.__buildkit.fileName( "pyd" )
-        subprocess.check_call( [ "python", "-mpdb", self.__fileName ] + arguments )
+        Subprocess.execute( [ "python", "-mpdb", self.__fileName ] + arguments, buildkit = self.__buildkit )
 
 class PythonCompileAction( Action ):
     def __init__( self, source, destination ):

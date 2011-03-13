@@ -1,5 +1,4 @@
-import subprocess
-
+from ViDE.Core import Subprocess
 import ViDE.Project.Artifacts.CPlusPlus
 import ViDE.Project.Artifacts.Fortran
 import ViDE.Project.Artifacts.Binary
@@ -87,7 +86,7 @@ class gcc( Buildkit ):
                 )
 
             def debug( self, arguments ):
-                subprocess.check_call( [ "gdb", self.__executableFile ] + arguments )
+                Subprocess.execute( [ "gdb", self.__executableFile ] + arguments, buildkit = self.__buildkit )
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, buildkit, name, objects, localLibraries, explicit ):
