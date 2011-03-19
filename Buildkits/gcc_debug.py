@@ -1,6 +1,4 @@
-from gcc import gcc
-
-class gcc_debug( gcc ):
+class gcc_debug:
     def getCompilationOptions( self ):
         return [ "-g" ]
 

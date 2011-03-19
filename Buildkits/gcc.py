@@ -27,7 +27,7 @@ class gcc( Buildkit ):
                 return SystemAction(
                     [ "g++", "-c", sourceName ],
                     self.context.buildkit.getCompilationOptions()
-                    + [ "-o" + self.__fileName ]
+                    + [ "-o", self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
                     + [ "-I" + self.context.buildkit.fileName( "inc" ) ]
                     + [ "-I" + d for d in self.getIncludeDirectories() ]
@@ -74,7 +74,7 @@ class gcc( Buildkit ):
     class Binary:
         class Executable( ViDE.Project.Artifacts.Binary.Executable ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
-                self.__fileName = context.buildkit.fileName( "bin", name + ".exe" )
+                self.__fileName = context.buildkit.computeExecutableName( context, name )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.Executable.__init__(
                     self,
@@ -89,7 +89,7 @@ class gcc( Buildkit ):
 
             def doGetProductionAction( self ):
                 return SystemAction(
-                    [ "g++", "-o" + self.__fileName ],
+                    [ "g++", "-o", self.__fileName ],
                     self.context.buildkit.getLinkOptions()
                     + [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
@@ -103,7 +103,7 @@ class gcc( Buildkit ):
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
-                self.__fileName = context.buildkit.fileName( "bin", name + ".dll" )
+                self.__fileName = context.buildkit.computeDynamicLibraryName( context, name )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.DynamicLibraryBinary.__init__(
                     self,
@@ -119,7 +119,7 @@ class gcc( Buildkit ):
             def doGetProductionAction( self ):
                 # Build commands taken from http://www.cygwin.com/cygwin-ug-net/dll.html
                 return SystemAction(
-                    [ "g++", "-shared", "-o" + self.__fileName ],
+                    [ "g++", self.context.buildkit.getDynamicLibraryFlag(), "-o", self.__fileName ],
                     self.context.buildkit.getLinkOptions()
                     + [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
@@ -169,7 +169,7 @@ class gcc( Buildkit ):
 
             def doGetProductionAction( self ):
                 return SystemAction(
-                    [ "g++", "-shared", "-o" + self.__fileName ],
+                    [ "g++", "-shared", "-o", self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.context.buildkit.fileName( "bin" ) ]
