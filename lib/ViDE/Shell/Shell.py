@@ -1,5 +1,6 @@
 from Misc import InteractiveCommandLineProgram
 
+import ViDE
 from ViDE import Log
 from ViDE.Shell.AutoTest import AutoTest
 from ViDE.Shell.Make import Make
@@ -9,7 +10,7 @@ from ViDE.Shell.InstallTools import InstallTools
 
 # Get from ViDE
 defaultToolset = "ts20110308"
-defaultBuildkit = "gcc_debug"
+defaultBuildkit = ViDE.host() + "_gcc_debug"
 
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
     def __init__( self ):

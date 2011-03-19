@@ -1,4 +1,15 @@
+import sys
 import os.path
+
+def host():
+    if sys.platform == "linux2":
+        return "linux"
+    elif sys.platform == "cygwin":
+        return "cygwin"
+    elif sys.platform == "darwin":
+        return "darwin"
+    else:
+        raise Exception( "Unsupported host " + sys.platform )
 
 def rootDirectory():
     return os.path.relpath( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ) )
