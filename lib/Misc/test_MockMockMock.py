@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 import unittest
 
-from MockMockMock import TestCase, UnexpectedCall, ExpectedMoreCalls
+from MockMockMock import TestCase, UnexpectedCall, ExpectedMoreCalls, CustomChecker
 
 class ToBeMocked:
     def __init__( self ):
@@ -54,6 +54,19 @@ class TestCheckCall( TestCase ):
 
     def testBadArguments( self ):
         self.assertRaises( UnexpectedCall, self.o1.foobar, "abc", "ghi" )
+
+class TestCustomArgumentChecker( TestCase ):
+    def setUp( self ):
+        TestCase.setUp( self )
+        self.o = self.m.createMock( "self.o" )
+        self.o.foobar( CustomChecker( lambda s: len( s ) == 3 ), "def" )
+        self.m.startTest()
+
+    def testOk( self ):
+        self.o.foobar( "xxx", "def" )
+
+    def testBadArgument( self ):
+        self.assertRaises( UnexpectedCall, self.o.foobar, "xxxx", "def" )
 
 class TestOrderedGroup:
     def testGoodOrder( self ):

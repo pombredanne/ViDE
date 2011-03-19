@@ -1,3 +1,4 @@
+import itertools
 import unittest
 
 class MockException( Exception ): pass
@@ -75,12 +76,43 @@ class UnorderedGroup( Group ):
 # @todo Maybe replace FunctionCall.isOptional by a class OptionalGroup( Group )
 # @todo Maybe replace mustBeRemoved (and maybe canBeSkipped) by a simplify method
 
+class Checker:
+    pass
+
+class EqualityChecker( Checker ):
+    def __init__( self, ref ):
+        self.__ref = ref
+
+    def __call__( self, arg ):
+        return self.__ref == arg
+
+    def __repr__( self ):
+        return self.__ref.__repr__()
+
+class CustomChecker( Checker ):
+    def __init__( self, check ):
+        self.__check = check
+
+    def __call__( self, arg ):
+        return self.__check( arg )
+
+class DontCheck( Checker ):
+    def __call__( self, arg ):
+        return True
+
 # @todo Create a FunctionCallDescription for returns, raises, lasts, etc. Keep FunctionCall for other methods
 class FunctionCall:
     def __init__( self, mock, name, *args ):
         self.__mock = mock
         self.__name = name
-        self.__args = args
+        checkers = []
+        for arg in args:
+            if isinstance( arg, Checker ):
+                checker = arg
+            else:
+                checker = EqualityChecker( arg )
+            checkers.append( checker )
+        self.__checkers = tuple( checkers )
         self.__returnValue = None
         self.__exception = None
         self.__optional = False
@@ -105,10 +137,10 @@ class FunctionCall:
 
     def checkCall( self, mock, name, *args ):
         if not self.canExecute( mock, name, *args ):
-            raise UnexpectedCall( "Unexpected call to " + mock._Mock__name + "." + name + str( args ) + " instead of " + self.__mock._Mock__name + "." + self.__name + str( self.__args ) )
+            raise UnexpectedCall( "Unexpected call to " + mock._Mock__name + "." + name + str( args ) + " instead of " + self.__mock._Mock__name + "." + self.__name + str( self.__checkers ) )
 
     def canExecute( self, mock, name, *args ):
-        return mock == self.__mock and name == self.__name and args == self.__args
+        return mock == self.__mock and name == self.__name and all( check( arg ) for ( check, arg ) in itertools.izip( self.__checkers, args ) )
 
     def canBeSkipped( self ):
         return self.__optional

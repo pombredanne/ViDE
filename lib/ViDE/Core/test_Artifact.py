@@ -3,7 +3,7 @@ from __future__ import with_statement
 import os.path
 import unittest
 
-from Misc.MockMockMock import TestCase
+from Misc.MockMockMock import TestCase, DontCheck
 from Misc.Graphviz import Graph, Cluster, Node, Link
 
 from Artifact import Artifact, AtomicArtifact, CompoundArtifact, InputArtifact, BuildEmptyArtifact
@@ -220,7 +220,7 @@ class ProductionReasons( TestCase ):
         self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
         self.automaticDependency.getNewestFile( [], [] ).returns( 1200000 )
         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( True )
-        self.orderOnlyDependency.computeProductionAction( [], [], False ).returns( self.orderOnlyDependencyProductionAction )
+        self.orderOnlyDependency.computeProductionAction( [], [], False, DontCheck() ).returns( self.orderOnlyDependencyProductionAction )
         
         self.orderOnlyDependencyProductionAction.computePreview().returns( "create orderOnlyDependency" )
 
@@ -270,7 +270,7 @@ class ProductionReasons( TestCase ):
         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( True )
         self.artifact.doGetProductionAction().returns( self.productionAction )
-        self.strongDependency.computeProductionAction( [], [], False ).returns( self.strongDependencyProductionAction )
+        self.strongDependency.computeProductionAction( [], [], False, DontCheck() ).returns( self.strongDependencyProductionAction )
         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
 
@@ -332,7 +332,7 @@ class ProductionReasons( TestCase ):
         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( True )
         self.artifact.doGetProductionAction().returns( self.productionAction )
         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-        self.automaticDependency.computeProductionAction( [], [], False ).returns( self.automaticDependencyProductionAction )
+        self.automaticDependency.computeProductionAction( [], [], False, DontCheck() ).returns( self.automaticDependencyProductionAction )
 
         self.productionAction.computePreview().returns( "create file1" )
         self.automaticDependencyProductionAction.computePreview().returns( "create automaticDependency" )
