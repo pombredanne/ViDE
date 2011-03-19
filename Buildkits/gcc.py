@@ -31,7 +31,8 @@ class gcc( Buildkit ):
                     + [ "-o", self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
                     + [ "-I" + self.context.buildkit.fileName( "inc" ) ]
-                    + [ "-I" + d for d in self.getIncludeDirectories() ]
+                    + [ "-I" + d for d in self.getIncludeDirectories() ],
+                    context = self.context
                 )
 
             def getFileName( self ):
@@ -53,19 +54,20 @@ class gcc( Buildkit ):
                 sourceName = self.getSource().getFileName()
                 return SystemAction(
                     [ "gfortran", "-c", sourceName ],
-                    [ "-o" + self.__fileName ]
+                    [ "-o" + self.__fileName ],
+                    context = self.context
                 )
 
             def getFileName( self ):
                 return self.__fileName
-            
+
             class FakeLibrary:
                 def __init__( self, name ):
                     self.__name = name
 
                 def getLibName( self ):
                     return self.__name
-                
+
                 def getLibPath( self ):
                     return None
 
@@ -96,7 +98,8 @@ class gcc( Buildkit ):
                     + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.context.buildkit.fileName( "bin" ) ]
                     + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
-                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
+                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ],
+                    context = self.context
                 )
 
             def debug( self, arguments ):
@@ -126,7 +129,8 @@ class gcc( Buildkit ):
                     + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.context.buildkit.fileName( "bin" ) ]
                     + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
-                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
+                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ],
+                    context = self.context
                 )
 
         class StaticLibraryBinary( ViDE.Project.Artifacts.Binary.StaticLibraryBinary ):
@@ -147,7 +151,8 @@ class gcc( Buildkit ):
             def doGetProductionAction( self ):
                 return SystemAction(
                     [ "ar", "-q", self.__fileName ],
-                    [ o.getFileName() for o in self.__objects ]
+                    [ o.getFileName() for o in self.__objects ],
+                    context = self.context
                 )
 
     class Python:
@@ -176,5 +181,6 @@ class gcc( Buildkit ):
                     + [ "-L" + self.context.buildkit.fileName( "bin" ) ]
                     + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
-                    + [ "-lpython2.6" ] # @todo Remove
+                    + [ "-lpython2.6" ], # @todo Remove
+                    context = self.context
                 )

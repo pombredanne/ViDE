@@ -25,19 +25,20 @@ class SubProcess:
         finally:
             self.__restoreEnviron()
             self.__restoreWorkingDirectory()
-    
+
     def __updateEnviron( self ):
         self.__oldEnviron = dict( os.environ )
         if self.__context is not None:
             # @todo Do not override PYTHONPATH if it already exists
             os.environ[ "PYTHONPATH" ] = self.__context.buildkit.fileName( "pyd" )
+            os.environ[ "LD_LIBRARY_PATH" ] = self.__context.buildkit.fileName( "lib" )
             os.environ[ "PATH" ] = os.path.realpath( os.path.join( self.__context.toolset.getInstallDirectory(), "bin" ) ) + ":" + os.environ[ "PATH" ]
-    
+
     def __changeWorkingDirectory( self ):
         if self.__wd is not None:
             self.__oldWorkingDirectory = os.getcwd()
             os.chdir( self.__wd )
-    
+
     def __setIoStreams( self ):
         self.__stdout = None
         if Log.level < 1:
@@ -45,7 +46,7 @@ class SubProcess:
         self.__stderr = None
         if Log.level < 0:
             self.__stderr = subprocess.PIPE
-    
+
     def __execute( self ):
         p = subprocess.Popen( self.__base + self.__options, stdout = self.__stdout, stderr = self.__stderr )
         p.communicate()
@@ -54,7 +55,7 @@ class SubProcess:
         else:
             Log.verbose( "Error during", self.__preview )
             raise Exception( "Error during " + self.__preview )
-    
+
     def __restoreWorkingDirectory( self ):
         if self.__wd is not None:
             os.chdir( self.__oldWorkingDirectory )
