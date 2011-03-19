@@ -28,9 +28,9 @@ class gcc( Buildkit ):
                 return SystemAction(
                     [ "g++", "-c", sourceName ],
                     self.__buildkit.getCompilationOptions()
-                    + [ "-I" + self.__buildkit.fileName( "inc" ), "-o" + self.__fileName ]
+                    + [ "-o" + self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
-                    + [ "-I/usr/include/python2.6" ] # @todo Remove
+                    + [ "-I" + self.__buildkit.fileName( "inc" ) ]
                     + [ "-I" + d for d in self.getIncludeDirectories() ]
                 )
 
@@ -59,6 +59,19 @@ class gcc( Buildkit ):
 
             def getFileName( self ):
                 return self.__fileName
+            
+            class FakeLibrary:
+                def __init__( self, name ):
+                    self.__name = name
+
+                def getLibName( self ):
+                    return self.__name
+                
+                def getLibPath( self ):
+                    return None
+
+            def getLibrariesToLink( self ):
+                return [ FakeLibrary( "gfortranbegin" ), FakeLibrary( "fortran" ) ] + ViDE.Project.Artifacts.Fortran.Object.getLibrariesToLink()
 
     class Binary:
         class Executable( ViDE.Project.Artifacts.Binary.Executable ):
@@ -84,8 +97,8 @@ class gcc( Buildkit ):
                     + [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
+                    + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
-                    + [ "-lgfortranbegin", "-lgfortran" ] # @todo Remove
                 )
 
             def debug( self, arguments ):
@@ -114,6 +127,7 @@ class gcc( Buildkit ):
                     + [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
+                    + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                 )
 
@@ -162,6 +176,7 @@ class gcc( Buildkit ):
                     [ o.getFileName() for o in self.__objects ]
                     + [ "-L" + self.__buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.__buildkit.fileName( "bin" ) ]
+                    + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                     + [ "-lpython2.6" ] # @todo Remove
                 )

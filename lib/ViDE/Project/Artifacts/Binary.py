@@ -90,6 +90,8 @@ class StaticLibraryBinary( AtomicArtifact ):
 class LinkedBinary( AtomicArtifact ):
     def __init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit ):
         self.__librariesToLink, staticLibraryBinaries, dynamicLibraryBinaries = LinkedBinary.__extractLibraries( localLibraries )
+        for o in objects:
+            self.__librariesToLink += o.getLibrariesToLink()
         AtomicArtifact.__init__(
             self,
             name = name,

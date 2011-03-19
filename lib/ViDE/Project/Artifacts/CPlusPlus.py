@@ -195,7 +195,9 @@ class Object( AtomicArtifact ):
         return Headers.load( depFile.getFileName() )
 
     def getIncludeDirectories( self ):
+        # @todo Implement from external libraries
         return [
+            "/usr/include/python2.6",
             "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/cairomm-1.0",
             "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/sigc++-2.0",
             "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/cairo",
@@ -203,3 +205,18 @@ class Object( AtomicArtifact ):
             "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib/cairomm-1.0/include",
             "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib/sigc++-2.0/include",
         ]
+
+    class FakeLibrary:
+        def __init__( self, name, path ):
+            self.__name = name
+            self.__path = path
+
+        def getLibName( self ):
+            return self.__name
+
+        def getLibPath( self ):
+            return self.__path
+
+    def getLibrariesToLink( self ):
+        # @todo Implement from external libraries
+        return [ Object.FakeLibrary( "cairomm-1.0", "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib" ) ]
