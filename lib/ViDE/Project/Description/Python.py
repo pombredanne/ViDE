@@ -31,4 +31,4 @@ def PythonScript( source ):
     return Project.inProgress.createArtifact( Python.Script, __PythonSource( source ), True )
 
 def CppPythonModule( name, sources = [], objects = [], localLibraries = [], externalLibraries = [] ):
-    return Project.inProgress.createArtifact( Project.inProgress.context.bk.Python.CModule, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries, externalLibraries ), localLibraries, externalLibraries, True )
+    return Project.inProgress.createArtifact( Project.inProgress.context.buildkit.Python.CModule, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries, externalLibraries ), localLibraries, externalLibraries, True )

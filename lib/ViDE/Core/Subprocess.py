@@ -30,8 +30,8 @@ class SubProcess:
         self.__oldEnviron = dict( os.environ )
         if self.__context is not None:
             # @todo Do not override PYTHONPATH if it already exists
-            os.environ[ "PYTHONPATH" ] = self.__context.bk.fileName( "pyd" )
-            os.environ[ "PATH" ] = os.path.realpath( os.path.join( self.__context.ts.getInstallDirectory(), "bin" ) ) + ":" + os.environ[ "PATH" ]
+            os.environ[ "PYTHONPATH" ] = self.__context.buildkit.fileName( "pyd" )
+            os.environ[ "PATH" ] = os.path.realpath( os.path.join( self.__context.toolset.getInstallDirectory(), "bin" ) ) + ":" + os.environ[ "PATH" ]
     
     def __changeWorkingDirectory( self ):
         if self.__wd is not None:

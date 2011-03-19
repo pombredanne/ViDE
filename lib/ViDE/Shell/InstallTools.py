@@ -20,9 +20,9 @@ class InstallTools( ICLP.Command ):
     def execute( self, args ):
         context = Context( self.program )
         if self.downloadOnly:
-            artifact = context.ts.getFetchArtifact()
+            artifact = context.toolset.getFetchArtifact()
         else:
-            artifact = context.ts.getInstallArtifact()
+            artifact = context.toolset.getInstallArtifact()
         action = artifact.getProductionAction()
         if self.dryRun:
             print "\n".join( action.preview() )

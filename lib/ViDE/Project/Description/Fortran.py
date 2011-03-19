@@ -13,7 +13,7 @@ def __FortranSources( sources ):
     return [ __FortranSource( source ) for source in sources ]
 
 def __FortranObject( source, explicit = False ):
-    return Project.inProgress.createArtifact( Project.inProgress.context.bk.Fortran.Object, source, explicit )
+    return Project.inProgress.createArtifact( Project.inProgress.context.buildkit.Fortran.Object, source, explicit )
 
 def __FortranObjects( sources, objects ):
     return objects + [ __FortranObject( source ) for source in sources ]

@@ -42,8 +42,8 @@ class UnarchivedArchive( AtomicArtifact ):
         self.context = context
         self.__toolName = toolName
         self.__downloadedArchive = downloadedArchive
-        self.__marker = os.path.join( self.context.ts.getMarkerDirectory(), toolName + "_unarchived"  )
-        self.__destination = os.path.join( self.context.ts.getTempDirectory(), self.__toolName )
+        self.__marker = os.path.join( self.context.toolset.getMarkerDirectory(), toolName + "_unarchived"  )
+        self.__destination = os.path.join( self.context.toolset.getTempDirectory(), self.__toolName )
         AtomicArtifact.__init__(
             self,
             name = self.__marker,
@@ -68,7 +68,7 @@ class ConfiguredPackage( AtomicArtifact ):
         self.context = context
         self.__configureOptions = configureOptions
         self.__unarchivedArchive = unarchivedArchive
-        self.__marker = os.path.join( context.ts.getMarkerDirectory(), toolName + "_configured"  )
+        self.__marker = os.path.join( context.toolset.getMarkerDirectory(), toolName + "_configured"  )
         AtomicArtifact.__init__(
             self,
             name = self.__marker,
@@ -83,7 +83,7 @@ class ConfiguredPackage( AtomicArtifact ):
         return ActionAndTouch(
             SystemAction(
                 [ "./configure" ],
-                [ "--prefix=" + os.path.realpath( self.context.ts.getInstallDirectory() ) ] + self.__configureOptions,
+                [ "--prefix=" + os.path.realpath( self.context.toolset.getInstallDirectory() ) ] + self.__configureOptions,
                 wd = self.getDestination(),
                 context = self.context
             ),
@@ -97,7 +97,7 @@ class MadePackage( AtomicArtifact ):
     def __init__( self, context, toolName, configuredPackage ):
         self.context = context
         self.__configuredPackage = configuredPackage
-        self.__marker = os.path.join( context.ts.getMarkerDirectory(), toolName + "_made"  )
+        self.__marker = os.path.join( context.toolset.getMarkerDirectory(), toolName + "_made"  )
         AtomicArtifact.__init__(
             self,
             name = self.__marker,
@@ -126,7 +126,7 @@ class InstalledPackage( AtomicArtifact ):
     def __init__( self, context, toolName, madePackage ):
         self.context = context
         self.__madePackage = madePackage
-        self.__marker = os.path.join( context.ts.getMarkerDirectory(), toolName + "_installed"  )
+        self.__marker = os.path.join( context.toolset.getMarkerDirectory(), toolName + "_installed"  )
         AtomicArtifact.__init__(
             self,
             name = self.__marker,

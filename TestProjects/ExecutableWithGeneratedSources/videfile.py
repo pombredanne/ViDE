@@ -22,8 +22,8 @@ class XsdGeneratedSource( SubatomicArtifact ):
 
 class GeneratedSource( AtomicArtifact ):
     def __init__( self, context, xsdSchema, explicit ):
-        self.__hppFileName = context.bk.fileName( "gen", xsdSchema.getFileName() + ".hpp" )
-        self.__cppFileName = context.bk.fileName( "gen", xsdSchema.getFileName() + ".cpp" )
+        self.__hppFileName = context.buildkit.fileName( "gen", xsdSchema.getFileName() + ".hpp" )
+        self.__cppFileName = context.buildkit.fileName( "gen", xsdSchema.getFileName() + ".cpp" )
         AtomicArtifact.__init__(
             self,
             name = xsdSchema.getFileName() + "_tree",

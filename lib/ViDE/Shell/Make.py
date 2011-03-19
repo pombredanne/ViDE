@@ -25,7 +25,7 @@ class Make( ICLP.Command ):
         
     def execute( self, args ):
         context = Context( self.program )
-        action = context.pj.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
+        action = context.project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
         # @todo project's include/import graph
         if self.dryRun:
             print "\n".join( action.preview() )
@@ -36,6 +36,6 @@ class Make( ICLP.Command ):
                 Log.error( "build failed", e )
             finally:
                 report = ExecutionReport( action, 800 )
-                report.drawTo( context.bk.fileName( "make-report.png" ) )
-        action.getGraph().drawTo( context.bk.fileName( "make-actions.png" ) )
-        context.pj.getGraph().drawTo( context.bk.fileName( "make-artifacts.png" ) )
+                report.drawTo( context.buildkit.fileName( "make-report.png" ) )
+        action.getGraph().drawTo( context.buildkit.fileName( "make-actions.png" ) )
+        context.project.getGraph().drawTo( context.buildkit.fileName( "make-artifacts.png" ) )

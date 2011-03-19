@@ -10,7 +10,7 @@ class gcc( Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.Artifacts.CPlusPlus.Object ):
             def __init__( self, context, source, additionalDefines, localLibraries, externalLibraries, explicit ):
-                self.__fileName = context.bk.fileName( "obj", source.getFileName() + ".o" )
+                self.__fileName = context.buildkit.fileName( "obj", source.getFileName() + ".o" )
                 self.__additionalDefines = additionalDefines
                 ViDE.Project.Artifacts.CPlusPlus.Object.__init__(
                     self,
@@ -26,10 +26,10 @@ class gcc( Buildkit ):
                 sourceName = self.getSource().getFileName()
                 return SystemAction(
                     [ "g++", "-c", sourceName ],
-                    self.context.bk.getCompilationOptions()
+                    self.context.buildkit.getCompilationOptions()
                     + [ "-o" + self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
-                    + [ "-I" + self.context.bk.fileName( "inc" ) ]
+                    + [ "-I" + self.context.buildkit.fileName( "inc" ) ]
                     + [ "-I" + d for d in self.getIncludeDirectories() ]
                 )
 
@@ -39,7 +39,7 @@ class gcc( Buildkit ):
     class Fortran:
         class Object( ViDE.Project.Artifacts.Fortran.Object ):
             def __init__( self, context, source, explicit ):
-                self.__fileName = context.bk.fileName( "obj", source.getFileName() + ".o" )
+                self.__fileName = context.buildkit.fileName( "obj", source.getFileName() + ".o" )
                 ViDE.Project.Artifacts.Fortran.Object.__init__(
                     self,
                     context = context,
@@ -74,7 +74,7 @@ class gcc( Buildkit ):
     class Binary:
         class Executable( ViDE.Project.Artifacts.Binary.Executable ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
-                self.__fileName = context.bk.fileName( "bin", name + ".exe" )
+                self.__fileName = context.buildkit.fileName( "bin", name + ".exe" )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.Executable.__init__(
                     self,
@@ -90,10 +90,10 @@ class gcc( Buildkit ):
             def doGetProductionAction( self ):
                 return SystemAction(
                     [ "g++", "-o" + self.__fileName ],
-                    self.context.bk.getLinkOptions()
+                    self.context.buildkit.getLinkOptions()
                     + [ o.getFileName() for o in self.__objects ]
-                    + [ "-L" + self.context.bk.fileName( "lib" ) ]
-                    + [ "-L" + self.context.bk.fileName( "bin" ) ]
+                    + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
+                    + [ "-L" + self.context.buildkit.fileName( "bin" ) ]
                     + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                 )
@@ -103,7 +103,7 @@ class gcc( Buildkit ):
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
-                self.__fileName = context.bk.fileName( "bin", name + ".dll" )
+                self.__fileName = context.buildkit.fileName( "bin", name + ".dll" )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.DynamicLibraryBinary.__init__(
                     self,
@@ -120,17 +120,17 @@ class gcc( Buildkit ):
                 # Build commands taken from http://www.cygwin.com/cygwin-ug-net/dll.html
                 return SystemAction(
                     [ "g++", "-shared", "-o" + self.__fileName ],
-                    self.context.bk.getLinkOptions()
+                    self.context.buildkit.getLinkOptions()
                     + [ o.getFileName() for o in self.__objects ]
-                    + [ "-L" + self.context.bk.fileName( "lib" ) ]
-                    + [ "-L" + self.context.bk.fileName( "bin" ) ]
+                    + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
+                    + [ "-L" + self.context.buildkit.fileName( "bin" ) ]
                     + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                 )
 
         class StaticLibraryBinary( ViDE.Project.Artifacts.Binary.StaticLibraryBinary ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
-                self.__fileName = context.bk.fileName( "lib", "lib" + name + ".a" )
+                self.__fileName = context.buildkit.fileName( "lib", "lib" + name + ".a" )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.StaticLibraryBinary.__init__(
                     self,
@@ -154,7 +154,7 @@ class gcc( Buildkit ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
                 names = name.split( "." )
                 names[ -1 ] += ".dll"
-                self.__fileName = context.bk.fileName( "pyd", *names )
+                self.__fileName = context.buildkit.fileName( "pyd", *names )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Python.CModule.__init__(
                     self,
@@ -171,8 +171,8 @@ class gcc( Buildkit ):
                 return SystemAction(
                     [ "g++", "-shared", "-o" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
-                    + [ "-L" + self.context.bk.fileName( "lib" ) ]
-                    + [ "-L" + self.context.bk.fileName( "bin" ) ]
+                    + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
+                    + [ "-L" + self.context.buildkit.fileName( "bin" ) ]
                     + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                     + [ "-lpython2.6" ] # @todo Remove
