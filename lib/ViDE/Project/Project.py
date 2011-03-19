@@ -8,10 +8,10 @@ from ViDE.Core.Actions import NullAction
 
 class Project:
     @classmethod
-    def load( cls, buildkit, toolset, projectDirectory = "." ):
+    def load( cls, context, projectDirectory = "." ):
         descriptionFile = os.path.join( projectDirectory, "videfile.py" )
 
-        instance = Project( buildkit, toolset )
+        instance = Project( context )
 
         Project.inProgress = instance
         imp.load_source( "description", descriptionFile )
@@ -19,12 +19,12 @@ class Project:
 
         return instance
 
-    def __init__( self, buildkit, toolset ):
-        self.buildkit = buildkit
+    def __init__( self, context ):
+        self.context = context
         self.__artifacts = []
 
     def createArtifact( self, artifactClass, *args ):
-        artifact = artifactClass( self.buildkit, *args )
+        artifact = artifactClass( self.context, *args )
         self.__addArtifact( artifact )
         return artifact
 

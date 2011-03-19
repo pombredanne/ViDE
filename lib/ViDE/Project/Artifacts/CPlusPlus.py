@@ -15,15 +15,15 @@ class Source( MonofileInputArtifact ):
     pass
 
 class CandidateCopiedHeaders:
-    def __init__( self, buildkit, localLibraries ):
-        self.__buildkit = buildkit
+    def __init__( self, context, localLibraries ):
+        self.context = context
         self.__candidateCopiedHeaders = []
         for lib in localLibraries:
             for copiedHeaders in lib.getCopiedHeaders():
                 self.__candidateCopiedHeaders += copiedHeaders.get()
 
     def find( self, searchedHeader ):
-        searchedHeader = self.__buildkit.fileName( "inc", searchedHeader )
+        searchedHeader = self.context.bk.fileName( "inc", searchedHeader )
         for copiedHeader in self.__candidateCopiedHeaders:
             if searchedHeader == copiedHeader.getDestination():
                 return copiedHeader
@@ -134,8 +134,8 @@ class DepFile( AtomicArtifact ):
                 explicit = False
             )
 
-    def __init__( self, buildkit, source, candidateCopiedHeaders ):
-        fileName = buildkit.fileName( "dep", source.getFileName() + ".dep" )
+    def __init__( self, context, source, candidateCopiedHeaders ):
+        fileName = context.bk.fileName( "dep", source.getFileName() + ".dep" )
         if os.path.exists( fileName ):
             headers = Headers.load( fileName )
             automaticDependencies = [ DepFile.Header( header ) for header in headers.getDoubleQuotedHeaders() ]
@@ -163,9 +163,10 @@ class DepFile( AtomicArtifact ):
         return self.__fileName
 
 class Object( AtomicArtifact ):
-    def __init__( self, buildkit, files, source, localLibraries, externalLibraries, explicit ):
-        candidateCopiedHeaders = CandidateCopiedHeaders( buildkit, localLibraries )
-        headers = self.__parseCppHeaders( buildkit, source, candidateCopiedHeaders )
+    def __init__( self, context, files, source, localLibraries, externalLibraries, explicit ):
+        self.context = context
+        candidateCopiedHeaders = CandidateCopiedHeaders( context, localLibraries )
+        headers = self.__parseCppHeaders( context, source, candidateCopiedHeaders )
         includedHeaders = [ self.__retrieveOrCreateHeader( header ) for header in headers.getDoubleQuotedHeaders() ]
         for searchedHeader in headers.getAngleHeaders():
             includedHeaders.append( candidateCopiedHeaders.find( searchedHeader ) )
@@ -189,8 +190,8 @@ class Object( AtomicArtifact ):
             artifact = Project.inProgress.createArtifact( Header, header, False )
         return artifact
 
-    def __parseCppHeaders( self, buildkit, source, candidateCopiedHeaders ):
-        depFile = DepFile( buildkit, source, candidateCopiedHeaders )
+    def __parseCppHeaders( self, context, source, candidateCopiedHeaders ):
+        depFile = DepFile( context, source, candidateCopiedHeaders )
         depFile.getProductionAction().execute( False, 1 )
         return Headers.load( depFile.getFileName() )
 

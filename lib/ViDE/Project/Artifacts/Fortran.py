@@ -11,7 +11,7 @@ class Source( MonofileInputArtifact ):
     pass
 
 class Object( AtomicArtifact ):
-    def __init__( self, buildkit, files, source, explicit ):
+    def __init__( self, context, files, source, explicit ):
         AtomicArtifact.__init__(
             self,
             name = files[ 0 ],

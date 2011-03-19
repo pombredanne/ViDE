@@ -1,12 +1,9 @@
-import cairo
-
 from Misc import InteractiveCommandLineProgram as ICLP
 
-import ViDE
 from ViDE import Log
 from ViDE.Core.Action import CompoundException
 from ViDE.Core.ExecutionReport import ExecutionReport
-from ViDE.Toolset import Toolset
+from ViDE.Context import Context
 
 class InstallTools( ICLP.Command ):
     def __init__( self, program ):
@@ -21,11 +18,11 @@ class InstallTools( ICLP.Command ):
         self.addOption( [ "d", "dl-only" ], "downloadOnly", ICLP.StoreConstant( True ), "only do the part of installation which needs internet access" )
         
     def execute( self, args ):
-        toolset = Toolset.load( self.program.toolset )
+        context = Context( self.program )
         if self.downloadOnly:
-            artifact = toolset.getFetchArtifact()
+            artifact = context.ts.getFetchArtifact()
         else:
-            artifact = toolset.getInstallArtifact()
+            artifact = context.ts.getInstallArtifact()
         action = artifact.getProductionAction()
         if self.dryRun:
             print "\n".join( action.preview() )
@@ -36,9 +33,6 @@ class InstallTools( ICLP.Command ):
                 Log.error( "installation failed", e )
             finally:
                 report = ExecutionReport( action, 800 )
-                #report.drawTo( toolset.fileName( "installation-report.png" ) )
                 report.drawTo( "installation-report.png" )
-        #print 
-        artifact.getGraph().dotString()
         artifact.getGraph().drawTo( "installation-artifacts.png" )
         action.getGraph().drawTo( "installation-actions.png" )

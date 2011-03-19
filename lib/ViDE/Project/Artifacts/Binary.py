@@ -6,11 +6,11 @@ from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
 from ViDE.Project.Artifacts.BasicArtifacts import CopiedArtifact
 
 class CopiedHeader( CopiedArtifact ):
-    def __init__( self, buildkit, header, stripHeaders, explicit ):
-        fileName = buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
+    def __init__( self, context, header, stripHeaders, explicit ):
+        fileName = context.bk.fileName( "inc", stripHeaders( header.getFileName() ) )
         CopiedArtifact.__init__(
             self,
-            buildkit,
+            context,
             name = fileName,
             source = header,
             destination = fileName,
@@ -18,17 +18,17 @@ class CopiedHeader( CopiedArtifact ):
         )
 
 class CopiedHeaders( CompoundArtifact ):
-    def __init__( self, buildkit, name, headers, stripHeaders, explicit ):
-        self.__copiedHeaders = [ CopiedHeader( buildkit, header, stripHeaders, False ) for header in headers ]
+    def __init__( self, context, name, headers, stripHeaders, explicit ):
+        self.__copiedHeaders = [ CopiedHeader( context, header, stripHeaders, False ) for header in headers ]
         CompoundArtifact.__init__( self, name = name + "_hdr", componants = self.__copiedHeaders, explicit = explicit )
 
     def get( self ):
         return self.__copiedHeaders
 
 class Library( CompoundArtifact ):
-    def __init__( self, buildkit, name, headers, binary, localLibraries, externalLibraries, stripHeaders, explicit ):
+    def __init__( self, context, name, headers, binary, localLibraries, externalLibraries, stripHeaders, explicit ):
         self.__libName = name
-        self.__copiedHeaders = CopiedHeaders( buildkit, name, headers, stripHeaders, False )
+        self.__copiedHeaders = CopiedHeaders( context, name, headers, stripHeaders, False )
         self.__binary = binary
         self.__localLibraries = localLibraries
         componants = [ self.__copiedHeaders ]
@@ -57,10 +57,10 @@ class Library( CompoundArtifact ):
         return self.__localLibraries
 
 class HeaderLibrary( Library ):
-    def __init__( self, buildkit, name, headers, localLibraries, externalLibraries, stripHeaders, explicit ):
+    def __init__( self, context, name, headers, localLibraries, externalLibraries, stripHeaders, explicit ):
         Library.__init__(
             self,
-            buildkit = buildkit,
+            context = context,
             name = name,
             headers = headers,
             binary = None,
@@ -76,7 +76,8 @@ class StaticLibrary( Library ):
     pass
 
 class StaticLibraryBinary( AtomicArtifact ):
-    def __init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit ):
+    def __init__( self, context, name, files, objects, localLibraries, externalLibraries, explicit ):
+        self.context = context
         AtomicArtifact.__init__(
             self,
             name = name,
@@ -88,7 +89,8 @@ class StaticLibraryBinary( AtomicArtifact ):
         )
 
 class LinkedBinary( AtomicArtifact ):
-    def __init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit ):
+    def __init__( self, context, name, files, objects, localLibraries, externalLibraries, explicit ):
+        self.context = context
         self.__librariesToLink, staticLibraryBinaries, dynamicLibraryBinaries = LinkedBinary.__extractLibraries( localLibraries )
         for o in objects:
             self.__librariesToLink += o.getLibrariesToLink()
@@ -130,8 +132,8 @@ class LinkedBinary( AtomicArtifact ):
         return self.__librariesToLink
 
 class Executable( LinkedBinary ):
-    def __init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit ):
-        LinkedBinary.__init__( self, buildkit, name, files, objects, localLibraries, externalLibraries, explicit )
+    def __init__( self, context, name, files, objects, localLibraries, externalLibraries, explicit ):
+        LinkedBinary.__init__( self, context, name, files, objects, localLibraries, externalLibraries, explicit )
         self.__executableFile = files[ 0 ]
 
     def run( self, arguments ):

@@ -1,14 +1,9 @@
-import cairo
-
 from Misc import InteractiveCommandLineProgram as ICLP
 
-import ViDE
 from ViDE import Log
 from ViDE.Core.Action import CompoundException
 from ViDE.Core.ExecutionReport import ExecutionReport
-from ViDE.Project.Project import Project
-from ViDE.Buildkit import Buildkit
-from ViDE.Toolset import Toolset
+from ViDE.Context import Context
 
 class Make( ICLP.Command ):
     def __init__( self, program ):
@@ -29,10 +24,8 @@ class Make( ICLP.Command ):
         ### @todo Add an option to build with all buildkits
         
     def execute( self, args ):
-        buildkit = Buildkit.load( self.program.buildkit )
-        toolset = Toolset.load( self.program.toolset )
-        project = Project.load( buildkit, toolset )
-        action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
+        context = Context( self.program )
+        action = context.pj.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
         # @todo project's include/import graph
         if self.dryRun:
             print "\n".join( action.preview() )
@@ -43,6 +36,6 @@ class Make( ICLP.Command ):
                 Log.error( "build failed", e )
             finally:
                 report = ExecutionReport( action, 800 )
-                report.drawTo( buildkit.fileName( "make-report.png" ) )
-        action.getGraph().drawTo( buildkit.fileName( "make-actions.png" ) )
-        project.getGraph().drawTo( buildkit.fileName( "make-artifacts.png" ) )
+                report.drawTo( context.bk.fileName( "make-report.png" ) )
+        action.getGraph().drawTo( context.bk.fileName( "make-actions.png" ) )
+        context.pj.getGraph().drawTo( context.bk.fileName( "make-artifacts.png" ) )

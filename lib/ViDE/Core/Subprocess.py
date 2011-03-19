@@ -3,16 +3,15 @@ import os
 
 from ViDE import Log
 
-def execute( base, options = [], wd = None, buildkit = None, toolset = None ):
-    SubProcess( base, options, wd, buildkit, toolset ).execute()
+def execute( base, options = [], wd = None, context = None ):
+    SubProcess( base, options, wd, context ).execute()
 
 class SubProcess:
-    def __init__( self, base, options, wd, buildkit, toolset ):
+    def __init__( self, base, options, wd, context ):
         self.__base = base
         self.__options = options
         self.__wd = wd
-        self.__buildkit = buildkit
-        self.__toolset = toolset
+        self.__context = context
         self.__preview = " ".join( base )
 
     def execute( self ):
@@ -29,10 +28,10 @@ class SubProcess:
     
     def __updateEnviron( self ):
         self.__oldEnviron = dict( os.environ )
-        if self.__buildkit is not None:
-            os.environ[ "PYTHONPATH" ] = self.__buildkit.fileName( "pyd" )
-        if self.__toolset is not None:
-            os.environ[ "PATH" ] = os.path.realpath( os.path.join( self.__toolset.getInstallDirectory(), "bin" ) ) + ":" + os.environ[ "PATH" ]
+        if self.__context is not None:
+            # @todo Do not override PYTHONPATH if it already exists
+            os.environ[ "PYTHONPATH" ] = self.__context.bk.fileName( "pyd" )
+            os.environ[ "PATH" ] = os.path.realpath( os.path.join( self.__context.ts.getInstallDirectory(), "bin" ) ) + ":" + os.environ[ "PATH" ]
     
     def __changeWorkingDirectory( self ):
         if self.__wd is not None:

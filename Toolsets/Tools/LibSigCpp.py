@@ -2,9 +2,9 @@ from ViDE.Core.Artifact import CompoundArtifact
 from ViDE.Toolset import Tool, DownloadUnarchiveConfigureMakeMakeinstall
 
 class LibSigCpp( Tool ):
-    def computeInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
+    def computeInstallArtifact( self, context, downloadOnly, strongDependencies ):
         return DownloadUnarchiveConfigureMakeMakeinstall(
-            toolset = toolset,
+            context = context,
             downloadOnly = downloadOnly,
             toolName = "libsigc++",
             archiveUrl = "http://ftp.gnome.org/pub/GNOME/sources/libsigc++/" + ".".join( self.version.split( "." )[:-1] ) + "/libsigc++-" + self.version + ".tar.bz2",

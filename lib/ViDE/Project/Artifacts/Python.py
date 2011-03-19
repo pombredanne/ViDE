@@ -11,12 +11,11 @@ class Source( MonofileInputArtifact ):
     pass
 
 class Script( CopiedArtifact ):
-    def __init__( self, buildkit, source, explicit ):
-        self.__fileName = buildkit.fileName( "bin", os.path.basename( source.getFileName() ) )
-        self.__buildkit = buildkit
+    def __init__( self, context, source, explicit ):
+        self.__fileName = context.bk.fileName( "bin", os.path.basename( source.getFileName() ) )
         CopiedArtifact.__init__(
             self,
-            buildkit,
+            context,
             name = self.__fileName,
             source = source,
             destination = self.__fileName,
@@ -24,10 +23,10 @@ class Script( CopiedArtifact ):
         )
 
     def run( self, arguments ):
-        Subprocess.execute( [ "python", self.__fileName ] + arguments, buildkit = self.__buildkit )
+        Subprocess.execute( [ "python", self.__fileName ] + arguments, context = self.context )
 
     def debug( self, arguments ):
-        Subprocess.execute( [ "python", "-mpdb", self.__fileName ] + arguments, buildkit = self.__buildkit )
+        Subprocess.execute( [ "python", "-mpdb", self.__fileName ] + arguments, context = self.context )
 
 class PythonCompileAction( Action ):
     def __init__( self, source, destination ):
@@ -42,8 +41,8 @@ class PythonCompileAction( Action ):
         return "python -m py_compile " + self.__source
 
 class Module( AtomicArtifact ):
-    def __init__( self, buildkit, source, strip, explicit ):
-        self.__fileName = buildkit.fileName( "pyd", strip( source.getFileName() ) + "c" )
+    def __init__( self, context, source, strip, explicit ):
+        self.__fileName = context.bk.fileName( "pyd", strip( source.getFileName() ) + "c" )
         self.__source = source
         AtomicArtifact.__init__(
             self,
@@ -59,7 +58,7 @@ class Module( AtomicArtifact ):
         return PythonCompileAction( self.__source.getFileName(), self.__fileName )
 
 class Package( CompoundArtifact ):
-    def __init__( self, buildkit, name, modules, explicit ):
+    def __init__( self, context, name, modules, explicit ):
         CompoundArtifact.__init__(
             self,
             name = name,

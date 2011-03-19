@@ -8,43 +8,43 @@ import ViDE
 from ViDE.Core.Action import CompoundException
 from ViDE.Shell.Shell import Shell
 
-buildkit = "gcc"
+bkName = "gcc_debug"
 
 def hppFile( name ):
-    return os.path.join( "build", buildkit, "debug", "inc", name + ".hpp" )
+    return os.path.join( "build", bkName, "inc", name + ".hpp" )
 
 def cppObjFile( name ):
-    return os.path.join( "build", buildkit, "debug", "obj", name + ".cpp.o" )
+    return os.path.join( "build", bkName, "obj", name + ".cpp.o" )
 
 def forObjFile( name ):
-    return os.path.join( "build", buildkit, "debug", "obj", name + ".for.o" )
+    return os.path.join( "build", bkName, "obj", name + ".for.o" )
 
 def dllFile( name ):
-    return os.path.join( "build", buildkit, "debug", "bin", name + ".dll" )
+    return os.path.join( "build", bkName, "bin", name + ".dll" )
 
 def modFile( name ):
-    return os.path.join( "build", buildkit, "debug", "pyd", name + ".dll" )
+    return os.path.join( "build", bkName, "pyd", name + ".dll" )
 
 def exeFile( name ):
-    return os.path.join( "build", buildkit, "debug", "bin", name + ".exe" )
+    return os.path.join( "build", bkName, "bin", name + ".exe" )
 
 def libFile( name ):
-    return os.path.join( "build", buildkit, "debug", "lib", "lib" + name + ".a" )
+    return os.path.join( "build", bkName, "lib", "lib" + name + ".a" )
 
 def pyFile( name ):
-    return os.path.join( "build", buildkit, "debug", "bin", name + ".py" )
+    return os.path.join( "build", bkName, "bin", name + ".py" )
 
 def pycFile( name ):
-    return os.path.join( "build", buildkit, "debug", "pyd", name + ".pyc" )
+    return os.path.join( "build", bkName, "pyd", name + ".pyc" )
 
 def genCppFile( name ):
-    return os.path.join( "build", buildkit, "debug", "gen", name + ".cpp" )
+    return os.path.join( "build", bkName, "gen", name + ".cpp" )
 
 def genHppFile( name ):
-    return os.path.join( "build", buildkit, "debug", "gen", name + ".hpp" )
+    return os.path.join( "build", bkName, "gen", name + ".hpp" )
 
 def genCppObjFile( name ):
-    return os.path.join( "build", buildkit, "debug", "obj", "build", buildkit, "debug", "gen", name + ".cpp.o" )
+    return os.path.join( "build", bkName, "obj", "build", bkName, "gen", name + ".cpp.o" )
 
 def allFilesIn( directory ):
     l = set()
@@ -58,7 +58,7 @@ class TestCompilationError( unittest.TestCase ):
         os.chdir( os.path.join( ViDE.rootDirectory, "TestProjects", "CompilationError" ) )
         shutil.rmtree( "build", True )
         shell = Shell()
-        shell.execute( [ "test", "--silent", "--buildkit", buildkit, "make", "-k" ] )
+        shell.execute( [ "test", "--silent", "--buildkit", bkName, "make", "-k" ] )
         time.sleep( 0.5 )
         self.assertFalse( os.path.exists( cppObjFile( "a" ) ) )
         self.assertTrue( os.path.exists( cppObjFile( "b" ) ) )
@@ -78,7 +78,7 @@ def TestMake( project, whatIfs ):
         def setUp( self ):
             os.chdir( os.path.join( ViDE.rootDirectory, "TestProjects", project ) )
             self.__shell = Shell()
-            self.__shell.execute( [ "test", "--silent", "--buildkit", buildkit, "make" ] )
+            self.__shell.execute( [ "test", "--silent", "--buildkit", bkName, "make" ] )
             self.__targets = set()
             for source in whatIfs:
                 for target in whatIfs[ source ]:
@@ -93,7 +93,7 @@ def TestMake( project, whatIfs ):
                 before = dict()
                 for target in self.__targets:
                     before[ target ] = os.stat( target ).st_mtime
-                self.__shell.execute( [ "test", "--buildkit", buildkit, "make", "--touch", "--new-file", source ] )
+                self.__shell.execute( [ "test", "--buildkit", bkName, "make", "--touch", "--new-file", source ] )
                 after = dict()
                 for target in self.__targets:
                     after[ target ] = os.stat( target ).st_mtime

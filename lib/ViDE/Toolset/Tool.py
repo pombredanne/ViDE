@@ -5,5 +5,5 @@ class Tool( CallOnceAndCache ):
         CallOnceAndCache.__init__( self )
         self.version = version
 
-    def getInstallArtifact( self, toolset, downloadOnly, strongDependencies ):
-        return self.getCached( "installArtifact", self.computeInstallArtifact, toolset, downloadOnly, strongDependencies )
+    def getInstallArtifact( self, context, downloadOnly, strongDependencies ):
+        return self.getCached( "installArtifact", self.computeInstallArtifact, context, downloadOnly, strongDependencies )

@@ -85,19 +85,18 @@ class DownloadFileAction( Action ):
         print
 
 class SystemAction( Action ):
-    def __init__( self, base, options = [], wd = None, buildkit = None, toolset = None ):
+    def __init__( self, base, options = [], wd = None, context = None ):
         Action.__init__( self )
         self.__base = base
         self.__options = options
         self.__wd = wd
-        self.__buildkit = buildkit
-        self.__toolset = toolset
+        self.__context = context
 
     def computePreview( self ):
         return " ".join( self.__base )
 
     def doExecute( self ):
-        Subprocess.execute( self.__base, self.__options, self.__wd, self.__buildkit, self.__toolset )
+        Subprocess.execute( self.__base, self.__options, self.__wd, self.__context )
 
 class TouchAction( Action ):
     def __init__( self, files ):
