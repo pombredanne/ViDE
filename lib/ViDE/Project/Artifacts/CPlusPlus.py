@@ -180,6 +180,7 @@ class Object( AtomicArtifact ):
             explicit = explicit
         )
         self.__source = source
+        self.__externalLibraries = externalLibraries
 
     def getSource( self ):
         return self.__source
@@ -196,28 +197,10 @@ class Object( AtomicArtifact ):
         return Headers.load( depFile.getFileName() )
 
     def getIncludeDirectories( self ):
-        # @todo Implement from external libraries
-        return [
-            "/usr/include/python2.6",
-            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/cairomm-1.0",
-            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/sigc++-2.0",
-            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/cairo",
-            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/include/freetype2",
-            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib/cairomm-1.0/include",
-            "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib/sigc++-2.0/include",
-        ]
-
-    class FakeLibrary:
-        def __init__( self, name, path ):
-            self.__name = name
-            self.__path = path
-
-        def getLibName( self ):
-            return self.__name
-
-        def getLibPath( self ):
-            return self.__path
+        directories = []
+        for lib in self.__externalLibraries:
+            directories += self.context.toolset.getTool( lib ).getIncludeDirectories( self.context )
+        return directories
 
     def getLibrariesToLink( self ):
-        # @todo Implement from external libraries
-        return [ Object.FakeLibrary( "cairomm-1.0", "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib" ) ]
+        return [ self.context.toolset.getTool( lib ) for lib in self.__externalLibraries ]

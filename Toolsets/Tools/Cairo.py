@@ -1,3 +1,5 @@
+import os.path
+
 from ViDE.Core.Artifact import CompoundArtifact
 from ViDE.Toolset import Tool, DownloadUnarchiveConfigureMakeMakeinstall
 
@@ -81,6 +83,22 @@ class Cairomm( Tool ):
 
     def getDependencies( self ):
         return [ Cairo, LibSigCpp ]
+
+    def getIncludeDirectories( self, context ):
+        return [ os.path.join( context.toolset.getInstallDirectory(), *path ) for path in [
+            ( "include", "sigc++-2.0" ),
+            ( "include", "cairo" ),
+            ( "include", "freetype2" ),
+            ( "lib", "cairomm-1.0", "include" ),
+            ( "lib", "sigc++-2.0", "include" ),
+            ( "include", "cairomm-1.0" ),
+        ] ]
+
+    def getLibPath( self ):
+        return "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib"
+
+    def getLibName( self ):
+        return "cairomm-1.0"
 
 class PyCairo( Tool ):
     def computeInstallArtifact( self, context, downloadOnly, strongDependencies ):
