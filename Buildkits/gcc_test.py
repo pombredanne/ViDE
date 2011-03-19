@@ -1,7 +1,5 @@
-from gcc import gcc
-
-class gcc_test( gcc ):
-    def getCompilationOptions( self ):
+class gcc_test:
+    def getFlavourCompilationOptions( self ):
         return [ "-g", "--coverage" ]
 
     def getLinkOptions( self ):

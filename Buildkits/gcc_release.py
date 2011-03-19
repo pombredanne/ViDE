@@ -1,7 +1,5 @@
-from gcc import gcc
-
-class gcc_release( gcc ):
-    def getCompilationOptions( self ):
+class gcc_release:
+    def getFlavourCompilationOptions( self ):
         return [ "-O3" ]
 
     def getLinkOptions( self ):

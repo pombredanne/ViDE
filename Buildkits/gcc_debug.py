@@ -1,5 +1,5 @@
 class gcc_debug:
-    def getCompilationOptions( self ):
+    def getFlavourCompilationOptions( self ):
         return [ "-g" ]
 
     def getLinkOptions( self ):

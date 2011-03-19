@@ -7,3 +7,6 @@ class linux_gcc:
 
     def computeDynamicLibraryName( self, context, baseName ):
         return context.buildkit.fileName( "lib", "lib" + baseName + ".so" )
+
+    def getSystemCompilationOptions( self ):
+        return [ "-fPIC" ]

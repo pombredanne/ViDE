@@ -26,8 +26,9 @@ class gcc( Buildkit ):
                 sourceName = self.getSource().getFileName()
                 return SystemAction(
                     [ "g++", "-c", sourceName ],
-                    self.context.buildkit.getCompilationOptions()
-                    + [ "-fPIC", "-o", self.__fileName ]
+                    self.context.buildkit.getFlavourCompilationOptions()
+                    + self.context.buildkit.getSystemCompilationOptions()
+                    + [ "-o", self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
                     + [ "-I" + self.context.buildkit.fileName( "inc" ) ]
                     + [ "-I" + d for d in self.getIncludeDirectories() ]

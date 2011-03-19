@@ -7,3 +7,6 @@ class cygwin_gcc:
 
     def computeDynamicLibraryName( self, context, baseName ):
         return context.buildkit.fileName( "lib", baseName + ".dll" )
+
+    def getSystemCompilationOptions( self ):
+        return []

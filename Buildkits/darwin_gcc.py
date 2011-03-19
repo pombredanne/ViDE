@@ -7,3 +7,6 @@ class darwin_gcc:
 
     def computeDynamicLibraryName( self, context, baseName ):
         return context.buildkit.fileName( "lib", "lib" + baseName + ".dylib" )
+
+    def getSystemCompilationOptions( self ):
+        return []
