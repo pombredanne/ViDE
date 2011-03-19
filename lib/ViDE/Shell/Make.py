@@ -29,7 +29,7 @@ class Make( ICLP.Command ):
         ### @todo Add an option to build with all buildkits
         
     def execute( self, args ):
-        buildkit = Buildkit.load( self.program.buildkit, self.program.flavour )
+        buildkit = Buildkit.load( self.program.buildkit )
         toolset = Toolset.load( self.program.toolset )
         project = Project.load( buildkit, toolset )
         action = project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )

@@ -15,7 +15,7 @@ class Debug( ICLP.Command ):
         ICLP.Command.__init__( self, program )
 
     def execute( self, args ):
-        buildkit = Buildkit.load( self.program.buildkit, "debug" )
+        buildkit = Buildkit.load( self.program.buildkit )
         toolset = Toolset.load( self.program.toolset )
         project = Project.load( buildkit, toolset )
         artifact =  project.retrieveByName( args[0] )

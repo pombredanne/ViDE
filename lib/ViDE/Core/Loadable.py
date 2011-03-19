@@ -8,8 +8,9 @@ class Loadable:
     @classmethod
     def load( cls, name, *args, **kwargs ):
         oldSysPath = sys.path
-        sys.path.append( ViDE.toolsetsDirectory )
-        instance = getattr( imp.load_source( name, os.path.join( ViDE.rootDirectory, cls.__name__ + "s", name + ".py" ) ), name )( *args, **kwargs )
+        loadDirectory = os.path.join( ViDE.rootDirectory, cls.__name__ + "s" )
+        sys.path.append( loadDirectory )
+        instance = getattr( imp.load_source( name, os.path.join( loadDirectory, name + ".py" ) ), name )( *args, **kwargs )
         sys.path = oldSysPath
         return instance
 

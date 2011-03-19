@@ -108,9 +108,3 @@ class vs( Buildkit ):
         return {
             "PATH": self.fileName( "bin" )
         }
-    def __init__( self, flavour ):
-        Buildkit.__init__( self )
-        self.__flavor = flavour
-
-    def getPreliminaryNameParts( self ):
-        return [ self.__flavor ]

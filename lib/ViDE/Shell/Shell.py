@@ -9,8 +9,7 @@ from ViDE.Shell.InstallTools import InstallTools
 
 # Get from ViDE
 defaultToolset = "ts20110308"
-defaultBuildkit = "gcc"
-defaultFlavour = "debug"
+defaultBuildkit = "gcc_debug"
 
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
     def __init__( self ):
@@ -29,8 +28,6 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
 
         self.buildkit = defaultBuildkit
         toolsChoice.addOption( "buildkit", "buildkit", InteractiveCommandLineProgram.StoreArgument( "BUILDKIT" ), "use buildkit BUILDKIT", InteractiveCommandLineProgram.StoreConstant( defaultBuildkit ), "use default buildkit" )
-        self.flavour = defaultFlavour
-        toolsChoice.addOption( "flavour", "flavour", InteractiveCommandLineProgram.StoreArgument( "FLAVOUR" ), "use flavour FLAVOUR", InteractiveCommandLineProgram.StoreConstant( defaultFlavour ), "use default flavour" )
 
         generation = self.createCommandGroup( "Artifact generation", "" )
         generation.addCommand( "make", Make, "build the project" )

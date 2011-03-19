@@ -165,26 +165,3 @@ class gcc( Buildkit ):
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
                     + [ "-lpython2.6" ] # @todo Remove
                 )
-
-    def __init__( self, flavour ):
-        Buildkit.__init__( self )
-        self.__flavor = flavour
-
-    def getPreliminaryNameParts( self ):
-        return [ self.__flavor ]
-
-    def getCompilationOptions( self ):
-        if self.__flavor == "debug":
-            return [ "-g" ]
-        elif self.__flavor == "test":
-            return [ "-g", "--coverage" ]
-        elif self.__flavor == "release":
-            return [ "-O3" ]
-
-    def getLinkOptions( self ):
-        if self.__flavor == "debug":
-            return [ "-g" ]
-        elif self.__flavor == "test":
-            return [ "-g", "--coverage" ]
-        elif self.__flavor == "release":
-            return []

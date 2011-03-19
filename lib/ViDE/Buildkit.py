@@ -9,4 +9,4 @@ class Buildkit( Loadable ):
         Loadable.__init__( self )
         
     def fileName( self, *nameParts ):
-        return os.path.join( "build", self.name, *( self.getPreliminaryNameParts() + list( nameParts ) ) )
+        return os.path.join( "build", self.name, *nameParts )
