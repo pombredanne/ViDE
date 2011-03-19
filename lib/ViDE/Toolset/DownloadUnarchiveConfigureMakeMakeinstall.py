@@ -20,7 +20,7 @@ def DownloadUnarchiveConfigureMakeMakeinstall( context, downloadOnly, toolName, 
 class DownloadedArchive( AtomicArtifact ):
     def __init__( self, url ):
         self.__url = url
-        self.__file = os.path.join( ViDE.toolsCacheDirectory, os.path.basename( urlparse.urlparse( url ).path ) )
+        self.__file = os.path.join( ViDE.toolsCacheDirectory(), os.path.basename( urlparse.urlparse( url ).path ) )
         AtomicArtifact.__init__(
             self,
             name = self.__file,

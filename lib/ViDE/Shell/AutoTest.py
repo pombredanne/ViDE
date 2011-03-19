@@ -19,7 +19,7 @@ class AutoTest( Command ):
     
     def __listTestFiles( self ):
         self.__testFiles = []
-        for path, dirs, files in os.walk( ViDE.rootDirectory ):
+        for path, dirs, files in os.walk( ViDE.rootDirectory() ):
             for fileName in fnmatch.filter( files, "test_*.py" ):
                 self.__testFiles.append( os.path.realpath( os.path.join( path, fileName ) ) )
 
@@ -48,7 +48,7 @@ class AutoTest( Command ):
     
     def __runTest( self, test ):
         ### @todo Refactor
-        os.environ[ "PYTHONPATH" ] = ViDE.libDirectory
+        os.environ[ "PYTHONPATH" ] = ViDE.libDirectory()
         if test.test:
             print test.file, test.test
             os.system( "python " + test.file + " -q " + test.test )

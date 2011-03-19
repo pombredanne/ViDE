@@ -69,7 +69,7 @@ class gcc( Buildkit ):
                     return None
 
             def getLibrariesToLink( self ):
-                return [ FakeLibrary( "gfortranbegin" ), FakeLibrary( "fortran" ) ] + ViDE.Project.Artifacts.Fortran.Object.getLibrariesToLink()
+                return [ gcc.Fortran.Object.FakeLibrary( "gfortranbegin" ), gcc.Fortran.Object.FakeLibrary( "gfortran" ) ] + ViDE.Project.Artifacts.Fortran.Object.getLibrariesToLink( self )
 
     class Binary:
         class Executable( ViDE.Project.Artifacts.Binary.Executable ):
@@ -102,7 +102,7 @@ class gcc( Buildkit ):
                 Subprocess.execute( [ "gdb", self.__executableFile ] + arguments, context = self.context )
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
-            def __init__( self, context, name, objects, localLibraries, explicit ):
+            def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
                 self.__fileName = context.bk.fileName( "bin", name + ".dll" )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.DynamicLibraryBinary.__init__(
@@ -112,6 +112,7 @@ class gcc( Buildkit ):
                     files = [ self.__fileName ],
                     objects = objects,
                     localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
                     explicit = explicit
                 )
 
@@ -128,7 +129,7 @@ class gcc( Buildkit ):
                 )
 
         class StaticLibraryBinary( ViDE.Project.Artifacts.Binary.StaticLibraryBinary ):
-            def __init__( self, context, name, objects, localLibraries, explicit ):
+            def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
                 self.__fileName = context.bk.fileName( "lib", "lib" + name + ".a" )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.StaticLibraryBinary.__init__(
@@ -138,6 +139,7 @@ class gcc( Buildkit ):
                     files = [ self.__fileName ],
                     objects = objects,
                     localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
                     explicit = explicit
                 )
 
@@ -149,7 +151,7 @@ class gcc( Buildkit ):
 
     class Python:
         class CModule( ViDE.Project.Artifacts.Python.CModule ):
-            def __init__( self, context, name, objects, localLibraries, explicit ):
+            def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
                 names = name.split( "." )
                 names[ -1 ] += ".dll"
                 self.__fileName = context.bk.fileName( "pyd", *names )
@@ -161,6 +163,7 @@ class gcc( Buildkit ):
                     files = [ self.__fileName ],
                     objects = objects,
                     localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
                     explicit = explicit
                 )
 

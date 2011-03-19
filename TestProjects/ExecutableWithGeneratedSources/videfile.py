@@ -7,7 +7,7 @@ class XsdSchema( MonofileInputArtifact ):
     pass
 
 class XsdGeneratedSource( SubatomicArtifact ):
-    def __init__( self, buildkit, fileName, atomicArtifact, explicit ):
+    def __init__( self, context, fileName, atomicArtifact, explicit ):
         SubatomicArtifact.__init__(
             self,
             name = fileName,
@@ -21,9 +21,9 @@ class XsdGeneratedSource( SubatomicArtifact ):
         return self.__fileName
 
 class GeneratedSource( AtomicArtifact ):
-    def __init__( self, buildkit, xsdSchema, explicit ):
-        self.__hppFileName = buildkit.fileName( "gen", xsdSchema.getFileName() + ".hpp" )
-        self.__cppFileName = buildkit.fileName( "gen", xsdSchema.getFileName() + ".cpp" )
+    def __init__( self, context, xsdSchema, explicit ):
+        self.__hppFileName = context.bk.fileName( "gen", xsdSchema.getFileName() + ".hpp" )
+        self.__cppFileName = context.bk.fileName( "gen", xsdSchema.getFileName() + ".cpp" )
         AtomicArtifact.__init__(
             self,
             name = xsdSchema.getFileName() + "_tree",

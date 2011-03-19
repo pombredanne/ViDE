@@ -41,10 +41,10 @@ class Toolset( Loadable, CallOnceAndCache ):
         return tool.getInstallArtifact( self, downloadOnly, strongDependencies )
 
     def getTempDirectory( self ):
-        return os.path.join( ViDE.toolsetsTmpDirectory, self.__class__.__name__ )
+        return os.path.join( ViDE.toolsetsTmpDirectory(), self.__class__.__name__ )
 
     def getInstallDirectory( self ):
-        return os.path.join( ViDE.toolsetsInstallDirectory, self.__class__.__name__ )
+        return os.path.join( ViDE.toolsetsInstallDirectory(), self.__class__.__name__ )
 
     def getMarkerDirectory( self ):
-        return os.path.join( ViDE.toolsetsMarkerDirectory, self.__class__.__name__ )
+        return os.path.join( ViDE.toolsetsMarkerDirectory(), self.__class__.__name__ )

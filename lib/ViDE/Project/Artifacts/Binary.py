@@ -44,6 +44,9 @@ class Library( CompoundArtifact ):
     def getLibName( self ):
         return self.__libName
 
+    def getLibPath( self ):
+        return None
+
     def getCopiedHeaders( self ):
         copiedHeaders = [ self.__copiedHeaders ]
         for lib in self.__localLibraries:
@@ -65,6 +68,7 @@ class HeaderLibrary( Library ):
             headers = headers,
             binary = None,
             localLibraries = localLibraries,
+            externalLibraries = externalLibraries,
             stripHeaders = stripHeaders,
             explicit = explicit
         )

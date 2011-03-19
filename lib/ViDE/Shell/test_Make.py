@@ -55,7 +55,7 @@ def allFilesIn( directory ):
 
 class TestCompilationError( unittest.TestCase ):
     def test( self ):
-        os.chdir( os.path.join( ViDE.rootDirectory, "TestProjects", "CompilationError" ) )
+        os.chdir( os.path.join( ViDE.rootDirectory(), "TestProjects", "CompilationError" ) )
         shutil.rmtree( "build", True )
         shell = Shell()
         shell.execute( [ "test", "--silent", "--buildkit", bkName, "make", "-k" ] )
@@ -69,14 +69,14 @@ class TestCompilationError( unittest.TestCase ):
         self.assertFalse( os.path.exists( exeFile( "hello" ) ) )
 
 def TestMake( project, whatIfs ):
-    shutil.rmtree( os.path.join( ViDE.rootDirectory, "TestProjects", project, "build" ), True )
+    shutil.rmtree( os.path.join( ViDE.rootDirectory(), "TestProjects", project, "build" ), True )
 
     class TestCase( unittest.TestCase ):
         # def __init__( self ):
             # unittest.TestCase.__init__( self )
 
         def setUp( self ):
-            os.chdir( os.path.join( ViDE.rootDirectory, "TestProjects", project ) )
+            os.chdir( os.path.join( ViDE.rootDirectory(), "TestProjects", project ) )
             self.__shell = Shell()
             self.__shell.execute( [ "test", "--silent", "--buildkit", bkName, "make" ] )
             self.__targets = set()
@@ -265,6 +265,10 @@ FortranCalledFromCpp = TestMake( "FortranCalledFromCpp", {
 ExecutableWithGeneratedSources = TestMake( "ExecutableWithGeneratedSources", {
     "main.cpp": [ exeFile( "hello" ), cppObjFile( "main" ) ],
     "a.xsd": [ genCppFile( "a.xsd" ), genHppFile( "a.xsd" ), genCppObjFile( "a.xsd" ), exeFile( "hello" ) ]
+} )
+
+ExecutableWithExternalDependency = TestMake( "ExecutableWithExternalDependency", {
+    "main.cpp": [ exeFile( "hello" ), cppObjFile( "main" ) ],
 } )
 
 unittest.main()

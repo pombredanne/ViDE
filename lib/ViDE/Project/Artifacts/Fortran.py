@@ -25,3 +25,6 @@ class Object( AtomicArtifact ):
 
     def getSource( self ):
         return self.__source
+
+    def getLibrariesToLink( self ):
+        return []
