@@ -75,7 +75,7 @@ class gcc( Buildkit ):
     class Binary:
         class Executable( ViDE.Project.Artifacts.Binary.Executable ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
-                self.__fileName = context.buildkit.computeExecutableName( context, name )
+                self.__fileName = context.buildkit.computeExecutableName( name )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.Executable.__init__(
                     self,
@@ -104,7 +104,7 @@ class gcc( Buildkit ):
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
-                self.__fileName = context.buildkit.computeDynamicLibraryName( context, name )
+                self.__fileName = context.buildkit.computeDynamicLibraryName( name )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.DynamicLibraryBinary.__init__(
                     self,

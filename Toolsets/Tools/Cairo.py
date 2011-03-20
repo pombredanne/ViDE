@@ -1,6 +1,5 @@
 import os.path
 
-from ViDE.Core.Artifact import CompoundArtifact
 from ViDE.Toolset import Tool, DownloadUnarchiveConfigureMakeMakeinstall
 
 from PkgConfig import PkgConfig

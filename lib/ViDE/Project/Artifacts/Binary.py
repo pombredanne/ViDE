@@ -1,16 +1,12 @@
-import os.path
-
 from ViDE.Core import Subprocess
-from ViDE.Core.Actions import CopyFileAction
-from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
-from ViDE.Project.Artifacts.BasicArtifacts import CopiedArtifact
+from ViDE.Project.Artifacts.BasicArtifacts import CopiedArtifact, AtomicArtifact, CompoundArtifact
 
 class CopiedHeader( CopiedArtifact ):
     def __init__( self, context, header, stripHeaders, explicit ):
         fileName = context.buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
         CopiedArtifact.__init__(
             self,
-            context,
+            context = context,
             name = fileName,
             source = header,
             destination = fileName,
@@ -20,7 +16,13 @@ class CopiedHeader( CopiedArtifact ):
 class CopiedHeaders( CompoundArtifact ):
     def __init__( self, context, name, headers, stripHeaders, explicit ):
         self.__copiedHeaders = [ CopiedHeader( context, header, stripHeaders, False ) for header in headers ]
-        CompoundArtifact.__init__( self, name = name + "_hdr", componants = self.__copiedHeaders, explicit = explicit )
+        CompoundArtifact.__init__(
+            self,
+            context = context,
+            name = name + "_hdr",
+            componants = self.__copiedHeaders,
+            explicit = explicit
+        )
 
     def get( self ):
         return self.__copiedHeaders
@@ -36,6 +38,7 @@ class Library( CompoundArtifact ):
             componants.append( binary )
         CompoundArtifact.__init__(
             self,
+            context = context,
             name = "lib" + name,
             componants = componants,
             explicit = explicit
@@ -81,9 +84,9 @@ class StaticLibrary( Library ):
 
 class StaticLibraryBinary( AtomicArtifact ):
     def __init__( self, context, name, files, objects, localLibraries, externalLibraries, explicit ):
-        self.context = context
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = name,
             files = files,
             strongDependencies = objects,
@@ -94,12 +97,12 @@ class StaticLibraryBinary( AtomicArtifact ):
 
 class LinkedBinary( AtomicArtifact ):
     def __init__( self, context, name, files, objects, localLibraries, externalLibraries, explicit ):
-        self.context = context
         self.__librariesToLink, staticLibraryBinaries, dynamicLibraryBinaries = LinkedBinary.__extractLibraries( localLibraries )
         for o in objects:
             self.__librariesToLink += o.getLibrariesToLink()
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = name,
             files = files,
             strongDependencies = objects + staticLibraryBinaries,

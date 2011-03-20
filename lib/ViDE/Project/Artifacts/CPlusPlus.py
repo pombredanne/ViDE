@@ -1,12 +1,10 @@
 import os.path
 import re
-import sys
 import itertools
 
-from ViDE.Core.Artifact import AtomicArtifact, InputArtifact
 from ViDE.Core.Action import Action
-from ViDE.Project.Project import Project
-from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact
+from ViDE.Project import Project
+from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact, AtomicArtifact, InputArtifact
 
 class Header( MonofileInputArtifact ):
     pass
@@ -16,14 +14,14 @@ class Source( MonofileInputArtifact ):
 
 class CandidateCopiedHeaders:
     def __init__( self, context, localLibraries ):
-        self.context = context
+        self.__context = context
         self.__candidateCopiedHeaders = []
         for lib in localLibraries:
             for copiedHeaders in lib.getCopiedHeaders():
                 self.__candidateCopiedHeaders += copiedHeaders.get()
 
     def find( self, searchedHeader ):
-        searchedHeader = self.context.buildkit.fileName( "inc", searchedHeader )
+        searchedHeader = self.__context.buildkit.fileName( "inc", searchedHeader )
         for copiedHeader in self.__candidateCopiedHeaders:
             if searchedHeader == copiedHeader.getDestination():
                 return copiedHeader
@@ -126,9 +124,10 @@ class ParseCppHeadersAction( Action ):
 
 class DepFile( AtomicArtifact ):
     class Header( InputArtifact ):
-        def __init__( self, header ):
+        def __init__( self, context, header ):
             InputArtifact.__init__(
                 self,
+                context = context,
                 name = header,
                 files = [ header ],
                 explicit = False
@@ -138,13 +137,14 @@ class DepFile( AtomicArtifact ):
         fileName = context.buildkit.fileName( "dep", source.getFileName() + ".dep" )
         if os.path.exists( fileName ):
             headers = Headers.load( fileName )
-            automaticDependencies = [ DepFile.Header( header ) for header in headers.getDoubleQuotedHeaders() ]
+            automaticDependencies = [ DepFile.Header( context, header ) for header in headers.getDoubleQuotedHeaders() ]
             for searchedHeader in headers.getAngleHeaders():
-                automaticDependencies.append( DepFile.Header( candidateCopiedHeaders.find( searchedHeader ).getSource().getFileName() ) )
+                automaticDependencies.append( DepFile.Header( context, candidateCopiedHeaders.find( searchedHeader ).getSource().getFileName() ) )
         else:
             automaticDependencies = []
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = fileName,
             files = [ fileName ],
             strongDependencies = [ source ],
@@ -164,7 +164,6 @@ class DepFile( AtomicArtifact ):
 
 class Object( AtomicArtifact ):
     def __init__( self, context, files, source, localLibraries, externalLibraries, explicit ):
-        self.context = context
         candidateCopiedHeaders = CandidateCopiedHeaders( context, localLibraries )
         headers = self.__parseCppHeaders( context, source, candidateCopiedHeaders )
         includedHeaders = [ self.__retrieveOrCreateHeader( header ) for header in headers.getDoubleQuotedHeaders() ]
@@ -172,6 +171,7 @@ class Object( AtomicArtifact ):
             includedHeaders.append( candidateCopiedHeaders.find( searchedHeader ) )
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = files[ 0 ],
             files = files,
             strongDependencies = [ source ],

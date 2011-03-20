@@ -1,4 +1,3 @@
-from ViDE.Core.Artifact import CompoundArtifact
 from ViDE.Toolset import Tool, DownloadUnarchiveConfigureMakeMakeinstall
 
 class LibSigCpp( Tool ):

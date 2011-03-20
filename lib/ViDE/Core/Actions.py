@@ -12,6 +12,8 @@ from ViDE.Core.Action import Action, NullAction
 from ViDE.Core import Subprocess
 from ViDE import Log
 
+# Unused symbol NullAction
+
 class RemoveFileAction( Action ):
     def __init__( self, file ):
         Action.__init__( self )

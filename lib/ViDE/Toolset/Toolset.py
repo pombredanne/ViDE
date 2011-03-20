@@ -1,16 +1,16 @@
-import imp
-import sys
 import os.path
 
 import ViDE
 from ViDE.Core.CallOnceAndCache import CallOnceAndCache
 from ViDE.Core.Artifact import CompoundArtifact
 from ViDE.Core.Loadable import Loadable
+from ViDE.ContextReferer import ContextReferer
 
-class Toolset( Loadable, CallOnceAndCache ):
-    def __init__( self ):
+class Toolset( Loadable, CallOnceAndCache, ContextReferer ):
+    def __init__( self, context ):
         Loadable.__init__( self )
         CallOnceAndCache.__init__( self )
+        ContextReferer.__init__( self, context )
         self.__toolsByClass = dict()
         for tool in self.getTools():
             if tool.__class__ in self.__toolsByClass:
@@ -38,7 +38,7 @@ class Toolset( Loadable, CallOnceAndCache ):
             strongDependencies = []
         else:
             strongDependencies = [ self.__getToolInstallArtifact( self.__toolsByClass[ dep ], downloadOnly ) for dep in tool.getDependencies() ]
-        return tool.getInstallArtifact( self, downloadOnly, strongDependencies )
+        return tool.getInstallArtifact( self.context, downloadOnly, strongDependencies )
 
     def getTool( self, toolClass ):
         return self.__toolsByClass[ toolClass ]

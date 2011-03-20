@@ -3,13 +3,12 @@ from __future__ import with_statement
 import unittest
 import threading
 import random
-import os
 import time
 
 from Misc.MockMockMock import TestCase
-from Misc.Graphviz import Graph, Cluster, Node, Link
+from Misc.Graphviz import Graph, Node, Link
 
-from Action import Action, CompoundException, NullAction
+from Action import Action, CompoundException
 
 class MyException( Exception ):
     pass

@@ -3,11 +3,11 @@ import os.path
 import multiprocessing
 
 import ViDE
-from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
+from ViDE.Project.Artifacts.BasicArtifacts import AtomicArtifact, CompoundArtifact
 from ViDE.Core.Actions import SystemAction, DownloadFileAction, UnarchiveAction, ActionAndTouch
 
 def DownloadUnarchiveConfigureMakeMakeinstall( context, downloadOnly, toolName, archiveUrl, strongDependencies, configureOptions = [] ):
-    downloaded = DownloadedArchive( archiveUrl )
+    downloaded = DownloadedArchive( context, archiveUrl )
     if downloadOnly:
         return downloaded
     else:
@@ -15,14 +15,20 @@ def DownloadUnarchiveConfigureMakeMakeinstall( context, downloadOnly, toolName, 
         configured = ConfiguredPackage( context, toolName, configureOptions, strongDependencies, unarchived )
         made = MadePackage( context, toolName, configured )
         installed = InstalledPackage( context, toolName, made )
-        return CompoundArtifact( toolName, [ downloaded, unarchived, configured, made, installed ], False )
+        return CompoundArtifact(
+            context = context,
+            name = toolName,
+            componants = [ downloaded, unarchived, configured, made, installed ],
+            explicit = False
+        )
 
 class DownloadedArchive( AtomicArtifact ):
-    def __init__( self, url ):
+    def __init__( self, context, url ):
         self.__url = url
         self.__file = os.path.join( ViDE.toolsCacheDirectory(), os.path.basename( urlparse.urlparse( url ).path ) )
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = self.__file,
             files = [ self.__file ],
             strongDependencies = [],
@@ -46,6 +52,7 @@ class UnarchivedArchive( AtomicArtifact ):
         self.__destination = os.path.join( self.context.toolset.getTempDirectory(), self.__toolName )
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = self.__marker,
             files = [ self.__marker ],
             strongDependencies = [ downloadedArchive ],
@@ -71,6 +78,7 @@ class ConfiguredPackage( AtomicArtifact ):
         self.__marker = os.path.join( context.toolset.getMarkerDirectory(), toolName + "_configured"  )
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = self.__marker,
             files = [ self.__marker ],
             strongDependencies = strongDependencies + [ unarchivedArchive ],
@@ -100,6 +108,7 @@ class MadePackage( AtomicArtifact ):
         self.__marker = os.path.join( context.toolset.getMarkerDirectory(), toolName + "_made"  )
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = self.__marker,
             files = [ self.__marker ],
             strongDependencies = [ configuredPackage ],
@@ -129,6 +138,7 @@ class InstalledPackage( AtomicArtifact ):
         self.__marker = os.path.join( context.toolset.getMarkerDirectory(), toolName + "_installed"  )
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = self.__marker,
             files = [ self.__marker ],
             strongDependencies = [ madePackage ],

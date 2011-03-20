@@ -26,7 +26,7 @@ class Make( ICLP.Command ):
     def execute( self, args ):
         context = Context( self.program )
         action = context.project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
-        # @todo project's include/import graph
+        # @todo project's include graph
         if self.dryRun:
             print "\n".join( action.preview() )
         else:

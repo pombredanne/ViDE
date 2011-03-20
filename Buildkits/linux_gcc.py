@@ -1,12 +1,12 @@
 class linux_gcc:
-    def computeExecutableName( self, context, baseName ):
-        return context.buildkit.fileName( "bin", baseName )
+    def computeExecutableName( self, baseName ):
+        return self.context.buildkit.fileName( "bin", baseName )
 
     def getDynamicLibraryFlag( self ):
         return "-shared"
 
-    def computeDynamicLibraryName( self, context, baseName ):
-        return context.buildkit.fileName( "lib", "lib" + baseName + ".so" )
+    def computeDynamicLibraryName( self, baseName ):
+        return self.context.buildkit.fileName( "lib", "lib" + baseName + ".so" )
 
     def getSystemCompilationOptions( self ):
         return [ "-fPIC" ]

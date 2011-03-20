@@ -7,7 +7,7 @@ from Misc.MockMockMock import TestCase, DontCheck
 from Misc.Graphviz import Graph, Cluster, Node, Link
 
 from Artifact import Artifact, AtomicArtifact, CompoundArtifact, InputArtifact, BuildEmptyArtifact
-from Action import Action, NullAction
+from Action import Action
 
 def actionHasGraph( a, g ):
     return Graph.areSame( a.getGraph(), g )

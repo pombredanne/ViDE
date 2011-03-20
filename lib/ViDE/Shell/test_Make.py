@@ -1,14 +1,12 @@
 import os.path
 import shutil
 import unittest
-import glob
 import time
 
 import ViDE
-from ViDE.Core.Action import CompoundException
 from ViDE.Shell.Shell import Shell
 
-bkName = "gcc_debug"
+bkName = "cygwin_gcc_debug"
 
 def hppFile( name ):
     return os.path.join( "build", bkName, "inc", name + ".hpp" )

@@ -1,7 +1,7 @@
 from ViDE.Project.Project import Project
 from ViDE.Project.Description.Utilities import *
 from ViDE.Project.Description.CPlusPlus import __CppObjects, __CppSources
-from ViDE.Project.Artifacts import Binary, Python
+from ViDE.Project.Artifacts import Python
 
 def __PythonSource( source, explicit = False ):
     if isArtifact( source ):

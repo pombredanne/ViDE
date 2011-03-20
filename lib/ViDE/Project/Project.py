@@ -1,12 +1,10 @@
 import os
 import imp
 
-from Misc import Graphviz
+from ViDE.ContextReferer import ContextReferer
+from ViDE.Project.Artifacts.BasicArtifacts import Artifact, CompoundArtifact
 
-from ViDE.Core.Artifact import Artifact, CompoundArtifact
-from ViDE.Core.Actions import NullAction
-
-class Project:
+class Project( ContextReferer ):
     @classmethod
     def load( cls, context, projectDirectory = "." ):
         descriptionFile = os.path.join( projectDirectory, "videfile.py" )
@@ -20,7 +18,7 @@ class Project:
         return instance
 
     def __init__( self, context ):
-        self.context = context
+        ContextReferer.__init__( self, context )
         self.__artifacts = []
 
     def createArtifact( self, artifactClass, *args ):
@@ -44,6 +42,7 @@ class Project:
     def __getArtifact( self, filter = lambda artifact: True ):
         return CompoundArtifact(
             name = "Project",
+            context = self.context,
             componants = [ artifact for artifact in self.__artifacts if filter( artifact ) ],
             explicit = False
         )

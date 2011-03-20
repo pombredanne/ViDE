@@ -1,11 +1,4 @@
-import os.path
-import re
-import sys
-import itertools
-
-from ViDE.Core.Artifact import AtomicArtifact
-from ViDE.Project.Project import Project
-from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact
+from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact, AtomicArtifact
 
 class Source( MonofileInputArtifact ):
     pass
@@ -14,6 +7,7 @@ class Object( AtomicArtifact ):
     def __init__( self, context, files, source, explicit ):
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = files[ 0 ],
             files = files,
             strongDependencies = [ source ],

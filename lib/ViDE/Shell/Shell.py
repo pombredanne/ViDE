@@ -7,6 +7,7 @@ from ViDE.Shell.Make import Make
 from ViDE.Shell.Run import Run
 from ViDE.Shell.Debug import Debug
 from ViDE.Shell.InstallTools import InstallTools
+from ViDE.Shell.CheckImports import CheckImports
 
 # Get from ViDE
 defaultToolset = "ts20110308"
@@ -25,18 +26,21 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
 
         toolsChoice = self.createOptionGroup( "Tools choice", "" )
         self.toolset = defaultToolset
-        toolsChoice.addOption( "toolset", "toolset", InteractiveCommandLineProgram.StoreArgument( "TOOLSET" ), "use toolset TOOLSET", InteractiveCommandLineProgram.StoreConstant( defaultToolset ), "use default toolset" )
+        toolsChoice.addOption( [ "t", "toolset" ], "toolset", InteractiveCommandLineProgram.StoreArgument( "TOOLSET" ), "use toolset TOOLSET", InteractiveCommandLineProgram.StoreConstant( defaultToolset ), "use default toolset" )
 
         self.buildkit = defaultBuildkit
-        toolsChoice.addOption( "buildkit", "buildkit", InteractiveCommandLineProgram.StoreArgument( "BUILDKIT" ), "use buildkit BUILDKIT", InteractiveCommandLineProgram.StoreConstant( defaultBuildkit ), "use default buildkit" )
+        toolsChoice.addOption( [ "b", "buildkit" ], "buildkit", InteractiveCommandLineProgram.StoreArgument( "BUILDKIT" ), "use buildkit BUILDKIT", InteractiveCommandLineProgram.StoreConstant( defaultBuildkit ), "use default buildkit" )
 
         generation = self.createCommandGroup( "Artifact generation", "" )
         generation.addCommand( "make", Make, "build the project" )
         
         self.addCommand( "run", Run, "run an executable file" )
         self.addCommand( "debug", Debug, "debug an executable file" )
-        self.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
         self.addCommand( "install-tools", InstallTools, "install tools" )
+
+        autodiagnostic = self.createCommandGroup( "ViDE's auto diagnostic", "" )
+        autodiagnostic.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
+        autodiagnostic.addCommand( "check-imports", CheckImports, "check ViDE's imports" )
 
         self.addHelpCommand()
         self.addExitCommand()

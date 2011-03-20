@@ -1,12 +1,8 @@
 from __future__ import with_statement
 
-import tempfile
-import os.path
 import multiprocessing
 import threading
-import itertools
 import time
-import pickle
 
 from Misc import Graphviz
 

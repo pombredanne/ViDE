@@ -3,8 +3,7 @@ import py_compile
 
 from ViDE.Core import Subprocess
 from ViDE.Core.Action import Action
-from ViDE.Core.Artifact import AtomicArtifact, CompoundArtifact
-from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact, CopiedArtifact
+from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact, CopiedArtifact, AtomicArtifact, CompoundArtifact
 from ViDE.Project.Artifacts.Binary import LinkedBinary
 
 class Source( MonofileInputArtifact ):
@@ -46,6 +45,7 @@ class Module( AtomicArtifact ):
         self.__source = source
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = self.__fileName,
             files = [ self.__fileName ],
             strongDependencies = [ source ],
@@ -61,6 +61,7 @@ class Package( CompoundArtifact ):
     def __init__( self, context, name, modules, explicit ):
         CompoundArtifact.__init__(
             self,
+            context = context,
             name = name,
             componants = modules,
             explicit = explicit
