@@ -5,6 +5,7 @@ class Source( MonofileInputArtifact ):
 
 class Object( AtomicArtifact ):
     def __init__( self, context, files, source, explicit ):
+        self.context = context
         AtomicArtifact.__init__(
             self,
             context = context,
