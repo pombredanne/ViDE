@@ -110,7 +110,7 @@ class ExecutionReport:
         self.__optimalHorizontalScale = ( self.__pixelWidth - self.__pixelForZero ) / self.__duration
         for a in self.__actions:
             if a.begin != 0:
-                maximumScaleForA = ( self.__pixelWidth - self.__pixelForZero - self.__textWidth( a.text ) - 1. ) / a.begin
+                maximumScaleForA = ( self.__pixelWidth - self.__pixelForZero - self.__textWidth( a.text ) ) / a.begin
                 if maximumScaleForA < self.__optimalHorizontalScale:
                     self.__optimalHorizontalScale = maximumScaleForA
 
