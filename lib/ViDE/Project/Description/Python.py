@@ -1,7 +1,14 @@
+import sys
+
+import ViDE
 from ViDE.Project.Project import Project
 from ViDE.Project.Description.Utilities import *
 from ViDE.Project.Description.CPlusPlus import __CppObjects, __CppSources
 from ViDE.Project.Artifacts import Python
+
+sys.path.append( ViDE.toolsetsDirectory() )
+import Tools
+sys.path.pop()
 
 def __PythonSource( source, explicit = False ):
     if isArtifact( source ):
@@ -31,4 +38,5 @@ def PythonScript( source ):
     return Project.inProgress.createArtifact( Python.Script, __PythonSource( source ), True )
 
 def CppPythonModule( name, sources = [], objects = [], localLibraries = [], externalLibraries = [] ):
+    externalLibraries.append( Tools.Python.Python )
     return Project.inProgress.createArtifact( Project.inProgress.context.buildkit.Python.CModule, name, __CppObjects( __CppSources( sources ), objects, [], localLibraries, externalLibraries ), localLibraries, externalLibraries, True )

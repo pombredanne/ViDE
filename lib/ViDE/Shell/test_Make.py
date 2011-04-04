@@ -6,7 +6,7 @@ import time
 import ViDE
 from ViDE.Shell.Shell import Shell
 
-bkName = "cygwin_gcc_debug"
+bkName = "linux_gcc_debug"
 
 def hppFile( name ):
     return os.path.join( "build", bkName, "inc", name + ".hpp" )
@@ -18,13 +18,13 @@ def forObjFile( name ):
     return os.path.join( "build", bkName, "obj", name + ".for.o" )
 
 def dllFile( name ):
-    return os.path.join( "build", bkName, "bin", name + ".dll" )
+    return os.path.join( "build", bkName, "lib", "lib" + name + ".so" )
 
 def modFile( name ):
-    return os.path.join( "build", bkName, "pyd", name + ".dll" )
+    return os.path.join( "build", bkName, "pyd", name + ".so" )
 
 def exeFile( name ):
-    return os.path.join( "build", bkName, "bin", name + ".exe" )
+    return os.path.join( "build", bkName, "bin", name )
 
 def libFile( name ):
     return os.path.join( "build", bkName, "lib", "lib" + name + ".a" )

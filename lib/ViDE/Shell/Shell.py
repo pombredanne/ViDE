@@ -10,7 +10,7 @@ from ViDE.Shell.InstallTools import InstallTools
 from ViDE.Shell.CheckImports import CheckImports
 
 # Get from ViDE
-defaultToolset = "ts20110308"
+defaultToolset = "system"
 defaultBuildkit = ViDE.host() + "_gcc_debug"
 
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):

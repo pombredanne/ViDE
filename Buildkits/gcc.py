@@ -159,7 +159,7 @@ class gcc( Buildkit ):
         class CModule( ViDE.Project.Artifacts.Python.CModule ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
                 names = name.split( "." )
-                names[ -1 ] += ".dll"
+                names[ -1 ] += "." + context.buildkit.getCppPythonModuleExtension()
                 self.__fileName = context.buildkit.fileName( "pyd", *names )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Python.CModule.__init__(
@@ -180,7 +180,6 @@ class gcc( Buildkit ):
                     + [ "-L" + self.context.buildkit.fileName( "lib" ) ]
                     + [ "-L" + self.context.buildkit.fileName( "bin" ) ]
                     + [ "-L" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
-                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ]
-                    + [ "-lpython2.6" ], # @todo Remove
+                    + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ],
                     context = self.context
                 )
