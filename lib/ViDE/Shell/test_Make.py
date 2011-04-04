@@ -269,4 +269,12 @@ ExecutableWithExternalDependency = TestMake( "ExecutableWithExternalDependency",
     "main.cpp": [ exeFile( "hello" ), cppObjFile( "main" ) ],
 } )
 
+MoreComplexCopiedHeadersDependencies = TestMake( "MoreComplexCopiedHeadersDependencies", {
+    "main.cpp": [ exeFile( "hello" ), cppObjFile( "main" ) ],
+    "src/lib.hpp": [ exeFile( "hello" ), cppObjFile( "main" ), hppFile( "lib" ) ],
+    "src/lib/a.hpp": [ exeFile( "hello" ), cppObjFile( "main" ), hppFile( "lib/a" ) ],
+    "src/lib/b.hpp": [ exeFile( "hello" ), cppObjFile( "main" ), hppFile( "lib/b" ) ],
+    "src/lib.cpp": [ dllFile( "lib" ), cppObjFile( "src/lib" ), cppObjFile( "src/lib" ) ],
+} )
+
 unittest.main()

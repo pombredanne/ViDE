@@ -101,7 +101,7 @@ class ParseCppHeadersAction( Action ):
         header = os.path.join( path, header )
         copiedHeader = self.__candidateCopiedHeaders.find( header )
         headers.addAngleHeader( header )
-        self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader, path )
+        self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader, os.path.join( path, os.path.dirname( header )  ) )
 
     def __handleAngleHeader( self, headers, header, path ):
         copiedHeader = self.__candidateCopiedHeaders.find( header )
