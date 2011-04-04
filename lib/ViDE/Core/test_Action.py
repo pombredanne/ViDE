@@ -675,12 +675,13 @@ class CompareActions( TestCase ):
     def testTwoWayEqual( self ):
         self.makeTwoWay()
         
-        self.a3.computePreview().returns( "3" )
-        self.a1.computePreview().returns( "1" )
-        self.a2.computePreview().returns( "2" )
-        self.b3.computePreview().returns( "3" )
-        self.b2.computePreview().returns( "2" )
-        self.b1.computePreview().returns( "1" )
+        with self.m.unorderedGroup():
+            self.a3.computePreview().returns( "3" )
+            self.a1.computePreview().returns( "1" )
+            self.a2.computePreview().returns( "2" )
+            self.b3.computePreview().returns( "3" )
+            self.b2.computePreview().returns( "2" )
+            self.b1.computePreview().returns( "1" )
 
         self.m.startTest()
         self.assertTrue( Action.areSame( self.a3, self.b3 ) )
@@ -688,12 +689,13 @@ class CompareActions( TestCase ):
     def testTwoWayDiffByPredPreview( self ):
         self.makeTwoWay()
         
-        self.a3.computePreview().returns( "3" )
-        self.a1.computePreview().returns( "1" )
-        self.a2.computePreview().returns( "2" )
-        self.b3.computePreview().returns( "3" )
-        self.b2.computePreview().returns( "2" )
-        self.b1.computePreview().returns( "one" )
+        with self.m.unorderedGroup():
+            self.a3.computePreview().returns( "3" )
+            self.a1.computePreview().returns( "1" )
+            self.a2.computePreview().returns( "2" )
+            self.b3.computePreview().returns( "3" )
+            self.b2.computePreview().returns( "2" )
+            self.b1.computePreview().returns( "one" )
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a3, self.b3 ) )
@@ -706,13 +708,14 @@ class CompareActions( TestCase ):
         self.b3.addPredecessor( self.b1 )
         self.b2.addPredecessor( self.b4 )
 
-        self.a3.computePreview().returns( "3" )
-        self.a1.computePreview().returns( "1" )
-        self.a2.computePreview().returns( "2" )
-        self.b3.computePreview().returns( "3" )
-        self.b1.computePreview().returns( "1" )
-        self.b2.computePreview().returns( "2" )
-        self.b4.computePreview().returns( "4" )
+        with self.m.unorderedGroup():
+            self.a3.computePreview().returns( "3" )
+            self.a1.computePreview().returns( "1" )
+            self.a2.computePreview().returns( "2" )
+            self.b3.computePreview().returns( "3" )
+            self.b1.computePreview().returns( "1" )
+            self.b2.computePreview().returns( "2" )
+            self.b4.computePreview().returns( "4" )
 
         self.m.startTest()
         self.assertFalse( Action.areSame( self.a3, self.b3 ) )
@@ -741,9 +744,10 @@ class DrawGraph( TestCase ):
         self.a1.addPredecessor( self.a2 )
         self.a1.addPredecessor( self.a3 )
 
-        self.a1.computePreview().returns( "a1's preview" )
-        self.a3.computePreview().returns( "a3's preview" )
-        self.a2.computePreview().returns( "a2's preview" )
+        with self.m.unorderedGroup():
+            self.a1.computePreview().returns( "a1's preview" )
+            self.a3.computePreview().returns( "a3's preview" )
+            self.a2.computePreview().returns( "a2's preview" )
         
         self.m.startTest()
         
