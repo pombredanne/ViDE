@@ -21,10 +21,15 @@ class CandidateCopiedHeaders:
                 self.__candidateCopiedHeaders += copiedHeaders.get()
 
     def find( self, searchedHeader ):
-        searchedHeader = self.__context.buildkit.fileName( "inc", searchedHeader )
+        searchedHeader = os.path.normpath( self.__context.buildkit.fileName( "inc", searchedHeader ) )
+        #print "Searching for", searchedHeader
         for copiedHeader in self.__candidateCopiedHeaders:
+            #print "  Trying", copiedHeader.getDestination(),
             if searchedHeader == copiedHeader.getDestination():
+                #print ": ok"
                 return copiedHeader
+            #print ": ko"
+        #print "  Returning None"
 
 class Headers:
     def __init__( self ):
@@ -77,37 +82,34 @@ class ParseCppHeadersAction( Action ):
 
     def doExecute( self ):
         headers = Headers()
-        self.__parse( headers, self.__source, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader, "" )
+        self.__parse( headers, fileName = self.__source )
         headers.save( self.__depFile )
 
-    def __parse( self, headers, fileName, handleDoubleQuotedHeader, path ):
+    def __parse( self, headers, fileName, inAngleQuotedInclude = False, path = "" ):
+        #print "Parsing", fileName, "with path", path
         f = open( fileName )
         for line in f:
             line = line.strip()
+            
             header = self.__doubleQuotedHeaderOnLine( line )
             if header:
-                handleDoubleQuotedHeader( headers, fileName, header, path )
+                if inAngleQuotedInclude:
+                    fullHeader = os.path.join( path, header )
+                    copiedHeader = self.__candidateCopiedHeaders.find( fullHeader )
+                    headers.addAngleHeader( fullHeader )
+                    self.__parse( headers, fileName = copiedHeader.getSource().getFileName(), inAngleQuotedInclude = True, path = os.path.join( path, os.path.dirname( header ) ) )
+                else:
+                    header = os.path.join( os.path.dirname( fileName ), header )
+                    headers.addDoubleQuotedHeader( header )
+                    self.__parse( headers, fileName = header, inAngleQuotedInclude = False, path = "" )
+
             header = self.__angleHeaderOnLine( line )
             if header:
-                self.__handleAngleHeader( headers, header, path )
+                copiedHeader = self.__candidateCopiedHeaders.find( header )
+                if copiedHeader is not None:
+                    headers.addAngleHeader( header )
+                    self.__parse( headers, fileName = copiedHeader.getSource().getFileName(), inAngleQuotedInclude = True, path = os.path.dirname( header ) )
         f.close()
-
-    def __handleDoubleQuotedHeaderFromDoubleQuotedHeader( self, headers, fileName, header, path ):
-        header = os.path.join( os.path.dirname( fileName ), header )
-        headers.addDoubleQuotedHeader( header )
-        self.__parse( headers, header, self.__handleDoubleQuotedHeaderFromDoubleQuotedHeader, path )
-
-    def __handleDoubleQuotedHeaderFromAngleHeader( self, headers, fileName, header, path ):
-        header = os.path.join( path, header )
-        copiedHeader = self.__candidateCopiedHeaders.find( header )
-        headers.addAngleHeader( header )
-        self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader, os.path.join( path, os.path.dirname( header )  ) )
-
-    def __handleAngleHeader( self, headers, header, path ):
-        copiedHeader = self.__candidateCopiedHeaders.find( header )
-        if copiedHeader is not None:
-            headers.addAngleHeader( header )
-            self.__parse( headers, copiedHeader.getSource().getFileName(), self.__handleDoubleQuotedHeaderFromAngleHeader, os.path.join( path, os.path.dirname( header )  ) )
 
     def __doubleQuotedHeaderOnLine( self, line ):
         return self.__headerOnLine( line, "\s*#\s*include\s*\"(.*)\"" )
