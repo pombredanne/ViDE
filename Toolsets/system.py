@@ -5,6 +5,7 @@ from Tools.Make import Make
 from Tools.LibSigCpp import LibSigCpp
 from Tools.Python import Python
 from Tools.Cairo import Pixman, FreeType, FontConfig, LibPng, Cairo, Cairomm, PyCairo
+from Tools.Boost import BoostPython, BoostUnitTestFramework
 
 class system( Toolset ):
     def computeTools( self ):
@@ -19,7 +20,9 @@ class system( Toolset ):
             LibSigCpp( "system" ),
             Cairomm( "system" ),
             Python( "system" ),
-            PyCairo( "system" )
+            PyCairo( "system" ),
+            BoostPython( "system" ),
+            BoostUnitTestFramework( "system" )
         ]
 
     def getInstallDirectory( self ):
