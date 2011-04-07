@@ -5,7 +5,7 @@ from Tools.Make import Make
 from Tools.LibSigCpp import LibSigCpp
 from Tools.Python import Python
 from Tools.Cairo import Pixman, FreeType, FontConfig, LibPng, Cairo, Cairomm, PyCairo
-from Tools.Boost import BoostPython, BoostUnitTestFramework
+from Tools.Boost import BoostPython, BoostUnitTestFramework, BoostProgramOptions
 
 class system( Toolset ):
     def computeTools( self ):
@@ -22,6 +22,7 @@ class system( Toolset ):
             Python( "system" ),
             PyCairo( "system" ),
             BoostPython( "system" ),
+            BoostProgramOptions( "system" ),
             BoostUnitTestFramework( "system" )
         ]
 

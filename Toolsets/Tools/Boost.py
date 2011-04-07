@@ -27,3 +27,16 @@ class BoostUnitTestFramework( Tool ):
 
     def getLibName( self ):
         return "boost_unit_test_framework"
+        
+class BoostProgramOptions( Tool ):
+    def getDependencies( self ):
+        return []
+
+    def getIncludeDirectories( self, context ):
+        return []
+
+    def getLibPath( self ):
+        return "/"
+
+    def getLibName( self ):
+        return "boost_program_options"

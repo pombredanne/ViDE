@@ -94,7 +94,7 @@ class Cairomm( Tool ):
         ] ]
 
     def getLibPath( self ):
-        return "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib"
+        return "/"
 
     def getLibName( self ):
         return "cairomm-1.0"
@@ -112,3 +112,24 @@ class PyCairo( Tool ):
 
     def getDependencies( self ):
         return [ Cairo ]
+
+    def getIncludeDirectories( self, context ):
+        return [ os.path.join( context.toolset.getInstallDirectory(), *path ) for path in [
+            ( "include", "sigc++-2.0" ),
+            ( "include", "pycairo" ),
+            ( "include", "cairo" ),
+            ( "include", "glib-2.0" ),
+            ( "include", "glib-2.0", "include" ),
+            ( "include", "pixman-1" ),
+            ( "include", "freetype2" ),
+            ( "include", "libpng12" ),
+            ( "lib", "cairomm-1.0", "include" ),
+            ( "lib", "sigc++-2.0", "include" ),
+            ( "include", "cairomm-1.0" ),
+        ] ]
+
+    def getLibPath( self ):
+        return "/"
+
+    def getLibName( self ):
+        return "cairo"
