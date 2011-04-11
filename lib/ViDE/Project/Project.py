@@ -1,5 +1,6 @@
 import os
 import imp
+import sys
 
 from ViDE.ContextReferer import ContextReferer
 from ViDE.Project.Artifacts.BasicArtifacts import Artifact, CompoundArtifact
@@ -12,6 +13,7 @@ class Project( ContextReferer ):
         instance = Project( context )
 
         Project.inProgress = instance
+        sys.path.append( projectDirectory )
         imp.load_source( "description", descriptionFile )
         del Project.inProgress
 
