@@ -1,7 +1,6 @@
-from ViDE.Core.Artifact import AtomicArtifact, SubatomicArtifact
 from ViDE.Core.Actions import TouchAction
 from ViDE.Project.Description import *
-from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact
+from ViDE.Project.Artifacts.BasicArtifacts import AtomicArtifact, SubatomicArtifact, MonofileInputArtifact
 
 class XsdSchema( MonofileInputArtifact ):
     pass
@@ -10,6 +9,7 @@ class XsdGeneratedSource( SubatomicArtifact ):
     def __init__( self, context, fileName, atomicArtifact, explicit ):
         SubatomicArtifact.__init__(
             self,
+            context = context,
             name = fileName,
             atomicArtifact = atomicArtifact,
             files = [ fileName ],
@@ -26,6 +26,7 @@ class GeneratedSource( AtomicArtifact ):
         self.__cppFileName = context.buildkit.fileName( "gen", xsdSchema.getFileName() + ".cpp" )
         AtomicArtifact.__init__(
             self,
+            context = context,
             name = xsdSchema.getFileName() + "_tree",
             files = [ self.__hppFileName, self.__cppFileName ],
             strongDependencies = [ xsdSchema ],

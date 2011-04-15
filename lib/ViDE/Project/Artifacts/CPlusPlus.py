@@ -167,7 +167,10 @@ class DepFile( AtomicArtifact ):
 class Object( AtomicArtifact ):
     def __init__( self, context, files, source, localLibraries, externalLibraries, explicit ):
         candidateCopiedHeaders = CandidateCopiedHeaders( context, localLibraries )
-        headers = self.__parseCppHeaders( context, source, candidateCopiedHeaders )
+        if isinstance( source, InputArtifact ):
+            headers = self.__parseCppHeaders( context, source, candidateCopiedHeaders )
+        else:
+            headers = Headers()
         includedHeaders = [ self.__retrieveOrCreateHeader( header ) for header in headers.getDoubleQuotedHeaders() ]
         for searchedHeader in headers.getAngleHeaders():
             includedHeaders.append( candidateCopiedHeaders.find( searchedHeader ) )
