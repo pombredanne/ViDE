@@ -167,7 +167,7 @@ class DepFile( AtomicArtifact ):
 class Object( AtomicArtifact ):
     def __init__( self, context, files, source, localLibraries, externalLibraries, explicit ):
         candidateCopiedHeaders = CandidateCopiedHeaders( context, localLibraries )
-        if isinstance( source, InputArtifact ):
+        if isinstance( source, InputArtifact ) or os.path.exists( source.getFileName() ):
             headers = self.__parseCppHeaders( context, source, candidateCopiedHeaders )
         else:
             headers = Headers()
