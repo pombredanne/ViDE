@@ -10,3 +10,6 @@ class darwin_gcc:
 
     def getSystemCompilationOptions( self ):
         return []
+    def getCppPythonModuleExtension( self ):
+        return "so"
+
