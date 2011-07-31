@@ -8,11 +8,11 @@ class Python( Tool ):
 
     def getIncludeDirectories( self, context ):
         return [ os.path.join( context.toolset.getInstallDirectory(), *path ) for path in [
-            ( "include", "python2.6" )
+            ( "include", "python2.7" )
         ] ]
 
     def getLibPath( self ):
         return "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib"
 
     def getLibName( self ):
-        return "python2.6"
+        return "python2.7"
