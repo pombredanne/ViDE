@@ -6,25 +6,30 @@ from ViDE.Buildkit import Buildkit
 class vs( Buildkit ):
     class CPlusPlus:
         class Object( ViDE.Project.Artifacts.CPlusPlus.Object ):
-            def __init__( self, buildkit, source, additionalDefines, localLibraries, explicit ):
-                self.__buildkit = buildkit
-                self.__fileName = self.__buildkit.fileName( "obj", source.getFileName() + ".obj" )
+            def __init__( self, context, source, additionalDefines, localLibraries, externalLibraries, explicit ):
+                self.__fileName = context.buildkit.fileName( "obj", source.getFileName() + ".obj" )
                 self.__additionalDefines = additionalDefines
                 ViDE.Project.Artifacts.CPlusPlus.Object.__init__(
                     self,
-                    buildkit = buildkit,
+                    context = context,
                     files = [ self.__fileName ],
                     source = source,
                     localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
                     explicit = explicit
                 )
 
             def doGetProductionAction( self ):
                 sourceName = self.getSource().getFileName()
                 return SystemAction(
-                    [ "cl", "/c", sourceName ],
-                    [ "/EHsc", "/I" + self.__buildkit.fileName( "inc" ), "/Fo" + self.__fileName ]
+                    [ "cl", "/c", sourceName ]
+                    + [ "/Fo" + self.__fileName ]
+                    + [ "/EHsc" ]
                     + [ "/D" + name for name in self.__additionalDefines ]
+                    + [ "/I" + self.context.buildkit.fileName( "inc" ) ]
+                    + [ "/I" + d for d in self.getIncludeDirectories() ],
+                    [],
+                    context = self.context
                 )
 
             def getFileName( self ):
@@ -32,17 +37,17 @@ class vs( Buildkit ):
 
     class Binary:
         class Executable( ViDE.Project.Artifacts.Binary.Executable ):
-            def __init__( self, buildkit, name, objects, localLibraries, explicit ):
-                self.__buildkit = buildkit
-                self.__fileName = self.__buildkit.fileName( "bin", name + ".exe" )
+            def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
+                self.__fileName = context.buildkit.fileName( "bin", name + ".exe" )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.Executable.__init__(
                     self,
-                    buildkit = buildkit,
+                    context = context,
                     name = name,
                     files = [ self.__fileName ],
                     objects = objects,
                     localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
                     explicit = explicit
                 )
 
@@ -50,27 +55,28 @@ class vs( Buildkit ):
                 return SystemAction(
                     [ "link", "/OUT:" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
-                    + [ "/LIBPATH:" + self.__buildkit.fileName( "lib" ) ] # Static libraries
-                    + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
-                    + [ lib.getLibName() + ".lib" for lib in self.getLibrariesToLink() ]
+                    + [ "/LIBPATH:" + self.context.buildkit.fileName( "lib" ) ] # Static libraries
+                    + [ "/LIBPATH:" + self.context.buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
+                    + [ lib.getLibName() + ".lib" for lib in self.getLibrariesToLink() ],
+                    context = self.context
                 )
 
             def debug( self, arguments ):
                 print "Debuging with Visual Studio is not supported yet"
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
-            def __init__( self, buildkit, name, objects, localLibraries, explicit ):
-                self.__buildkit = buildkit
-                self.__fileName = self.__buildkit.fileName( "bin", name + ".dll" )
+            def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
+                self.__fileName = context.buildkit.fileName( "bin", name + ".dll" )
                 self.__objects = objects
                 ViDE.Project.Artifacts.Binary.DynamicLibraryBinary.__init__(
                     self,
-                    buildkit,
+                    context,
                     name = name + "_bin",
                     # @todo Put the .dll in bin, but the .lib and .exp in lib
-                    files = [ self.__fileName, self.__buildkit.fileName( "bin", name + ".lib" ), self.__buildkit.fileName( "bin", name + ".exp" ) ],
+                    files = [ self.__fileName, context.buildkit.fileName( "bin", name + ".lib" ), context.buildkit.fileName( "bin", name + ".exp" ) ],
                     objects = objects,
                     localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
                     explicit = explicit
                 )
 
@@ -78,9 +84,10 @@ class vs( Buildkit ):
                 return SystemAction(
                     [ "link", "/DLL", "/OUT:" + self.__fileName ],
                     [ o.getFileName() for o in self.__objects ]
-                    + [ "/LIBPATH:" + self.__buildkit.fileName( "lib" ) ] # Static libraries
-                    + [ "/LIBPATH:" + self.__buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
-                    + [ lib.getLibName() + ".lib" for lib in self.getLibrariesToLink() ]
+                    + [ "/LIBPATH:" + self.context.buildkit.fileName( "lib" ) ] # Static libraries
+                    + [ "/LIBPATH:" + self.context.buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
+                    + [ lib.getLibName() + ".lib" for lib in self.getLibrariesToLink() ],
+                    context = self.context
                 )
 
         class StaticLibraryBinary( ViDE.Project.Artifacts.Binary.StaticLibraryBinary ):
@@ -101,7 +108,8 @@ class vs( Buildkit ):
             def doGetProductionAction( self ):
                 return SystemAction(
                     [ "lib", "/OUT:" + self.__fileName ],
-                    [ o.getFileName() for o in self.__objects ]
+                    [ o.getFileName() for o in self.__objects ],
+                    context = self.context
                 )
 
     def getExecutionEnvironment( self ):
