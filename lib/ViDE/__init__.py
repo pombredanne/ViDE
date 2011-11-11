@@ -8,6 +8,8 @@ def host():
         return "cygwin"
     elif sys.platform == "darwin":
         return "darwin"
+    elif sys.platform == "win32":
+        return "win32"
     else:
         raise Exception( "Unsupported host " + sys.platform )
 
