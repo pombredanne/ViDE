@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ "x$MSYSTEM" = "xMINGW32" ]
+then
+    cmd //C gitk.cmd "$@"
+else
+    cmd /C gitk.cmd "$@"
+fi
