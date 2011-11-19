@@ -11,6 +11,7 @@ Installation:
         - make, m4
         - python, python-gtk2.0, python-gtk2.0-devel, libgtk2.0-devel
         - libboost-devel
+- In file c:\cygwin\etc\passwd, change your home directory from /home/username /cygdrive/c/Users/username
 - From Cygwin, run `wget http://peak.telecommunity.com/dist/ez_setup.py` and `python ez_setup.py`
 - From Cygwin, run `easy_install odict markdown django`
 - Download and launch Xming-X-X-X-XX-setup.exe from http://sourceforge.net/projects/xming/
