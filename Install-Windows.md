@@ -1,8 +1,5 @@
 This document details how to install ViDE and its dependencies so that it is usable from three shells: the Windows command prompt, Cygwin's bach, and MSys.
 
-Windows command prompt
-======================
-
 Cygwin
 ======
 
@@ -61,7 +58,7 @@ ViDE
 ====
 
 Installation:
-- From the Windows command prompt, run `git clone git@github.com:jacquev6/ViDE`
+- From the Windows command prompt, run `git clone git@github.com:jacquev6/ViDE.git`
 - Add ViDE\bin to your system PATH environment variable
 
 Check:
