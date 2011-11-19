@@ -42,6 +42,8 @@ Installation:
     - in "Select Components", unselect all options unless you have special needs
     - in "Adjusting your PATH environment", select "Run Git from the Windows Command Prompt"
     - in "Configuring the line ending conversions", select "Checkout as-is, commit as-is"
+- From the Windows command prompt, run `git config --global user.name "Your Name"`
+- From the Windows command prompt, run `git config --global user.email you@yourdomain.com`
 
 Check:
 - From the Windows command prompt, run `git --version`
