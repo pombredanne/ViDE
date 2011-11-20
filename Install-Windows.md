@@ -47,16 +47,34 @@ ViDE
 Cygwin
 ======
 
+Packaged software
+-----------------
+
 - Download setup.exe from [Cygwin](http://www.cygwin.com/), copy it to a new dircetory c:\cygwin, and launch it
     - in "Select Local Package Directory", choose `c:\cygwin\LocalPackages`
     - in "Select packages", select at least:
         - wget
-        - make, m4
+        - make, m4, pkg-config
+        - libsigc-2.0_0, libsigc-2.0-devel
         - python, python-gtk2.0, python-gtk2.0-devel, libgtk2.0-devel
         - libboost-devel
 - In file `c:\cygwin\etc\passwd`, change your home directory from `/home/username` to `/cygdrive/c/Users/username`
+
+Non-packaged software
+---------------------
+
+### Cairomm
+
+- Download `cairomm-X.XX.X.tar.gz` from [Cairo](http://cairographics.org/releases/)
+- From Cygwin, run `tar xzf cairomm-X.XX.X.tar.gz`, then `cd cairomm-X.XX.X; ./configure; make; make install`
+
+### Python modules
+
 - From Cygwin, run `wget http://peak.telecommunity.com/dist/ez_setup.py` and `python ez_setup.py`
 - From Cygwin, run `easy_install odict markdown django`
+
+### Xming X server
+
 - Download and launch `Xming-X-X-X-XX-setup.exe` from [XMing](http://sourceforge.net/projects/xming/)
     - in "Select Components", choose "Don't install an SSH client"
 - In file `c:\cygwin\cygwin.bat`, add a line `set DISPLAY=127.0.0.1:0` (before the line calling bash)
