@@ -17,6 +17,8 @@ Artifacts:
     StaticLibrary
     HeaderLibrary
 
+In Project.Description, replace CppStaticLibrary by CPlusPlus.StaticLibrary (same thing for other LanguageArtifacts)
+
 Buildkits have a function
     system-on-which-they-run --> list-of-possible-target-systems
 => keep a fixed list of existing systems/platforms, etc.
