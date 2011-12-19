@@ -30,6 +30,7 @@ class system( Toolset ):
             BoostPython( "system" ),
             BoostProgramOptions( "system" ),
             BoostUnitTestFramework( "system" ),
+            Gdi( "system" ),
             BoostThread( "system" ),
             BoostDateTime( "system" ),
             BoostSystem( "system" ),
