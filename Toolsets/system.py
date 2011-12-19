@@ -6,6 +6,7 @@ from Tools.LibSigCpp import LibSigCpp
 from Tools.Python import Python
 from Tools.Cairo import Pixman, FreeType, FontConfig, LibPng, Cairo, Cairomm, PyCairo
 from Tools.Boost import BoostPython, BoostUnitTestFramework, BoostProgramOptions
+from Tools.Win32 import Gdi
 
 class system( Toolset ):
     def computeTools( self ):
@@ -23,7 +24,8 @@ class system( Toolset ):
             PyCairo( "system" ),
             BoostPython( "system" ),
             BoostProgramOptions( "system" ),
-            BoostUnitTestFramework( "system" )
+            BoostUnitTestFramework( "system" ),
+            Gdi( "system" )
         ]
 
     def getInstallDirectory( self ):
