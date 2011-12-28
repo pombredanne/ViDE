@@ -30,8 +30,8 @@ Python
 
 - Download and launch `python-2.X.X.msi` from [Python](http://python.org/download/) (Stick to a 2.X 32bits version because some extensions used do not support 3.X or 64bits)
 - Download and launch `setuptools-X.XXXX.win32-py2.X.exe` from [Setup tools](http://pypi.python.org/pypi/setuptools)
-    - Select every optional components
 - Download and launch `pygtk-all-in-one-X.XX.0.win32-py2.X.msi` from [PyGtk](http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/)
+    - Select every optional components
 - **To be confirmed:** Add `c:\Python27` and `c:\Python27\Scripts` to your PATH environment variable
 - From the Windows command prompt, run `easy_install odict markdown django`
 
