@@ -84,4 +84,4 @@ MinGW/MSys
 
 - Download and launch `mingw-get-inst-XXXXXXXX.exe` from [MinGW](http://sourceforge.net/projects/mingw/files)
 	- in "Select Components", select all options
-- In file `C:\MinGW\msys\1.0\etc\profile`, modify the "Set up USER's home directory" section to set the HOME environment variable to `"$USERPROFILE"` instead of `"/home/$LOGNAME"`
+- In file `C:\MinGW\msys\1.0\etc\profile`, modify the "Set up USER's home directory" section to set the HOME environment variable to `"/c/Users/username"` instead of `"/home/$LOGNAME"`
