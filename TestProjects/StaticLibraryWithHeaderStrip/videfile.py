@@ -2,8 +2,8 @@ from ViDE.Project.Description import *
 
 lib = CppStaticLibrary(
     name = "hello",
-    headers = [ "src/lib.hpp", "src/sub/sub.hpp" ],
-    sources = [ "src/lib.cpp" ],
+    headers = [ os.path.join( "src", "lib.hpp" ), os.path.join( "src", "sub", "sub.hpp" ) ],
+    sources = [ os.path.join( "src", "lib.cpp" ) ],
     stripHeaders = lambda f: f[4:]
 )
 

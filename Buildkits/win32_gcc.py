@@ -10,3 +10,6 @@ class win32_gcc:
 
     def getSystemCompilationOptions( self ):
         return []
+
+    def getCppPythonModuleExtension( self ):
+        raise Exception( "Under Windows, Python modules cannot be built with gcc. Use Visual Studio." )

@@ -91,10 +91,12 @@ class Cairomm( Tool ):
             ( "lib", "cairomm-1.0", "include" ),
             ( "lib", "sigc++-2.0", "include" ),
             ( "include", "cairomm-1.0" ),
+            ( "local", "include", "cairomm-1.0" ),
+            ( "local", "lib", "cairomm-1.0", "include" ),
         ] ]
 
     def getLibPath( self ):
-        return "/"
+        return "/usr/local/lib"
 
     def getLibName( self ):
         return "cairomm-1.0"
@@ -129,7 +131,7 @@ class PyCairo( Tool ):
         ] ]
 
     def getLibPath( self ):
-        return "/"
+        return None
 
     def getLibName( self ):
         return "cairo"

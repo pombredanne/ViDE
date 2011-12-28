@@ -1,3 +1,9 @@
+######################################
+- remove all default arguments in internal functions
+- build under Msys, Cygwin and cmd.exe
+- add TestProjects for all classical external dependencies
+######################################
+
 vide draw autodepgraph
 
 Focus on your code, let ViDE do peripheral tasks (list them) for you, in a uniform way (list axes)

@@ -2,8 +2,8 @@ from ViDE.Project.Description import *
 
 lib = CppDynamicLibrary(
     name = "lib",
-    sources = [ "src/lib.cpp" ],
-    headers = [ "src/lib.hpp", "src/lib/a.hpp", "src/lib/b.hpp", "src/lib/c.hpp" ],
+    sources = [ os.path.join( "src", "lib.cpp" ) ],
+    headers = [ os.path.join( "src", "lib.hpp" ), os.path.join( "src", "lib", "a.hpp" ), os.path.join( "src", "lib", "b.hpp" ), os.path.join( "src", "lib", "c.hpp" ) ],
     stripHeaders = lambda h: h[4:],
     localLibraries = [],
     externalLibraries = []

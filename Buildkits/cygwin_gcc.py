@@ -8,5 +8,8 @@ class cygwin_gcc:
     def computeDynamicLibraryName( self, baseName ):
         return self.context.buildkit.fileName( "lib", baseName + ".dll" )
 
+    def getCppPythonModuleExtension( self ):
+        return "dll"
+
     def getSystemCompilationOptions( self ):
         return []
