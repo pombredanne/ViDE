@@ -58,6 +58,7 @@ Packaged software
         - libsigc-2.0_0, libsigc-2.0-devel
         - python, python-gtk2.0, python-gtk2.0-devel, libgtk2.0-devel
         - libboost-devel
+        - gcc4-fortran
 - In file `c:\cygwin\etc\passwd`, change your home directory from `/home/username` to `/cygdrive/c/Users/username`
 
 Non-packaged software
