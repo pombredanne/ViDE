@@ -35,8 +35,24 @@ Python
 - **To be confirmed:** Add `c:\Python27` and `c:\Python27\Scripts` to your PATH environment variable
 - From the Windows command prompt, run `easy_install odict markdown django`
 
-Visual Studio Express
----------------------
+Visual Studio 2008 Express
+--------------------------
+
+- Download, mount and install `VS2008ExpressWithSP1ENUX1504728.iso` from [Microsoft](http://www.microsoft.com/visualstudio/en-us/products/2008-editions/express)
+
+<!---
+
+Visual Studio 2010 Express
+--------------------------
+
+- Download, mount and install `VS2010Express1.iso` from [Microsoft](http://www.microsoft.com/visualstudio/en-us/products/2010-editions/express-iso)
+
+Windows 7 SDK
+-------------
+
+- Download, mount and install `GRMSDKX_EN_DVD.iso` from [Microsoft](http://www.microsoft.com/download/en/details.aspx?id=18950)
+
+-->
 
 ViDE
 ====

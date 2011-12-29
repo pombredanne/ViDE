@@ -1,6 +1,7 @@
 import os
 import sys
 
+import ViDE
 from ViDE.Toolset import Tool
 
 class Python( Tool ):
@@ -11,11 +12,18 @@ class Python( Tool ):
 
     def getIncludeDirectories( self, context ):
         return [ os.path.join( context.toolset.getInstallDirectory(), *path ) for path in [
-            ( "include", Python.versionName )
+            ( "include", Python.versionName ),
+            ( "include", )
         ] ]
 
     def getLibPath( self ):
-        return "/home/Vincent/Programmation/ViDE/Toolsets/Install/ts20110308/lib"
+        if ViDE.host() == "win32":
+            return "c:\\Python27\\libs"
+        else:
+            return None
 
     def getLibName( self ):
-        return Python.versionName
+        if ViDE.host() == "win32":
+            return "python27"
+        else:
+            return Python.versionName

@@ -9,6 +9,7 @@ Install
 - kdiff3: http://sourceforge.net/projects/kdiff3/files/
 - Acrobat Reader: http://get.adobe.com/fr/reader/
 - Process explorer: http://technet.microsoft.com/fr-fr/sysinternals/bb896653
+- Daemon Tools Lite: http://www.daemon-tools.cc/eng/products/dtLite
 
 Optimize
 ========

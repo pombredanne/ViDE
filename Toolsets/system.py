@@ -1,3 +1,4 @@
+import ViDE
 from ViDE.Toolset import Toolset
 
 from Tools.PkgConfig import PkgConfig
@@ -29,4 +30,11 @@ class system( Toolset ):
         ]
 
     def getInstallDirectory( self ):
-        return "/usr"
+        ### @todo Add a notion of Host and Target. Buildkits make the link between hosts and targets
+        host = ViDE.host()
+        if host == "cygwin":
+            return "/usr"
+        elif host == "win32":
+            return "c:\\Python27\\"
+        else:
+            raise Exception( "System Buildkit not ready for host " + host )

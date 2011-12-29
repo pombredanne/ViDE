@@ -1,5 +1,6 @@
 import ViDE.Project.Artifacts.CPlusPlus
 import ViDE.Project.Artifacts.Binary
+import ViDE.Project.Artifacts.Python
 from ViDE.Core.Actions import SystemAction
 from ViDE.Buildkit import Buildkit
 
@@ -112,7 +113,31 @@ class vs( Buildkit ):
                     context = self.context
                 )
 
-    def getExecutionEnvironment( self ):
-        return {
-            "PATH": self.fileName( "bin" )
-        }
+    class Python:
+        class CModule( ViDE.Project.Artifacts.Python.CModule ):
+            def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
+                names = name.split( "." )
+                names[ -1 ] += ".pyd"
+                self.__fileName = context.buildkit.fileName( "pyd", *names )
+                self.__objects = objects
+                ViDE.Project.Artifacts.Python.CModule.__init__(
+                    self,
+                    context = context,
+                    name = self.__fileName,
+                    files = [ self.__fileName ],
+                    objects = objects,
+                    localLibraries = localLibraries,
+                    externalLibraries = externalLibraries,
+                    explicit = explicit
+                )
+
+            def doGetProductionAction( self ):
+                return SystemAction(
+                    [ "link", "/DLL", "/OUT:" + self.__fileName ],
+                    [ o.getFileName() for o in self.__objects ]
+                    + [ "/LIBPATH:" + self.context.buildkit.fileName( "lib" ) ] # Static libraries
+                    + [ "/LIBPATH:" + self.context.buildkit.fileName( "bin" ) ] # Dynamic libraries # @todo Put the .dll in bin, but the .lib and .exp in lib
+                    + [ "/LIBPATH:" + lib.getLibPath() for lib in self.getLibrariesToLink() if lib.getLibPath() is not None ]
+                    + [ lib.getLibName() + ".lib" for lib in self.getLibrariesToLink() ],
+                    context = self.context
+                )
