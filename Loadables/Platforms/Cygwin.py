@@ -8,3 +8,12 @@ class Cygwin( Platform ):
 
     def computeExecutableName( self, baseName ):
         return self.context.fileName( "bin", baseName + ".exe" )
+
+    def computeDynamicLibraryName( self, baseName ):
+        return self.context.fileName( "bin", baseName + ".dll" )
+
+    def getDynamicLibraryLinkOptions( self ):
+        return self.context.buildkit.getCygwinDynamicLibraryLinkOptions()
+
+    def getCppPythonModuleExtension( self ):
+        return "dll"

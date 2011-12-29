@@ -34,7 +34,7 @@ class Loadable:
                     raise Exception( "Could not choose default between " + cls.__name__ + "s " + default.name + " and " + instance.name )
         if default is None:
             raise Exception( "Could not find default " + cls.__name__ )
-        print "Choosing default " + cls.__name__ + ": " + default.name
+        # print "Choosing default " + cls.__name__ + ": " + default.name
         return default
 
     @classmethod
