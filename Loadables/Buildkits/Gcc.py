@@ -15,6 +15,18 @@ class Gcc( Buildkit ):
     def getDebugLinkOptions( self ):
         return [ "-g" ]
 
+    def getTestCompilationOptions( self ):
+        return self.getDebugCompilationOptions() + [ "--coverage" ]
+
+    def getTestLinkOptions( self ):
+        return self.getDebugLinkOptions() + [ "--coverage" ]
+
+    def getReleaseCompilationOptions( self ):
+        return [ "-O3" ]
+
+    def getReleaseLinkOptions( self ):
+        return []
+
     class CPlusPlus:
         class Object( ViDE.Project.Artifacts.CPlusPlus.Object ):
             def __init__( self, context, source, additionalDefines, localLibraries, externalLibraries, explicit ):

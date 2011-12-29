@@ -8,8 +8,8 @@ class darwin_gcc:
     def computeDynamicLibraryName( self, baseName ):
         return self.context.buildkit.fileName( "lib", "lib" + baseName + ".dylib" )
 
-    def getSystemCompilationOptions( self ):
-        return []
     def getCppPythonModuleExtension( self ):
         return "so"
 
+    def getSystemCompilationOptions( self ):
+        return []

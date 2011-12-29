@@ -2,12 +2,12 @@ import sys
 
 from ViDE.Flavour import Flavour
 
-class Release( Flavour ):
+class Test( Flavour ):
     def canBeDefault( self ):
         return False
 
     def getCompilationOptions( self ):
-        return self.context.buildkit.getReleaseCompilationOptions()
+        return self.context.buildkit.getTestCompilationOptions()
 
     def getLinkOptions( self ):
-        return self.context.buildkit.getReleaseLinkOptions()
+        return self.context.buildkit.getTestLinkOptions()

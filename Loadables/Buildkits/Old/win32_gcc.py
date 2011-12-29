@@ -8,8 +8,8 @@ class win32_gcc:
     def computeDynamicLibraryName( self, baseName ):
         return self.context.buildkit.fileName( "lib", baseName + ".dll" )
 
-    def getSystemCompilationOptions( self ):
-        return []
-
     def getCppPythonModuleExtension( self ):
         raise Exception( "Under Windows, Python modules cannot be built with gcc. Use Visual Studio." )
+
+    def getSystemCompilationOptions( self ):
+        return []
