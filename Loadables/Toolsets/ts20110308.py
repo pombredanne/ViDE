@@ -6,6 +6,9 @@ from Tools.LibSigCpp import LibSigCpp
 from Tools.Cairo import Pixman, FreeType, FontConfig, LibPng, Cairo, Cairomm, PyCairo
 
 class ts20110308( Toolset ):
+    def canBeDefault( self ):
+        return False
+
     def computeTools( self ):
         return [
             Make( "3.82" ),

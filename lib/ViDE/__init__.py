@@ -19,11 +19,8 @@ def rootDirectory():
 def libDirectory():
     return os.path.join( rootDirectory(), "lib" )
 
-def buildkitsDirectory():
-    return os.path.join( rootDirectory(), "Buildkits" )
-
 def toolsetsDirectory():
-    return os.path.join( rootDirectory(), "Toolsets" )
+    return os.path.join( rootDirectory(), "Loadables", "Toolsets" )
 def toolsetsTmpDirectory():
     return os.path.join( toolsetsDirectory(), "Build" )
 def toolsetsInstallDirectory():

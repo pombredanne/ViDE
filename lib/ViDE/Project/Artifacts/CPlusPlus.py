@@ -21,7 +21,7 @@ class CandidateCopiedHeaders:
                 self.__candidateCopiedHeaders += copiedHeaders.get()
 
     def find( self, searchedHeader ):
-        searchedHeader = os.path.normpath( self.__context.buildkit.fileName( "inc", searchedHeader ) )
+        searchedHeader = os.path.normpath( self.__context.fileName( "inc", searchedHeader ) )
         #print "Searching for", searchedHeader
         for copiedHeader in self.__candidateCopiedHeaders:
             #print "  Trying", copiedHeader.getDestination(),
@@ -136,7 +136,7 @@ class DepFile( AtomicArtifact ):
             )
 
     def __init__( self, context, source, candidateCopiedHeaders ):
-        fileName = context.buildkit.fileName( "dep", source.getFileName() + ".dep" )
+        fileName = context.fileName( "dep", source.getFileName() + ".dep" )
         if os.path.exists( fileName ):
             headers = Headers.load( fileName )
             automaticDependencies = [ DepFile.Header( context, header ) for header in headers.getDoubleQuotedHeaders() ]

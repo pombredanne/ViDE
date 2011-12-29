@@ -3,7 +3,7 @@ from ViDE.Project.Artifacts.BasicArtifacts import CopiedArtifact, AtomicArtifact
 
 class CopiedHeader( CopiedArtifact ):
     def __init__( self, context, header, stripHeaders, explicit ):
-        fileName = context.buildkit.fileName( "inc", stripHeaders( header.getFileName() ) )
+        fileName = context.fileName( "inc", stripHeaders( header.getFileName() ) )
         CopiedArtifact.__init__(
             self,
             context = context,

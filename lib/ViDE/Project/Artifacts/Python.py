@@ -11,7 +11,7 @@ class Source( MonofileInputArtifact ):
 
 class Script( CopiedArtifact ):
     def __init__( self, context, source, explicit ):
-        self.__fileName = context.buildkit.fileName( "bin", os.path.basename( source.getFileName() ) )
+        self.__fileName = context.fileName( "bin", os.path.basename( source.getFileName() ) )
         CopiedArtifact.__init__(
             self,
             context,
@@ -41,7 +41,7 @@ class PythonCompileAction( Action ):
 
 class Module( AtomicArtifact ):
     def __init__( self, context, source, strip, explicit ):
-        self.__fileName = context.buildkit.fileName( "pyd", strip( source.getFileName() ) + "c" )
+        self.__fileName = context.fileName( "pyd", strip( source.getFileName() ) + "c" )
         self.__source = source
         AtomicArtifact.__init__(
             self,

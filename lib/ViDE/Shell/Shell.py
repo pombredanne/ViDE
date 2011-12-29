@@ -1,6 +1,5 @@
 from Misc import InteractiveCommandLineProgram
 
-import ViDE
 from ViDE import Log
 from ViDE.Shell.AutoTest import AutoTest
 from ViDE.Shell.Make import Make
@@ -8,10 +7,6 @@ from ViDE.Shell.Run import Run
 from ViDE.Shell.Debug import Debug
 from ViDE.Shell.InstallTools import InstallTools
 from ViDE.Shell.CheckImports import CheckImports
-
-# Get from ViDE
-defaultToolset = "system"
-defaultBuildkit = ViDE.host() + "_gcc_debug"
 
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
     def __init__( self ):
@@ -25,11 +20,20 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         verbosity.addOption( "debug", "setVerbosity", InteractiveCommandLineProgram.CallWithConstant( 3 ), "print debug messages", InteractiveCommandLineProgram.CallWithConstant( 1 ), "don't print debug messages" )
 
         toolsChoice = self.createOptionGroup( "Tools choice", "" )
-        self.toolset = defaultToolset
-        toolsChoice.addOption( [ "t", "toolset" ], "toolset", InteractiveCommandLineProgram.StoreArgument( "TOOLSET" ), "use toolset TOOLSET", InteractiveCommandLineProgram.StoreConstant( defaultToolset ), "use default toolset" )
 
-        self.buildkit = defaultBuildkit
-        toolsChoice.addOption( [ "b", "buildkit" ], "buildkit", InteractiveCommandLineProgram.StoreArgument( "BUILDKIT" ), "use buildkit BUILDKIT", InteractiveCommandLineProgram.StoreConstant( defaultBuildkit ), "use default buildkit" )
+        self.hostPlatform = ""
+
+        self.targetPlatform = ""
+        toolsChoice.addOption( [ "t", "target-platform" ], "targetPlatform", InteractiveCommandLineProgram.StoreArgument( "TARGET-PLATFORM" ), "target platform TARGET-PLATFORM", InteractiveCommandLineProgram.StoreConstant( "" ), "target current platform" )
+
+        self.toolset = ""
+        # toolsChoice.addOption( [ "t", "toolset" ], "toolset", InteractiveCommandLineProgram.StoreArgument( "TOOLSET" ), "use toolset TOOLSET", InteractiveCommandLineProgram.StoreConstant( "" ), "use default toolset" )
+
+        self.buildkit = ""
+        toolsChoice.addOption( [ "b", "buildkit" ], "buildkit", InteractiveCommandLineProgram.StoreArgument( "BUILDKIT" ), "use buildkit BUILDKIT", InteractiveCommandLineProgram.StoreConstant( "" ), "use default buildkit" )
+
+        self.flavour = ""
+        toolsChoice.addOption( [ "f", "flavour" ], "flavour", InteractiveCommandLineProgram.StoreArgument( "FLAVOUR" ), "use flavour FLAVOUR", InteractiveCommandLineProgram.StoreConstant( "" ), "use default flavour" )
 
         generation = self.createCommandGroup( "Artifact generation", "" )
         generation.addCommand( "make", Make, "build the project" )

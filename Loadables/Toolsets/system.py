@@ -10,6 +10,9 @@ from Tools.Boost import BoostPython, BoostUnitTestFramework, BoostProgramOptions
 from Tools.Win32 import Gdi
 
 class system( Toolset ):
+    def canBeDefault( self ):
+        return True
+
     def computeTools( self ):
         return [
             Make( "system" ),
