@@ -1,5 +1,3 @@
-import sys
-
 import ViDE.Project.Artifacts.CPlusPlus
 import ViDE.Project.Artifacts.Fortran
 import ViDE.Project.Artifacts.Binary
