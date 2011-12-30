@@ -1,10 +1,9 @@
-from Misc import InteractiveCommandLineProgram as ICLP
+from CommandWithContext import CommandWithContext
 
 from ViDE.Context import Context
 
-class Run( ICLP.Command ):
-    def execute( self, args ):
-        context = Context( self.program )
+class Run( CommandWithContext ):
+    def executeWithContext( self, context, args ):
         artifact = context.project.retrieveByName( args[0] )
         if not hasattr( artifact, "run" ):
             artifact = context.project.retrieveByFile( context.fileName( "bin", args[0] ) )
