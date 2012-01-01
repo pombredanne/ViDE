@@ -4,10 +4,11 @@ from ViDE import Log
 from ViDE.Core.Action import CompoundException
 from ViDE.Core.ExecutionReport import ExecutionReport
 from ViDE.Context import Context
+from CommandWithContext import CommandWithContext
 
-class Make( ICLP.Command ):
+class Make( CommandWithContext ):
     def __init__( self, program ):
-        ICLP.Command.__init__( self, program )
+        CommandWithContext.__init__( self, program )
         self.jobs = -1
         self.addOption( [ "j", "jobs" ], "jobs", ICLP.StoreArgument( "JOBS" ), "use JOBS parallel jobs" )
         self.keepGoing = False
@@ -23,8 +24,7 @@ class Make( ICLP.Command ):
         self.addOption( [ "t", "touch" ], "touch", ICLP.StoreConstant( True ), "touch targets instead of remaking them")
         ### @todo Add an option to build with all buildkits
         
-    def execute( self, args ):
-        context = Context( self.program )
+    def executeWithContext( self, context, args ):
         action = context.project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
         # @todo project's include graph
         if self.dryRun:
