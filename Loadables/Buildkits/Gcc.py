@@ -35,6 +35,9 @@ class Gcc( Buildkit ):
 
     def getWindowsDynamicLibraryLinkOptions( self ):
         return [ "-shared" ]
+
+    def getLinuxDynamicLibraryLinkOptions( self ):
+        return [ "-shared" ]
     # End (Target-platform specific)
 
     class CPlusPlus:
@@ -58,6 +61,7 @@ class Gcc( Buildkit ):
                     [ "g++", "-c", sourceName ],
                     self.context.flavour.getCompilationOptions()
                     # + self.context.targetPlatform.getCompilationOptions()
+                    + [ "-fPIC" ]
                     + [ "-o", self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
                     + [ "-I" + self.context.fileName( "inc" ) ]

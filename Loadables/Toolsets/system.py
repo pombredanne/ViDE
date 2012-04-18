@@ -39,5 +39,7 @@ class system( Toolset ):
             return "/usr"
         elif host == "win32":
             return "c:\\Python27\\"
+        elif host == "linux":
+            return "/usr"
         else:
             raise Exception( "System Buildkit not ready for host " + host )

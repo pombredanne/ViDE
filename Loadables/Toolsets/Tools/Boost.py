@@ -17,7 +17,7 @@ class BoostPython( Tool, BoostLibrary ):
         return None
 
     def getLibName( self ):
-        return self.getBoostLibName( "python" )
+        return "boost_python-mt-py27"
         
 class BoostUnitTestFramework( Tool, BoostLibrary ):
     def getDependencies( self ):
