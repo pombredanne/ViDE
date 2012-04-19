@@ -1,10 +1,11 @@
 import os.path
 
+import ViDE
 from ViDE.Toolset import Tool, DownloadUnarchiveConfigureMakeMakeinstall
 
 class BoostLibrary:
 	def getBoostLibName( self, name ):
-		return "boost_" + name + "-mt" # Cygwin-specific
+		return "boost_" + name + "-mt" # Cygwin-and-Linux-specific
 
 class BoostPython( Tool, BoostLibrary ):
     def getDependencies( self ):
@@ -17,7 +18,7 @@ class BoostPython( Tool, BoostLibrary ):
         return None
 
     def getLibName( self ):
-        return self.getBoostLibName( "python" )
+        return self.getBoostLibName( "python" ) + ( "-py27" if ViDE.host() == "linux" else "" )
         
 class BoostUnitTestFramework( Tool, BoostLibrary ):
     def getDependencies( self ):
