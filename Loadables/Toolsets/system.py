@@ -6,7 +6,7 @@ from Tools.Make import Make
 from Tools.LibSigCpp import LibSigCpp
 from Tools.Python import Python
 from Tools.Cairo import Pixman, FreeType, FontConfig, LibPng, Cairo, Cairomm, PyCairo
-from Tools.Boost import BoostPython, BoostUnitTestFramework, BoostProgramOptions
+from Tools.Boost import BoostPython, BoostUnitTestFramework, BoostProgramOptions, BoostThread, BoostDateTime
 from Tools.Win32 import Gdi
 
 class system( Toolset ):
@@ -29,6 +29,8 @@ class system( Toolset ):
             BoostPython( "system" ),
             BoostProgramOptions( "system" ),
             BoostUnitTestFramework( "system" ),
+            BoostThread( "system" ),
+            BoostDateTime( "system" ),
             Gdi( "system" )
         ]
 

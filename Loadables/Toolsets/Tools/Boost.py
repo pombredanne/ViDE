@@ -44,3 +44,29 @@ class BoostProgramOptions( Tool, BoostLibrary ):
 
     def getLibName( self ):
         return self.getBoostLibName( "program_options" )
+        
+class BoostThread( Tool, BoostLibrary ):
+    def getDependencies( self ):
+        return []
+
+    def getIncludeDirectories( self, context ):
+        return []
+
+    def getLibPath( self ):
+        return None
+
+    def getLibName( self ):
+        return self.getBoostLibName( "thread" )
+        
+class BoostDateTime( Tool, BoostLibrary ):
+    def getDependencies( self ):
+        return []
+
+    def getIncludeDirectories( self, context ):
+        return []
+
+    def getLibPath( self ):
+        return None
+
+    def getLibName( self ):
+        return self.getBoostLibName( "date_time" )
