@@ -1,10 +1,9 @@
-import sys
-
+import ViDE
 from ViDE.Platform import Platform
 
 class Linux( Platform ):
     def canBeDefault( self ):
-        return sys.platform == "linux2"
+        return ViDE.host() == "linux"
 
     def computeExecutableName( self, baseName ):
         return self.context.fileName( "bin", baseName )

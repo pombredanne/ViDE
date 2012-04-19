@@ -1,10 +1,9 @@
-import sys
-
+import ViDE
 from ViDE.Platform import Platform
 
 class Cygwin( Platform ):
     def canBeDefault( self ):
-        return sys.platform == "cygwin"
+        return ViDE.host() == "cygwin"
 
     def computeExecutableName( self, baseName ):
         return self.context.fileName( "bin", baseName + ".exe" )
