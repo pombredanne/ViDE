@@ -9,7 +9,7 @@ import tarfile
 import zipfile
 
 from ViDE.Core.Action import Action, NullAction
-from ViDE.Core import Subprocess
+from ViDE.Core import SubprocessFoo as Subprocess
 from ViDE import Log
 
 # Unused symbol NullAction

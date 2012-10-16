@@ -1,4 +1,4 @@
-from ViDE.Core import Subprocess
+from ViDE.Core import SubprocessFoo as Subprocess
 from ViDE.Project.Artifacts.BasicArtifacts import CopiedArtifact, AtomicArtifact, CompoundArtifact
 
 class CopiedHeader( CopiedArtifact ):

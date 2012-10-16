@@ -1,7 +1,7 @@
 import os.path
 import py_compile
 
-from ViDE.Core import Subprocess
+from ViDE.Core import SubprocessFoo as Subprocess
 from ViDE.Core.Action import Action
 from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact, CopiedArtifact, AtomicArtifact, CompoundArtifact
 from ViDE.Project.Artifacts.Binary import LinkedBinary
