@@ -8,6 +8,7 @@ from Tools.Python import Python
 from Tools.Cairo import Pixman, FreeType, FontConfig, LibPng, Cairo, Cairomm, PyCairo
 from Tools.Boost import BoostPython, BoostUnitTestFramework, BoostProgramOptions, BoostThread, BoostDateTime, BoostSystem
 from Tools.Win32 import Gdi
+from Tools.Pcap import Pcap
 
 class system( Toolset ):
     def canBeDefault( self ):
@@ -32,7 +33,8 @@ class system( Toolset ):
             BoostThread( "system" ),
             BoostDateTime( "system" ),
             BoostSystem( "system" ),
-            Gdi( "system" )
+            Gdi( "system" ),
+            Pcap( "system"),
         ]
 
     def getInstallDirectory( self ):
