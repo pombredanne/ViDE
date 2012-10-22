@@ -5,7 +5,7 @@ from ViDE.Toolset import Tool, DownloadUnarchiveConfigureMakeMakeinstall
 
 class BoostLibrary:
 	def getBoostLibName( self, name ):
-		return "boost_" + name
+		return "boost_" + name + "-mt"
 
 class BoostPython( Tool, BoostLibrary ):
     def getDependencies( self ):
@@ -84,3 +84,16 @@ class BoostSystem( Tool, BoostLibrary ):
 
     def getLibName( self ):
         return self.getBoostLibName( "system" )
+
+class BoostFileSystem( Tool, BoostLibrary ):
+    def getDependencies( self ):
+        return [ BoostSystem ]
+
+    def getIncludeDirectories( self, context ):
+        return []
+
+    def getLibPath( self ):
+        return None
+
+    def getLibName( self ):
+        return self.getBoostLibName( "filesystem" )
