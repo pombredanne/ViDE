@@ -29,8 +29,10 @@ class SubProcess:
     def __updateEnviron( self ):
         self.__oldEnviron = dict( os.environ )
         if self.__context is not None:
-            # @todo Do not override PYTHONPATH if it already exists
-            os.environ[ "PYTHONPATH" ] = self.__context.fileName( "pyd" )
+            if "PYTHONPATH" in os.environ:
+                os.environ[ "PYTHONPATH" ] = os.environ[ "PYTHONPATH" ] + ":" + self.__context.fileName( "pyd" )
+            else:
+                os.environ[ "PYTHONPATH" ] = self.__context.fileName( "pyd" )
             os.environ[ "LD_LIBRARY_PATH" ] = self.__context.fileName( "lib" )
             os.environ[ "PATH" ] = os.path.realpath( os.path.join( self.__context.toolset.getInstallDirectory(), "bin" ) ) + ":" + os.environ[ "PATH" ]
 
