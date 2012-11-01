@@ -146,5 +146,8 @@ class Executable( LinkedBinary ):
     def run( self, arguments ):
         Subprocess.execute( [ self.__executableFile ] + arguments, context = self.context )
 
+    def getFileName( self ):
+        return self.__executableFile
+
 class DynamicLibraryBinary( LinkedBinary ):
     pass

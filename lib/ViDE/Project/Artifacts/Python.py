@@ -27,6 +27,9 @@ class Script( CopiedArtifact ):
     def debug( self, arguments ):
         Subprocess.execute( [ "python", "-mpdb", self.__fileName ] + arguments, context = self.context )
 
+    def getFileName( self ):
+        return self.__fileName
+
 class PythonCompileAction( Action ):
     def __init__( self, source, destination ):
         self.__source = source
