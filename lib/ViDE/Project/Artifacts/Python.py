@@ -22,7 +22,7 @@ class Script( CopiedArtifact ):
         )
 
     def run( self, arguments ):
-        Subprocess.execute( [ "python", self.__fileName ] + arguments, context = self.context )
+        Subprocess.execute( [ "python", self.__fileName ] + arguments, context = self.context, silent = True )
 
     def debug( self, arguments ):
         Subprocess.execute( [ "python", "-mpdb", self.__fileName ] + arguments, context = self.context )

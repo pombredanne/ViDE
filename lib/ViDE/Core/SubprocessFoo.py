@@ -3,19 +3,21 @@ import os
 
 from ViDE import Log
 
-def execute( base, options = [], wd = None, context = None ):
-    SubProcess( base, options, wd, context ).execute()
+def execute( base, options = [], wd = None, context = None, silent = False ):
+    SubProcess( base, options, wd, context, silent ).execute()
 
 class SubProcess:
-    def __init__( self, base, options, wd, context ):
+    def __init__( self, base, options, wd, context, silent ):
         self.__base = base
         self.__options = options
         self.__wd = wd
         self.__context = context
+        self.__silent = silent
         self.__preview = " ".join( base )
 
     def execute( self ):
-        Log.info( self.__preview )
+        if not self.__silent:
+            Log.info( self.__preview )
         Log.debug( " ".join( self.__base + self.__options ) )
         try:
             self.__updateEnviron()
