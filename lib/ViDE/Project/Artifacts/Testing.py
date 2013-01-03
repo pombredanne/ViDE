@@ -17,7 +17,7 @@ class UnitTestAction( Action ):
         return self.__executable.getFileName()
 
 class UnitTest( AtomicArtifact ):
-    def __init__( self, context, executable, explicit ):
+    def __init__( self, context, executable, additionalDependencies, explicit ):
         self.__fileName = context.fileName( "test", os.path.basename( executable.getFileName() ) + ".ok" )
         self.__executable = executable
         AtomicArtifact.__init__(
@@ -25,7 +25,7 @@ class UnitTest( AtomicArtifact ):
             context = context,
             name = self.__fileName,
             files = [ self.__fileName ],
-            strongDependencies = [ executable ],
+            strongDependencies = [ executable ] + additionalDependencies,
             orderOnlyDependencies = [],
             automaticDependencies = [],
             explicit = explicit
