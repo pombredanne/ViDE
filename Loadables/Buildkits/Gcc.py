@@ -61,6 +61,7 @@ class Gcc( Buildkit ):
                     [ "g++", "-c", sourceName ],
                     self.context.flavour.getCompilationOptions()
                     # + self.context.targetPlatform.getCompilationOptions()
+                    + [ "-std=c++11" ]
                     + [ "-fPIC" ]
                     + [ "-o", self.__fileName ]
                     + [ "-D" + name for name in self.__additionalDefines ]
