@@ -35,7 +35,6 @@ class system( Toolset ):
             BoostDateTime( "system" ),
             BoostSystem( "system" ),
             BoostFileSystem( "system" ),
-            Gdi( "system" ),
             Pcap( "system"),
         ]
 
