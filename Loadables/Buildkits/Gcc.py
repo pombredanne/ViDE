@@ -142,6 +142,9 @@ class Gcc( Buildkit ):
             def debug( self, arguments ):
                 Subprocess.execute( [ "gdb", self.__fileName ] + arguments, context = self.context )
 
+            def valgrind( self ):
+                Subprocess.execute( [ "valgrind", "--leak-check=full", self.__fileName ], context = self.context )
+
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
                 self.__fileName = context.targetPlatform.computeDynamicLibraryName( name )
