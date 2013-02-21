@@ -4,6 +4,8 @@ import ViDE.Project.Artifacts.Binary
 import ViDE.Project.Artifacts.Python
 from ViDE.Core.Actions import SystemAction
 from ViDE.Buildkit import Buildkit
+from ViDE.Core import SubprocessFoo as Subprocess
+
 
 class Gcc( Buildkit ):
     def canBeDefault( self ):
@@ -136,6 +138,9 @@ class Gcc( Buildkit ):
                     + [ "-l" + lib.getLibName() for lib in self.getLibrariesToLink() ],
                     context = self.context
                 )
+
+            def debug( self, arguments ):
+                Subprocess.execute( [ "gdb", self.__fileName ] + arguments, context = self.context )
 
         class DynamicLibraryBinary( ViDE.Project.Artifacts.Binary.DynamicLibraryBinary ):
             def __init__( self, context, name, objects, localLibraries, externalLibraries, explicit ):
