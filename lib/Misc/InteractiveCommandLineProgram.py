@@ -1,7 +1,7 @@
 import sys
 import shlex
 
-import RecursiveDocument as rd
+import recdoc as rd
 
 class ICLPException( Exception ):
     pass
@@ -360,9 +360,15 @@ class InteractiveCommandLineProgram( OptionContainer, CommandContainer ):
 
         def getGlobalHelp( self ):
             help = rd.Document()
-            help.add( self.getHelpSectionForUsage() )
-            help.add( self.getHelpSectionForOptions() )
-            help.add( self.getHelpSectionForCommands() )
+            section = self.getHelpSectionForUsage()
+            if section is not None:
+                help.add( section )
+            section = self.getHelpSectionForOptions()
+            if section is not None:
+                help.add( section )
+            section = self.getHelpSectionForCommands()
+            if section is not None:
+                help.add( section )
             return help
 
         def replaceStrings( self, text ):
@@ -379,12 +385,14 @@ class InteractiveCommandLineProgram( OptionContainer, CommandContainer ):
                 if c.help is not None:
                     list.add( c.name, self.replaceStrings( c.help ) )
             for g in container.allCommandGroups():
-                section.add( self.__getHelpSectionForCommands( g, g.name ) )
+                subSection = self.__getHelpSectionForCommands( g, g.name )
+                if subSection is not None:
+                    section.add( subSection )
             return section
 
         def getHelpSectionForCommandSummary( self, command ):
             section = rd.Section( "Summary" )
-            section.add( command.help )
+            section.add( rd.Paragraph( command.help ) )
             return section
 
         def getHelpSectionForDashedOptions( self, container, title = "Options" ):
@@ -396,7 +404,9 @@ class InteractiveCommandLineProgram( OptionContainer, CommandContainer ):
             for o in container.allOptions():
                 list.add( ", ".join( " ".join( [ ( "--" if len( name ) > 1 else "-" ) + name ] + o.argumentsForEnable() ) for name in o.allNames() ), self.replaceStrings( o.enableHelp ) )
             for g in container.allOptionGroups():
-                section.add( self.getHelpSectionForDashedOptions( g, g.name ) )
+                subSection = self.getHelpSectionForDashedOptions( g, g.name )
+                if subSection is not None:
+                    section.add( subSection )
             return section
 
         def getHelpSectionForCommandOptions( self, command ):
@@ -406,7 +416,7 @@ class InteractiveCommandLineProgram( OptionContainer, CommandContainer ):
     class CommandLineHelpCommand( HelpCommand ):
         def getHelpSectionForUsage( self ):
             section = rd.Section( "Usage" )
-            section.add( self.replaceStrings( "%PROG% [options] [command [...]]" ) )
+            section.add( rd.Paragraph( self.replaceStrings( "%PROG% [options] [command [...]]" ) ) )
             return section
 
         def getHelpSectionForOptions( self ):
@@ -418,15 +428,23 @@ class InteractiveCommandLineProgram( OptionContainer, CommandContainer ):
         def getHelpForCommand( self, commandName ):
             command = self.program.findCommandLineCommand( commandName )
             help = rd.Document()
-            help.add( self.getHelpSectionForCommandUsage( command ) )
-            help.add( self.getHelpSectionForOptions() )
-            help.add( self.getHelpSectionForCommandSummary( command ) )
-            help.add( self.getHelpSectionForCommandOptions( command ) )
+            section = self.getHelpSectionForCommandUsage( command )
+            if section is not None:
+                help.add( section )
+            section = self.getHelpSectionForOptions()
+            if section is not None:
+                help.add( section )
+            section = self.getHelpSectionForCommandSummary( command )
+            if section is not None:
+                help.add( section )
+            section = self.getHelpSectionForCommandOptions( command )
+            if section is not None:
+                help.add( section )
             return help
 
         def getHelpSectionForCommandUsage( self, command ):
             section = rd.Section( "Usage" )
-            section.add( self.replaceStrings( "%PROG% [options] " + command.name + " [options]" ) )
+            section.add( rd.Paragraph( self.replaceStrings( "%PROG% [options] " + command.name + " [options]" ) ) )
             return section
 
     class InteractiveHelpCommand( HelpCommand ):
@@ -445,7 +463,9 @@ class InteractiveCommandLineProgram( OptionContainer, CommandContainer ):
                 if o.canBeDisabled():
                     list.add( ", ".join( " ".join( [ "-" + name ] + o.argumentsForDisable() ) for name in o.allNames() ), self.replaceStrings( o.disableHelp ) )
             for g in container.allOptionGroups():
-                section.add( self.getHelpSectionForPlusMinusOptions( g, g.name ) )
+                subSection = self.getHelpSectionForPlusMinusOptions( g, g.name )
+                if subSection is not None:
+                    section.add( subSection )
             return section
 
         def allCommands( self, container ):
@@ -454,14 +474,20 @@ class InteractiveCommandLineProgram( OptionContainer, CommandContainer ):
         def getHelpForCommand( self, commandName ):
             command = self.program.findInteractiveCommand( commandName )
             help = rd.Document()
-            help.add( self.getHelpSectionForCommandUsage( command ) )
-            help.add( self.getHelpSectionForCommandSummary( command ) )
-            help.add( self.getHelpSectionForCommandOptions( command ) )
+            section = self.getHelpSectionForCommandUsage( command )
+            if section is not None:
+                help.add( section )
+            section = self.getHelpSectionForCommandSummary( command )
+            if section is not None:
+                help.add( section )
+            section = self.getHelpSectionForCommandOptions( command )
+            if section is not None:
+                help.add( section )
             return help
 
         def getHelpSectionForCommandUsage( self, command ):
             section = rd.Section( "Usage" )
-            section.add( command.name + " [options]" )
+            section.add( rd.Paragraph( command.name + " [options]" ) )
             return section
 
 if __name__ == "__main__":
