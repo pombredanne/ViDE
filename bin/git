@@ -1,8 +1,0 @@
-#!/bin/sh
-
-if [ "x$MSYSTEM" = "xMINGW32" ]
-then
-    cmd //C git.cmd "$@"
-else
-    cmd /C git.cmd "$@"
-fi
