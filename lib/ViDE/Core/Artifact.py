@@ -1,11 +1,14 @@
 import os
 import time
 
-from Misc import Graphviz
+import AnotherPyGraphvizAgain.Compounds as gv
 
 from ViDE import Log
 from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction, TouchAction
 from ViDE.Core.CallOnceAndCache import CallOnceAndCache
+
+def createAndLabel(cls, label):
+    return cls(label.replace(".", "_").replace("/", "_")).set("label", label)
 
 class BuildEmptyArtifact( Exception ):
     pass
@@ -40,9 +43,9 @@ class Artifact( CallOnceAndCache ):
         return self.__name
 
     def getGraph( self ):
-        graph = Graphviz.Graph( "artifact" )
-        graph.attr[ "ranksep" ] = "1"
-        graph.nodeAttr[ "shape" ] = "box"
+        graph = gv.Graph("artifact")
+        graph.set("ranksep", "1")
+        graph.nodeAttr.set("shape", "box")
         graph.add( self.getGraphNode() )
         for link in self.getGraphLinks():
             graph.add( link )
@@ -81,14 +84,14 @@ class InputArtifact( Artifact ):
     def computeGraphNode( self ):
     ### @todo Factorize with AtomicArtifact.computeGraphNode
         if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
-            node = Graphviz.Node( self.getName() )
+            node = createAndLabel(gv.Node, self.getName())
         else:
-            node = Graphviz.Cluster( self.getName() )
-            node.attr[ "style" ] = "solid"
+            node = createAndLabel(gv.Cluster, self.getName())
+            node.set("style", "solid")
             for f in self.__files:
-                node.add( Graphviz.Node( f ) )
+                node.add(createAndLabel(gv.Node, f))
         if self.explicit:
-            node.attr[ "style" ] = "bold"
+            node.set("style", "bold")
         return node
 
     def computeGraphLinks( self ):
@@ -164,27 +167,27 @@ class AtomicArtifact( Artifact ):
 
     def computeGraphNode( self ):
         if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
-            node = Graphviz.Node( self.getName() )
+            node = createAndLabel(gv.Node, self.getName())
         else:
-            node = Graphviz.Cluster( self.getName() )
-            node.attr[ "style" ] = "solid"
+            node = createAndLabel(gv.Cluster, self.getName())
+            node.set("style", "solid")
             for f in self.__files:
-                node.add( Graphviz.Node( f ) )
+                node.add(createAndLabel(gv.Node, f))
         if self.explicit:
-            node.attr[ "style" ] = "bold"
+            node.set("style", "bold")
         return node
 
     def computeGraphLinks( self ):
         links = []
         for d in self.__strongDependencies:
-            links.append( Graphviz.Link( self.getGraphNode(), d.getGraphNode() ) )
+            links.append( gv.Link( self.getGraphNode(), d.getGraphNode() ) )
         for d in self.__automaticDependencies:
-            link = Graphviz.Link( self.getGraphNode(), d.getGraphNode() )
-            link.attr[ "color" ] = "grey"
+            link = gv.Link( self.getGraphNode(), d.getGraphNode() )
+            link.set("color", "grey")
             links.append( link )
         for d in self.__orderOnlyDependencies:
-            link = Graphviz.Link( self.getGraphNode(), d.getGraphNode() )
-            link.attr[ "style" ] = "dashed"
+            link = gv.Link( self.getGraphNode(), d.getGraphNode() )
+            link.set("style", "dashed")
             links.append( link )
         return links
 
@@ -208,12 +211,12 @@ class CompoundArtifact( Artifact ):
         return allFiles
 
     def computeGraphNode( self ):
-        node = Graphviz.Cluster( self.getName() )
-        node.attr[ "style" ] = "solid"
+        node = createAndLabel(gv.Cluster, self.getName())
+        node.set("style", "solid")
         for c in self.__componants:
             node.add( c.getGraphNode() )
         if self.explicit:
-            node.attr[ "style" ] = "bold"
+            node.set("style", "bold")
         return node
 
     def computeGraphLinks( self ):
@@ -238,18 +241,18 @@ class SubatomicArtifact( Artifact ):
     def computeGraphNode( self ):
         ### @todo Factorize with AtomicArtifact.computeGraphNode
         if len( self.__files ) == 1 and self.__files[ 0 ] == self.getName():
-            node = Graphviz.Node( self.getName() )
+            node = createAndLabel(gv.Node, self.getName())
         else:
-            node = Graphviz.Cluster( self.getName() )
-            node.attr[ "style" ] = "solid"
+            node = createAndLabel(gv.Cluster, self.getName())
+            node.set("style", "solid")
             for f in self.__files:
-                node.add( Graphviz.Node( f ) )
+                node.add(createAndLabel(gv.Node, f))
         if self.explicit:
-            node.attr[ "style" ] = "bold"
+            node.set("style", "bold")
         return node
 
     def computeGraphLinks( self ):
-        return [ Graphviz.Link( self.getGraphNode(), self.__atomicArtifact.getGraphNode() ) ]
+        return [ gv.Link( self.getGraphNode(), self.__atomicArtifact.getGraphNode() ) ]
 
     def getAllFiles( self ):
         return self.__files
