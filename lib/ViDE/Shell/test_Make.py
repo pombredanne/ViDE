@@ -6,43 +6,43 @@ import time
 import ViDE
 from ViDE.Shell.Shell import Shell
 
-bkName = "linux_gcc_debug"
+baseBuildDir = os.path.join("build", "BuiltOnCygwin", "TargetingCygwin", "BuiltByGcc", "Debug")
 
 def hppFile( name ):
-    return os.path.join( "build", bkName, "inc", name + ".hpp" )
+    return os.path.join( baseBuildDir, "inc", name + ".hpp" )
 
 def cppObjFile( name ):
-    return os.path.join( "build", bkName, "obj", name + ".cpp.o" )
+    return os.path.join( baseBuildDir, "obj", name + ".cpp.o" )
 
 def forObjFile( name ):
-    return os.path.join( "build", bkName, "obj", name + ".for.o" )
+    return os.path.join( baseBuildDir, "obj", name + ".for.o" )
 
 def dllFile( name ):
-    return os.path.join( "build", bkName, "lib", "lib" + name + ".so" )
+    return os.path.join( baseBuildDir, "bin", name + ".dll" )
 
 def modFile( name ):
-    return os.path.join( "build", bkName, "pyd", name + ".so" )
+    return os.path.join( baseBuildDir, "pyd", name + ".dll" )
 
 def exeFile( name ):
-    return os.path.join( "build", bkName, "bin", name )
+    return os.path.join( baseBuildDir, "bin", name + ".exe" )
 
 def libFile( name ):
-    return os.path.join( "build", bkName, "lib", "lib" + name + ".a" )
+    return os.path.join( baseBuildDir, "lib", "lib" + name + ".a" )
 
 def pyFile( name ):
-    return os.path.join( "build", bkName, "bin", name + ".py" )
+    return os.path.join( baseBuildDir, "bin", name + ".py" )
 
 def pycFile( name ):
-    return os.path.join( "build", bkName, "pyd", name + ".pyc" )
+    return os.path.join( baseBuildDir, "pyd", name + ".pyc" )
 
 def genCppFile( name ):
-    return os.path.join( "build", bkName, "gen", name + ".cpp" )
+    return os.path.join( baseBuildDir, "gen", name + ".cpp" )
 
 def genHppFile( name ):
-    return os.path.join( "build", bkName, "gen", name + ".hpp" )
+    return os.path.join( baseBuildDir, "gen", name + ".hpp" )
 
 def genCppObjFile( name ):
-    return os.path.join( "build", bkName, "obj", "build", bkName, "gen", name + ".cpp.o" )
+    return os.path.join( baseBuildDir, "obj", baseBuildDir, "gen", name + ".cpp.o" )
 
 def allFilesIn( directory ):
     l = set()
@@ -51,20 +51,6 @@ def allFilesIn( directory ):
             l.add( os.path.join( path, fileName ) )
     return l
 
-class TestCompilationError( unittest.TestCase ):
-    def test( self ):
-        os.chdir( os.path.join( ViDE.rootDirectory(), "TestProjects", "CompilationError" ) )
-        shutil.rmtree( "build", True )
-        shell = Shell()
-        shell.execute( [ "test", "--silent", "--buildkit", bkName, "make", "-k" ] )
-        time.sleep( 0.5 )
-        self.assertFalse( os.path.exists( cppObjFile( "a" ) ) )
-        self.assertTrue( os.path.exists( cppObjFile( "b" ) ) )
-        self.assertTrue( os.path.exists( cppObjFile( "c" ) ) )
-        self.assertTrue( os.path.exists( cppObjFile( "d" ) ) )
-        self.assertTrue( os.path.exists( cppObjFile( "e" ) ) )
-        self.assertTrue( os.path.exists( cppObjFile( "main" ) ) )
-        self.assertFalse( os.path.exists( exeFile( "hello" ) ) )
 
 def TestMake( project, whatIfs ):
     shutil.rmtree( os.path.join( ViDE.rootDirectory(), "TestProjects", project, "build" ), True )
@@ -76,7 +62,7 @@ def TestMake( project, whatIfs ):
         def setUp( self ):
             os.chdir( os.path.join( ViDE.rootDirectory(), "TestProjects", project ) )
             self.__shell = Shell()
-            self.__shell.execute( [ "test", "--silent", "--buildkit", bkName, "make" ] )
+            self.__shell.execute( [ "test", "--silent", "make" ] )
             self.__targets = set()
             for source in whatIfs:
                 for target in whatIfs[ source ]:
@@ -91,7 +77,7 @@ def TestMake( project, whatIfs ):
                 before = dict()
                 for target in self.__targets:
                     before[ target ] = os.stat( target ).st_mtime
-                self.__shell.execute( [ "test", "--buildkit", bkName, "make", "--touch", "--new-file", source ] )
+                self.__shell.execute( [ "test", "--silent", "make", "--touch", "--new-file", source ] )
                 after = dict()
                 for target in self.__targets:
                     after[ target ] = os.stat( target ).st_mtime
@@ -101,6 +87,8 @@ def TestMake( project, whatIfs ):
                     if after[ target ] != before[ target ]:
                         updatedTargets.add( target )
                 self.assertEquals( updatedTargets, set( whatIfs[source] ), project + " " + source + " " + str( updatedTargets ) + " != " + str( whatIfs[source] ) )
+
+    TestCase.__name__ = project
 
     return TestCase
             
@@ -265,7 +253,7 @@ ExecutableWithGeneratedSources = TestMake( "ExecutableWithGeneratedSources", {
     "a.xsd": [ genCppFile( "a.xsd" ), genHppFile( "a.xsd" ), genCppObjFile( "a.xsd" ), exeFile( "hello" ) ]
 } )
 
-ExecutableWithExternalDependency = TestMake( "ExecutableWithExternalDependency", {
+ExecutableWithExternalDependency = TestMake( "ExecutableWithExternalDependency_Boost", {
     "main.cpp": [ exeFile( "hello" ), cppObjFile( "main" ) ],
 } )
 
