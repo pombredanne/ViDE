@@ -2,9 +2,9 @@ import os
 import time
 
 import AnotherPyGraphvizAgain.Compounds as gv
+import ActionTree.StockActions as actions
 
 from ViDE import Log
-from ViDE.Core.Actions import NullAction, CreateDirectoryAction, RemoveFileAction, TouchAction
 from ViDE.Core.CallOnceAndCache import CallOnceAndCache
 
 def createAndLabel(cls, label):
@@ -116,18 +116,18 @@ class AtomicArtifact( Artifact ):
             directories = set( os.path.dirname( f ) for f in self.__files )
             for d in directories:
                 if not d in createDirectoryActions:
-                    createDirectoryActions[ d ] = CreateDirectoryAction( d )
-                productionAction.addPredecessor( createDirectoryActions[ d ] )
+                    createDirectoryActions[ d ] = actions.CreateDirectory( d )
+                productionAction.addDependency( createDirectoryActions[ d ] )
             if not touch:
                 for f in self.__files:
-                    productionAction.addPredecessor( RemoveFileAction( f ) )
+                    productionAction.addDependency( actions.DeleteFile( f ) )
         else:
             Log.debug( "Do not produce", self.__files )
             productionAction = NullAction()
         for d in self.__strongDependencies + self.__orderOnlyDependencies + self.__automaticDependencies:
             if d.mustBeProduced( assumeNew, assumeOld, touch ):
                 predecessorAction = d.getProductionAction( assumeNew, assumeOld, touch, createDirectoryActions )
-                productionAction.addPredecessor( predecessorAction )
+                productionAction.addDependency( predecessorAction )
         return productionAction
 
     def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
@@ -199,9 +199,9 @@ class CompoundArtifact( Artifact ):
         self.__componants = componants
 
     def computeProductionAction( self, assumeNew, assumeOld, touch, createDirectoryActions ):
-        productionAction = NullAction()
+        productionAction = actions.NullAction()
         for c in self.__componants:
-            productionAction.addPredecessor( c.getProductionAction( assumeNew, assumeOld, touch, createDirectoryActions ) )
+            productionAction.addDependency( c.getProductionAction( assumeNew, assumeOld, touch, createDirectoryActions ) )
         return productionAction
 
     def getAllFiles( self ):

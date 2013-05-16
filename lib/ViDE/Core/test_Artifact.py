@@ -3,19 +3,23 @@ from __future__ import with_statement
 import os.path
 import unittest
 
-import AnotherPyGraphvizAgain.Compounds as gv
+import AnotherPyGraphvizAgain.Compounds as gvc
+import AnotherPyGraphvizAgain.Raw as gvr
+import ActionTree.Drawings
+import ActionTree.StockActions as actions
+import MockMockMock
 
-from Misc.MockMockMock import TestCase, DontCheck
+import Misc.MockMockMock
 
 from Artifact import Artifact, AtomicArtifact, CompoundArtifact, InputArtifact, BuildEmptyArtifact
 from Action import Action
 
-# def assertActionHasGraph(test, a, g ):
-#     test.assertEqual(a.getGraph().dotString(), g.dotString())
+def assertActionHasGraph(test, a, g ):
+    test.assertEqual(ActionTree.Drawings.ActionGraph(a).dotString(), g.dotString())
 
-class EmptyArtifacts( TestCase ):
-    def testAtomic( self ):
-        AtomicArtifact( "TestArtefact", [ "file" ], [], [], [], False )
+class EmptyArtifacts(unittest.TestCase):
+    def testAtomic(self):
+        AtomicArtifact("TestArtefact", [ "file" ], [], [], [], False)
         self.assertRaises( BuildEmptyArtifact, AtomicArtifact, "TestArtefact", [], [], [], [], False )
 
     def testCompound( self ):
@@ -26,57 +30,51 @@ class EmptyArtifacts( TestCase ):
         InputArtifact( "TestArtefact", [ "file" ], False )
         self.assertRaises( BuildEmptyArtifact, InputArtifact, "TestArtefact", [], False )
 
-class BasicAtomicArtifact( TestCase ):
+class BasicAtomicArtifact(unittest.TestCase):
     def setUp( self ):
-        TestCase.setUp( self )
-        self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "TestArtefact", [ os.path.join( "tmp1", "file1" ), os.path.join( "tmp2", "file2" ) ], [], [], [], False )
-        AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
-        self.productionAction = self.m.createMock( "self.productionAction", Action )
+        unittest.TestCase.setUp( self )
+        self.mocks = MockMockMock.Engine()
+        self.artifact = AtomicArtifact("TestArtefact", ["tmp1/file1", "tmp2/file2"], [], [], [], False)
+        self.productionAction = ActionTree.Action(None, "create file1 and file2")
+        self.doGetProductionAction = self.mocks.create("self.doGetProductionAction")
+        self.artifact.doGetProductionAction = self.doGetProductionAction.object
 
-    def recordGetProductionAction( self ):
-        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-        AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp2", "file2" ) ).returns( True )
-        self.artifact.doGetProductionAction().returns( self.productionAction )
+        self.fileIsMissing = self.mocks.create("self.fileIsMissing")
+        AtomicArtifact._AtomicArtifact__fileIsMissing = self.fileIsMissing.object
 
-#     def testGetProductionAction( self ):
-#         self.recordGetProductionAction()
-#         self.productionAction.computePreview().returns( "create file1 and file2" )
+        self.fileIsMissing.expect("tmp1/file1").andReturn(False)
+        self.fileIsMissing.expect("tmp2/file2").andReturn(True)
+        self.doGetProductionAction.expect().andReturn(self.productionAction)
 
-#         self.m.startTest()
+    def testGetProductionAction( self ):
+        action = self.artifact.getProductionAction()
 
-#         action = self.artifact.getProductionAction()
+        model = gvr.Graph("action")
+        n0 = gvr.Node("create_20file1_20and_20file2").set("label", "create file1 and file2")
+        n1 = gvr.Node("mkdir_20tmp1").set("label", "mkdir tmp1")
+        n2 = gvr.Node("mkdir_20tmp2").set("label", "mkdir tmp2")
+        n3 = gvr.Node("rm_20tmp1_2ffile1").set("label", "rm tmp1/file1")
+        n4 = gvr.Node("rm_20tmp2_2ffile2").set("label", "rm tmp2/file2")
+        model.add(n0)
+        model.add(n1)
+        model.add(n2)
+        model.add(n3)
+        model.add(n4)
+        model.add(gvr.Link(n0, n1))
+        model.add(gvr.Link(n0, n2))
+        model.add(gvr.Link(n0, n3))
+        model.add(gvr.Link(n0, n4))
 
-#         model = gv.Graph( "action" )
-#         model.nodeAttr.set("shape", "box")
-#         n0 = gv.Node( "create file1 and file2" )
-#         n1 = gv.Node( "mkdir -p tmp1" )
-#         n2 = gv.Node( "mkdir -p tmp2" )
-#         n3 = gv.Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
-#         n4 = gv.Node( "rm -f " + os.path.join( "tmp2", "file2" ) )
-#         model.add( n0 )
-#         model.add( n1 )
-#         model.add( n2 )
-#         model.add( n3 )
-#         model.add( n4 )
-#         model.add( gv.Link( n0, n1 ) )
-#         model.add( gv.Link( n0, n2 ) )
-#         model.add( gv.Link( n0, n3 ) )
-#         model.add( gv.Link( n0, n4 ) )
-        
-#         assertActionHasGraph(self, action, model)
+        assertActionHasGraph(self, action, model)
 
     def testGetProductionActionTwice( self ):
-        self.recordGetProductionAction()
-
-        self.m.startTest()
-
         action1 = self.artifact.getProductionAction()
         action2 = self.artifact.getProductionAction()
         self.assertTrue( action1 is action2 )
 
-class BasicCompoundArtifact( TestCase ):
+class BasicCompoundArtifact( Misc.MockMockMock.TestCase ):
     def setUp( self ):
-        TestCase.setUp( self )
+        Misc.MockMockMock.TestCase.setUp( self )
         self.atomicArtifact1 = self.m.createMock( "self.atomicArtifact1", AtomicArtifact, "AtomicArtifact1", [ os.path.join( "tmp1", "file1" ) ], [], [], [], False )
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
         self.atomicArtifact2 = self.m.createMock( "self.atomicArtifact2", AtomicArtifact, "AtomicArtifact2", [ os.path.join( "tmp2", "file2" ) ], [], [], [], False )
@@ -126,18 +124,18 @@ class BasicCompoundArtifact( TestCase ):
         
 #         assertActionHasGraph(self, action, model)
 
-    def testGetProductionActionTwice( self ):
-        self.recordGetProductionAction()
+    # def testGetProductionActionTwice( self ):
+    #     self.recordGetProductionAction()
 
-        self.m.startTest()
+    #     self.m.startTest()
 
-        action1 = self.artifact.getProductionAction()
-        action2 = self.artifact.getProductionAction()
-        self.assertTrue( action1 is action2 )
+    #     action1 = self.artifact.getProductionAction()
+    #     action2 = self.artifact.getProductionAction()
+    #     self.assertTrue( action1 is action2 )
 
-# class ProductionReasons( TestCase ):
+# class ProductionReasons( Misc.MockMockMock.TestCase ):
 #     def setUp( self ):
-#         TestCase.setUp( self )
+#         Misc.MockMockMock.TestCase.setUp( self )
 #         self.strongDependency = self.m.createMock( "self.strongDependency", Artifact, "Dependency", False )
 #         self.orderOnlyDependency = self.m.createMock( "self.orderOnlyDependency", Artifact, "Order only dependency", False )
 #         self.automaticDependency = self.m.createMock( "self.automaticDependency", Artifact, "Automatic dependency", False )
@@ -221,7 +219,7 @@ class BasicCompoundArtifact( TestCase ):
 #         self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
 #         self.automaticDependency.getNewestFile( [], [] ).returns( 1200000 )
 #         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( True )
-#         self.orderOnlyDependency.computeProductionAction( [], [], False, DontCheck() ).returns( self.orderOnlyDependencyProductionAction )
+#         self.orderOnlyDependency.computeProductionAction( [], [], False, Misc.MockMockMock.DontCheck() ).returns( self.orderOnlyDependencyProductionAction )
         
 #         self.orderOnlyDependencyProductionAction.computePreview().returns( "create orderOnlyDependency" )
 
@@ -271,7 +269,7 @@ class BasicCompoundArtifact( TestCase ):
 #         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
 #         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( True )
 #         self.artifact.doGetProductionAction().returns( self.productionAction )
-#         self.strongDependency.computeProductionAction( [], [], False, DontCheck() ).returns( self.strongDependencyProductionAction )
+#         self.strongDependency.computeProductionAction( [], [], False, Misc.MockMockMock.DontCheck() ).returns( self.strongDependencyProductionAction )
 #         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
 #         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
 
@@ -333,7 +331,7 @@ class BasicCompoundArtifact( TestCase ):
 #         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( True )
 #         self.artifact.doGetProductionAction().returns( self.productionAction )
 #         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeProductionAction( [], [], False, DontCheck() ).returns( self.automaticDependencyProductionAction )
+#         self.automaticDependency.computeProductionAction( [], [], False, Misc.MockMockMock.DontCheck() ).returns( self.automaticDependencyProductionAction )
 
 #         self.productionAction.computePreview().returns( "create file1" )
 #         self.automaticDependencyProductionAction.computePreview().returns( "create automaticDependency" )
@@ -358,15 +356,15 @@ class BasicCompoundArtifact( TestCase ):
         
 #         assertActionHasGraph(self, action, model)
 
-class DrawGraph( TestCase ):
+class DrawGraph( Misc.MockMockMock.TestCase ):
     def __assertDotEqual(self, g1, g2):
         self.assertEqual(g1.dotString(), g2.dotString())
 
     def __cluster(self, name):
-        return gv.Cluster(name).set("label", name).set("style", "solid")
+        return gvc.Cluster(name).set("label", name).set("style", "solid")
 
     def __node(self, id, label):
-        return gv.Node(id).set("label", label)
+        return gvc.Node(id).set("label", label)
 
     def testAtomic( self ):
         artifact = AtomicArtifact("TestArtefact", ["tmp/file1", "tmp/file2"], [], [], [], False)
@@ -399,7 +397,7 @@ class DrawGraph( TestCase ):
         compound = CompoundArtifact("TestArtefact3", [artifact1], False)
         artifact2 = AtomicArtifact("TestArtefact2", ["tmp/file3", "tmp/file4"], [artifact1], [], [], False)
 
-        g1 = gv.Graph("project")
+        g1 = gvc.Graph("project")
         cluster1 = self.__cluster("TestArtefact1")
         cluster1.add(self.__node("tmp_file1", "tmp/file1"))
         cluster1.add(self.__node("tmp_file2", "tmp/file2"))
@@ -410,10 +408,10 @@ class DrawGraph( TestCase ):
         cluster2.add(self.__node("tmp_file3", "tmp/file3"))
         cluster2.add(self.__node("tmp_file4", "tmp/file4"))
         g1.add(cluster2)
-        link = gv.Link(cluster2, cluster1)
+        link = gvc.Link(cluster2, cluster1)
         g1.add(link)
         
-        g2 = gv.Graph("project")
+        g2 = gvc.Graph("project")
         g2.add(artifact2.getGraphNode())
         g2.add(compound.getGraphNode())
         for l in artifact2.getGraphLinks():
@@ -428,7 +426,7 @@ class DrawGraph( TestCase ):
         compound = CompoundArtifact("TestArtefact3", [artifact1], False)
         artifact2 = AtomicArtifact("TestArtefact2", ["tmp/file3", "tmp/file4"], [], [artifact1], [], False)
         
-        g1 = gv.Graph("project")
+        g1 = gvc.Graph("project")
         cluster1 = self.__cluster("TestArtefact1")
         cluster1.add(self.__node("tmp_file1", "tmp/file1"))
         cluster1.add(self.__node("tmp_file2", "tmp/file2"))
@@ -439,11 +437,11 @@ class DrawGraph( TestCase ):
         cluster2.add(self.__node("tmp_file3", "tmp/file3"))
         cluster2.add(self.__node("tmp_file4", "tmp/file4"))
         g1.add(cluster2)
-        link = gv.Link(cluster2, cluster1)
+        link = gvc.Link(cluster2, cluster1)
         link.set("style", "dashed")
         g1.add(link)
         
-        g2 = gv.Graph("project")
+        g2 = gvc.Graph("project")
         g2.add(artifact2.getGraphNode())
         g2.add(compound.getGraphNode())
         for l in artifact2.getGraphLinks():
