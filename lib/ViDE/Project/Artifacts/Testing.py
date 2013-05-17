@@ -1,20 +1,24 @@
+# Standard library
 import os.path
 
-from ViDE.Core.Action import Action
+# Third-party libraries
+import ActionTree
+
+# Project
 from ViDE.Project.Artifacts.BasicArtifacts import AtomicArtifact
 
-class UnitTestAction( Action ):
+
+### @todo Maybe remove this thin and useless class (__execute could be a method of class UnitTest)
+class UnitTestAction(ActionTree.Action):
     def __init__( self, executable, sentinel ):
         self.__executable = executable
         self.__sentinel = sentinel
-        Action.__init__( self )
+        Action.__init__(self, self.__execute, executable.getFileName())
 
-    def doExecute( self ):
+    def __execute( self ):
         self.__executable.run( [] )
         open( self.__sentinel, "w" ).close()
 
-    def computePreview( self ):
-        return self.__executable.getFileName()
 
 class UnitTest( AtomicArtifact ):
     def __init__( self, context, executable, additionalDependencies, explicit ):

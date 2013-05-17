@@ -1,10 +1,10 @@
+# Third-party libraries
 import ActionTree.Drawings
+from ActionTree import CompoundException
 
+# Project
 from Misc import InteractiveCommandLineProgram as ICLP
-
 from ViDE import Log
-from ViDE.Core.Action import CompoundException
-from ViDE.Core.ExecutionReport import ExecutionReport
 from ViDE.Context import Context
 from CommandWithContext import CommandWithContext
 

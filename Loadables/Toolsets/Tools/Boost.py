@@ -1,7 +1,7 @@
 import os.path
 
 import ViDE
-from ViDE.Toolset import Tool, DownloadUnarchiveConfigureMakeMakeinstall
+from ViDE.Toolset import Tool
 
 class BoostLibrary:
 	def getBoostLibName( self, name ):

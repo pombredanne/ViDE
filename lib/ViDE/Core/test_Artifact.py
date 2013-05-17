@@ -1,18 +1,17 @@
+# Standard library
 from __future__ import with_statement
-
 import os.path
 import unittest
 
+# Third party libraries
 import AnotherPyGraphvizAgain.Compounds as gvc
 import AnotherPyGraphvizAgain.Raw as gvr
 import ActionTree.Drawings
 import ActionTree.StockActions as actions
 import MockMockMock
 
-import Misc.MockMockMock
-
+# Project
 from Artifact import Artifact, AtomicArtifact, CompoundArtifact, InputArtifact, BuildEmptyArtifact
-from Action import Action
 
 
 class EmptyArtifacts(unittest.TestCase):
@@ -356,7 +355,7 @@ class ProductionReasons(ArtifactTestCase):
         
         self.assertProductionActionHasGraph(model)
 
-class DrawGraph( Misc.MockMockMock.TestCase ):
+class DrawGraph(unittest.TestCase):
     def __assertDotEqual(self, g1, g2):
         self.assertEqual(g1.dotString(), g2.dotString())
 

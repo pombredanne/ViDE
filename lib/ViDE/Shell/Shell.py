@@ -6,7 +6,6 @@ from ViDE.Shell.Make import Make
 from ViDE.Shell.Run import Run
 from ViDE.Shell.Debug import Debug
 from ViDE.Shell.Valgrind import Valgrind
-from ViDE.Shell.InstallTools import InstallTools
 from ViDE.Shell.CheckImports import CheckImports
 
 class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
@@ -27,8 +26,6 @@ class Shell( InteractiveCommandLineProgram.InteractiveCommandLineProgram ):
         running.addCommand( "run", Run, "run an executable file" )
         running.addCommand( "debug", Debug, "debug an executable file" )
         running.addCommand( "valgrind", Valgrind, "run an executable file in valgrind" )
-
-        self.addCommand( "install-tools", InstallTools, "install tools" )
 
         autodiagnostic = self.createCommandGroup( "ViDE's auto diagnostic", "" )
         autodiagnostic.addCommand( "autotest", AutoTest, "run ViDE's own unit tests" )
