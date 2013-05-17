@@ -73,7 +73,7 @@ class InputArtifact( Artifact ):
         self.__files = files
 
     def computeProductionAction( self, assumeNew, assumeOld, touch, createDirectoryActions ):
-        return NullAction()
+        return actions.NullAction()
 
     def computeIfMustBeProduced( self, assumeNew, assumeOld, touch ):
         return False
@@ -110,7 +110,9 @@ class AtomicArtifact( Artifact ):
     def computeProductionAction( self, assumeNew, assumeOld, touch, createDirectoryActions ):
         if self.mustBeProduced( assumeNew, assumeOld, touch ):
             if touch:
-                productionAction = TouchAction( self.__files )
+                productionAction = actions.NullAction()
+                for f in self.__files:
+                    productionAction.addDependency(actions.TouchFile(f))
             else:
                 productionAction = self.doGetProductionAction()
             directories = set( os.path.dirname( f ) for f in self.__files )

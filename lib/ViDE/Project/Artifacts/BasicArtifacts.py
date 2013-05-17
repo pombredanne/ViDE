@@ -1,5 +1,6 @@
+import ActionTree.StockActions as actions
+
 from ViDE.ContextReferer import ContextReferer
-from ViDE.Core.Actions import CopyFileAction
 from ViDE.Core.Artifact import Artifact
 from ViDE.Core.Artifact import InputArtifact as CoreInputArtifact
 from ViDE.Core.Artifact import AtomicArtifact as CoreAtomicArtifact
@@ -56,7 +57,7 @@ class CopiedArtifact( AtomicArtifact ):
         )
 
     def doGetProductionAction( self ):
-        return CopyFileAction( self.__source.getFileName(), self.__destination )
+        return actions.CopyFile(self.__source.getFileName(), self.__destination)
 
     def getDestination( self ):
         return self.__destination

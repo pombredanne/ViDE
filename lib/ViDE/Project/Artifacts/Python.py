@@ -1,8 +1,9 @@
 import os.path
 import py_compile
 
+import ActionTree
+
 from ViDE.Core import SubprocessFoo as Subprocess
-from ViDE.Core.Action import Action
 from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact, CopiedArtifact, AtomicArtifact, CompoundArtifact
 from ViDE.Project.Artifacts.Binary import LinkedBinary
 
@@ -30,17 +31,14 @@ class Script( CopiedArtifact ):
     def getFileName( self ):
         return self.__fileName
 
-class PythonCompileAction( Action ):
+class PythonCompileAction(ActionTree.Action):
     def __init__( self, source, destination ):
         self.__source = source
         self.__destination = destination
-        Action.__init__( self )
+        ActionTree.Action.__init__(self, self.__compile, "python -m py_compile " + source)
 
-    def doExecute( self ):
+    def __compile( self ):
         py_compile.compile( self.__source, self.__destination )
-
-    def computePreview( self ):
-        return "python -m py_compile " + self.__source
 
 class Module( AtomicArtifact ):
     def __init__( self, context, source, strip, explicit ):

@@ -55,10 +55,7 @@ def allFilesIn( directory ):
 def TestMake( project, whatIfs ):
     shutil.rmtree( os.path.join( ViDE.rootDirectory(), "TestProjects", project, "build" ), True )
 
-    class TestCase( unittest.TestCase ):
-        # def __init__( self ):
-            # unittest.TestCase.__init__( self )
-
+    class TestCase(unittest.TestCase):
         def setUp( self ):
             os.chdir( os.path.join( ViDE.rootDirectory(), "TestProjects", project ) )
             self.__shell = Shell()
@@ -72,23 +69,30 @@ def TestMake( project, whatIfs ):
             for target in self.__targets:
                 self.assertTrue( os.path.exists( target ), project + " " + target )
 
-        def testWhatIf( self ):
-            for source in whatIfs:
-                before = dict()
-                for target in self.__targets:
-                    before[ target ] = os.stat( target ).st_mtime
-                self.__shell.execute( [ "test", "--silent", "make", "--touch", "--new-file", source ] )
-                after = dict()
-                for target in self.__targets:
-                    after[ target ] = os.stat( target ).st_mtime
+        def _testWhatIf( self, source ):
+            before = dict()
+            for target in self.__targets:
+                before[ target ] = os.stat( target ).st_mtime
+            self.__shell.execute( [ "test", "--silent", "make", "--touch", "--new-file", source ] )
+            after = dict()
+            for target in self.__targets:
+                after[ target ] = os.stat( target ).st_mtime
 
-                updatedTargets = set()
-                for target in self.__targets:
-                    if after[ target ] != before[ target ]:
-                        updatedTargets.add( target )
-                self.assertEquals( updatedTargets, set( whatIfs[source] ), project + " " + source + " " + str( updatedTargets ) + " != " + str( whatIfs[source] ) )
+            updatedTargets = set()
+            for target in self.__targets:
+                if after[ target ] != before[ target ]:
+                    updatedTargets.add( target )
+            self.assertEqual(updatedTargets, set( whatIfs[source]))
 
     TestCase.__name__ = project
+
+    for source in whatIfs:
+        def testMethod(self):
+            self._testWhatIf(source)
+
+        testName = "testWhatIf_" + source.replace(".", "_").replace("/", "_")
+
+        setattr(TestCase, testName, testMethod)
 
     return TestCase
             

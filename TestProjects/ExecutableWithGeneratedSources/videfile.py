@@ -1,4 +1,5 @@
-from ViDE.Core.Actions import TouchAction
+import ActionTree.StockActions as actions
+
 from ViDE.Project.Description import *
 from ViDE.Project.Artifacts.BasicArtifacts import AtomicArtifact, SubatomicArtifact, MonofileInputArtifact
 
@@ -39,7 +40,10 @@ class GeneratedSource( AtomicArtifact ):
         return self.getCached( "cpp", lambda: Project.inProgress.createArtifact( XsdGeneratedSource, self.__cppFileName, self, False ) )
 
     def doGetProductionAction( self ):
-        return TouchAction( [ self.__hppFileName, self.__cppFileName ] )
+        a = actions.NullAction()
+        a.addDependency(actions.TouchFile(self.__hppFileName))
+        a.addDependency(actions.TouchFile(self.__cppFileName))
+        return a
 
 def Xsd( schema ):
     schema = Project.inProgress.createArtifact( XsdSchema, schema, False )

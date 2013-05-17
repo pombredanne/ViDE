@@ -1,3 +1,5 @@
+import ActionTree.Drawings
+
 from Misc import InteractiveCommandLineProgram as ICLP
 
 from ViDE import Log
@@ -31,11 +33,11 @@ class Make( CommandWithContext ):
             print "\n".join( action.preview() )
         else:
             try:
-                action.execute( self.keepGoing, self.jobs )
+                action.execute(self.jobs, self.keepGoing)
             except CompoundException, e:
                 Log.error( "build failed", e )
             finally:
-                report = ExecutionReport( action, 800 )
-                report.drawTo( context.fileName( "make-report.png" ) )
-        action.getGraph().drawTo( context.fileName( "make-actions.png" ) )
+                report = ActionTree.Drawings.ExecutionReport( action )
+                # report.drawTo( context.fileName( "make-report.png" ), 800 )
+        ActionTree.Drawings.ActionGraph(action).drawTo( context.fileName( "make-actions.png" ) )
         context.project.getGraph().drawTo( context.fileName( "make-artifacts.png" ) )

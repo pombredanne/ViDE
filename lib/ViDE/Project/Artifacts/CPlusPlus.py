@@ -2,7 +2,8 @@ import os.path
 import re
 import itertools
 
-from ViDE.Core.Action import Action
+import ActionTree
+
 from ViDE.Project import Project
 from ViDE.Project.Artifacts.BasicArtifacts import MonofileInputArtifact, AtomicArtifact, InputArtifact
 
@@ -70,17 +71,14 @@ class Headers:
         self.__angleHeaders.add( header )
 
 # @todo Implement using Boost.Wave, through Boost.Python
-class ParseCppHeadersAction( Action ):
+class ParseCppHeadersAction(ActionTree.Action):
     def __init__( self, source, depFile, candidateCopiedHeaders ):
-        Action.__init__( self )
+        ActionTree.Action.__init__(self, self.__execute, "parse " + source + " " + depFile)
         self.__source = source
         self.__depFile = depFile
         self.__candidateCopiedHeaders = candidateCopiedHeaders
 
-    def computePreview( self ):
-        return "blahblah " + self.__source + " " + self.__depFile
-
-    def doExecute( self ):
+    def __execute( self ):
         headers = Headers()
         self.__parse( headers, fileName = self.__source )
         headers.save( self.__depFile )
@@ -198,7 +196,7 @@ class Object( AtomicArtifact ):
 
     def __parseCppHeaders( self, context, source, candidateCopiedHeaders ):
         depFile = DepFile( context, source, candidateCopiedHeaders )
-        depFile.getProductionAction().execute( False, 1 )
+        depFile.getProductionAction().execute()
         return Headers.load( depFile.getFileName() )
 
     def getIncludeDirectories( self ):

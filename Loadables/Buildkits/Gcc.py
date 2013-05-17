@@ -1,10 +1,15 @@
+import ActionTree.StockActions as actions
+
 import ViDE.Project.Artifacts.CPlusPlus
 import ViDE.Project.Artifacts.Fortran
 import ViDE.Project.Artifacts.Binary
 import ViDE.Project.Artifacts.Python
-from ViDE.Core.Actions import SystemAction
 from ViDE.Buildkit import Buildkit
 from ViDE.Core import SubprocessFoo as Subprocess
+
+
+def SystemAction(args, otherArgs, **kwds):
+    return actions.CallSubprocess(*(args + otherArgs))
 
 
 class Gcc( Buildkit ):
