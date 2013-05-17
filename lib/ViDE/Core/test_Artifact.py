@@ -154,10 +154,21 @@ class ProductionReasons(ArtifactTestCase):
         self.fileIsMissing = self.mocks.create("self.fileIsMissing")
         AtomicArtifact._AtomicArtifact__fileIsMissing = self.fileIsMissing.object
 
-        self.productionAction = ActionTree.Action(None, "productionAction")
-        self.strongDependencyProductionAction = ActionTree.Action(None, "strongDependencyProductionAction")
-        self.orderOnlyDependencyProductionAction = ActionTree.Action(None, "orderOnlyDependencyProductionAction")
-        self.automaticDependencyProductionAction = ActionTree.Action(None, "automaticDependencyProductionAction")
+        self.productionAction = ActionTree.Action(None, "create file1")
+        self.doGetProductionAction = self.mocks.create("self.doGetProductionAction")
+        self.artifact.doGetProductionAction = self.doGetProductionAction.object
+
+        self.strongDependencyProductionAction = ActionTree.Action(None, "create strongDependency")
+        self.computeStrongDependencyProductionAction = self.mocks.create("self.computeStrongDependencyProductionAction")
+        self.strongDependency.computeProductionAction = self.computeStrongDependencyProductionAction.object
+
+        self.orderOnlyDependencyProductionAction = ActionTree.Action(None, "create orderOnlyDependency")
+        self.computeOrderOnlyDependencyProductionAction = self.mocks.create("self.computeOrderOnlyDependencyProductionAction")
+        self.orderOnlyDependency.computeProductionAction = self.computeOrderOnlyDependencyProductionAction.object
+
+        self.automaticDependencyProductionAction = ActionTree.Action(None, "create automaticDependency")
+        self.computeAutomaticDependencyProductionAction = self.mocks.create("self.computeAutomaticDependencyProductionAction")
+        self.automaticDependency.computeProductionAction = self.computeAutomaticDependencyProductionAction.object
 
         self.getStrongDependencyNewestFile = self.mocks.create("self.getStrongDependencyNewestFile")
         self.strongDependency.getNewestFile = self.getStrongDependencyNewestFile.object
@@ -190,194 +201,160 @@ class ProductionReasons(ArtifactTestCase):
         model.add(self._node("nop"))
         self.assertProductionActionHasGraph(model)
 
-#     def testGetProductionActionWhenFileIsMissing( self ):
-#         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
-#         self.artifact.doGetProductionAction().returns( self.productionAction )
-#         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
+    def testGetProductionActionWhenFileIsMissing( self ):
+        self.fileIsMissing.expect("tmp1/file1").andReturn(True)
+        self.doGetProductionAction.expect().andReturn(self.productionAction)
+        self.computeIfStrongDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfOrderOnlyDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfAutomaticDependencyMustBeProduced.expect([], [], False).andReturn(False)
 
-#         self.productionAction.computePreview().returns( "create file1" )
+        action = self.artifact.getProductionAction()
         
-#         self.m.startTest()
-
-#         action = self.artifact.getProductionAction()
+        model = gvr.Graph("action")
+        n0 = self._node("create file1")
+        n3 = self._node("mkdir tmp1")
+        n4 = self._node("rm tmp1/file1")
+        model.add(n0)
+        model.add(n3)
+        model.add(n4)
+        model.add(gvr.Link(n0, n3))
+        model.add(gvr.Link(n0, n4))
         
-#         model = Graph( "action" )
-#         model.nodeAttr[ "shape" ] = "box"
-#         n0 = Node( "create file1" )
-#         n3 = Node( "mkdir -p tmp1" )
-#         n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
-#         model.add( n0 )
-#         model.add( n3 )
-#         model.add( n4 )
-#         model.add( Link( n0, n3 ) )
-#         model.add( Link( n0, n4 ) )
+        self.assertProductionActionHasGraph(model)
+
+    def testGetProductionActionWhenOrderOnlyDependencyIsNewer( self ):
+        self.fileIsMissing.expect("tmp1/file1").andReturn(False)
+        self.computeIfStrongDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfAutomaticDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.getOldestFile.expect([], []).andReturn(1200001)
+        self.getStrongDependencyNewestFile.expect([], []).andReturn(1200000)
+        self.getAutomaticDependencyNewestFile.expect([], []).andReturn(1200000)
+        self.computeIfOrderOnlyDependencyMustBeProduced.expect([], [], False).andReturn(False)
+
+        action = self.artifact.getProductionAction()
+
+        model = gvr.Graph("action")
+        model.add(self._node("nop"))
+
+        self.assertProductionActionHasGraph(model)
+
+    def testGetProductionActionWhenOrderOnlyDependencyMustBeProduced( self ):
+        self.fileIsMissing.expect("tmp1/file1").andReturn(False)
+        self.computeIfStrongDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfAutomaticDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.getOldestFile.expect([], []).andReturn(1200001)
+        self.getStrongDependencyNewestFile.expect([], []).andReturn(1200000)
+        self.getAutomaticDependencyNewestFile.expect([], []).andReturn(1200000)
+        self.computeIfOrderOnlyDependencyMustBeProduced.expect([], [], False).andReturn(True)
+        self.computeOrderOnlyDependencyProductionAction.expect([], [], False, {}).andReturn(self.orderOnlyDependencyProductionAction)
         
-#         self.assertProductionActionHasGraph(model)
-
-#     def testGetProductionActionWhenOrderOnlyDependencyIsNewer( self ):
-#         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-#         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.artifact.getOldestFile( [], [] ).returns( 1200001 )
-#         self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
-#         self.automaticDependency.getNewestFile( [], [] ).returns( 1200000 )
-#         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.orderOnlyDependency.getNewestFile( [], [] ).returns( 1200002 ).isOptional() # Never called
-
-#         self.m.startTest()
-
-#         action = self.artifact.getProductionAction()
-#         model = Graph( "action" )
-#         model.nodeAttr[ "shape" ] = "box"
-#         model.add( Node( "" ) )
-#         self.assertProductionActionHasGraph(model)
-
-#     def testGetProductionActionWhenOrderOnlyDependencyMustBeProduced( self ):
-#         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-#         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.artifact.getOldestFile( [], [] ).returns( 1200001 )
-#         self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
-#         self.automaticDependency.getNewestFile( [], [] ).returns( 1200000 )
-#         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( True )
-#         self.orderOnlyDependency.computeProductionAction( [], [], False, Misc.MockMockMock.DontCheck() ).returns( self.orderOnlyDependencyProductionAction )
+        action = self.artifact.getProductionAction()
         
-#         self.orderOnlyDependencyProductionAction.computePreview().returns( "create orderOnlyDependency" )
-
-#         self.m.startTest()
-
-#         action = self.artifact.getProductionAction()
+        model = gvr.Graph("action")
+        n0 = self._node("nop")
+        n1 = self._node("create orderOnlyDependency")
+        model.add(n0)
+        model.add(n1)
+        model.add(gvr.Link(n0, n1))
         
-#         model = Graph( "action" )
-#         model.nodeAttr[ "shape" ] = "box"
-#         n0 = Node( "" )
-#         n1 = Node( "create orderOnlyDependency" )
-#         model.add( n0 )
-#         model.add( n1 )
-#         model.add( Link( n0, n1 ) )
+        self.assertProductionActionHasGraph(model)
+
+    def testGetProductionActionWhenStrongDependencyIsNewer( self ):
+        self.fileIsMissing.expect("tmp1/file1").andReturn(False)
+        self.computeIfStrongDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfAutomaticDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.getOldestFile.expect([], []).andReturn(1200000)
+        self.getStrongDependencyNewestFile.expect([], []).andReturn(1200000)
+        self.doGetProductionAction.expect().andReturn(self.productionAction)
+        self.computeIfOrderOnlyDependencyMustBeProduced.expect([], [], False).andReturn(False)
+
+        action = self.artifact.getProductionAction()
         
-#         self.assertProductionActionHasGraph(model)
-
-#     def testGetProductionActionWhenStrongDependencyIsNewer( self ):
-#         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-#         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.artifact.getOldestFile( [], [] ).returns( 1200000 )
-#         self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
-#         self.artifact.doGetProductionAction().returns( self.productionAction )
-#         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-
-#         self.productionAction.computePreview().returns( "create file1" )
-
-#         self.m.startTest()
-
-#         action = self.artifact.getProductionAction()
+        model = gvr.Graph("action")
+        n0 = self._node("create file1")
+        n3 = self._node("mkdir tmp1")
+        n4 = self._node("rm tmp1/file1")
+        model.add(n0)
+        model.add(n3)
+        model.add(n4)
+        model.add(gvr.Link(n0, n3))
+        model.add(gvr.Link(n0, n4))
         
-#         model = Graph( "action" )
-#         model.nodeAttr[ "shape" ] = "box"
-#         n0 = Node( "create file1" )
-#         n3 = Node( "mkdir -p tmp1" )
-#         n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
-#         model.add( n0 )
-#         model.add( n3 )
-#         model.add( n4 )
-#         model.add( Link( n0, n3 ) )
-#         model.add( Link( n0, n4 ) )
+        self.assertProductionActionHasGraph(model)
+
+    def testGetProductionActionWhenStrongDependencyMustBeProduced( self ):
+        self.fileIsMissing.expect("tmp1/file1").andReturn(False)
+        self.computeIfStrongDependencyMustBeProduced.expect([], [], False).andReturn(True)
+        self.doGetProductionAction.expect().andReturn(self.productionAction)
+        self.computeStrongDependencyProductionAction.expect._call_.withArguments(lambda args, kwds: True).andReturn(self.strongDependencyProductionAction)
+        self.computeIfOrderOnlyDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfAutomaticDependencyMustBeProduced.expect([], [], False).andReturn(False)
+
+        action = self.artifact.getProductionAction()
         
-#         self.assertProductionActionHasGraph(model)
-
-#     def testGetProductionActionWhenStrongDependencyMustBeProduced( self ):
-#         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-#         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( True )
-#         self.artifact.doGetProductionAction().returns( self.productionAction )
-#         self.strongDependency.computeProductionAction( [], [], False, Misc.MockMockMock.DontCheck() ).returns( self.strongDependencyProductionAction )
-#         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-
-#         self.productionAction.computePreview().returns( "create file1" )
-#         self.strongDependencyProductionAction.computePreview().returns( "create strongDependency" )
-
-#         self.m.startTest()
-
-#         action = self.artifact.getProductionAction()
+        model = gvr.Graph("action")
+        n0 = self._node("create file1")
+        n1 = self._node("create strongDependency")
+        n3 = self._node("mkdir tmp1")
+        n4 = self._node("rm tmp1/file1")
+        model.add(n0)
+        model.add(n1)
+        model.add(n3)
+        model.add(n4)
+        model.add(gvr.Link(n0, n1))
+        model.add(gvr.Link(n0, n3))
+        model.add(gvr.Link(n0, n4))
         
-#         model = Graph( "action" )
-#         model.nodeAttr[ "shape" ] = "box"
-#         n0 = Node( "create file1" )
-#         n1 = Node( "create strongDependency" )
-#         n3 = Node( "mkdir -p tmp1" )
-#         n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
-#         model.add( n0 )
-#         model.add( n1 )
-#         model.add( n3 )
-#         model.add( n4 )
-#         model.add( Link( n0, n1 ) )
-#         model.add( Link( n0, n3 ) )
-#         model.add( Link( n0, n4 ) )
+        self.assertProductionActionHasGraph(model)
+
+    def testGetProductionActionWhenAutomaticDependencyIsNewer( self ):
+        self.fileIsMissing.expect("tmp1/file1").andReturn(False)
+        self.computeIfStrongDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfAutomaticDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.getOldestFile.expect([], []).andReturn(1200001)
+        self.getStrongDependencyNewestFile.expect([], []).andReturn(1200000)
+        self.getAutomaticDependencyNewestFile.expect([], []).andReturn(1200001)
+        self.doGetProductionAction.expect().andReturn(self.productionAction)
+        self.computeIfOrderOnlyDependencyMustBeProduced.expect([], [], False).andReturn(False)
+
+        action = self.artifact.getProductionAction()
         
-#         self.assertProductionActionHasGraph(model)
-
-#     def testGetProductionActionWhenAutomaticDependencyIsNewer( self ):
-#         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-#         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.artifact.getOldestFile( [], [] ).returns( 1200001 )
-#         self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
-#         self.automaticDependency.getNewestFile( [], [] ).returns( 1200001 )
-#         self.artifact.doGetProductionAction().returns( self.productionAction )
-#         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-
-#         self.productionAction.computePreview().returns( "create file1" )
-
-#         self.m.startTest()
-
-#         action = self.artifact.getProductionAction()
+        model = gvr.Graph("action")
+        n0 = self._node("create file1")
+        n3 = self._node("mkdir tmp1")
+        n4 = self._node("rm tmp1/file1")
+        model.add(n0)
+        model.add(n3)
+        model.add(n4)
+        model.add(gvr.Link(n0, n3))
+        model.add(gvr.Link(n0, n4))
         
-#         model = Graph( "action" )
-#         model.nodeAttr[ "shape" ] = "box"
-#         n0 = Node( "create file1" )
-#         n3 = Node( "mkdir -p tmp1" )
-#         n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
-#         model.add( n0 )
-#         model.add( n3 )
-#         model.add( n4 )
-#         model.add( Link( n0, n3 ) )
-#         model.add( Link( n0, n4 ) )
+        self.assertProductionActionHasGraph(model)
+
+    def testGetProductionActionWhenAutomaticDependencyMustBeProduced( self ):
+        self.fileIsMissing.expect("tmp1/file1").andReturn(False)
+        self.computeIfStrongDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfAutomaticDependencyMustBeProduced.expect([], [], False).andReturn(True)
+        self.doGetProductionAction.expect().andReturn( self.productionAction )
+        self.computeIfOrderOnlyDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeAutomaticDependencyProductionAction.expect._call_.withArguments(lambda args, kwds: True).andReturn(self.automaticDependencyProductionAction)
+
+        action = self.artifact.getProductionAction()
         
-#         self.assertProductionActionHasGraph(model)
-
-#     def testGetProductionActionWhenAutomaticDependencyMustBeProduced( self ):
-#         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-#         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( True )
-#         self.artifact.doGetProductionAction().returns( self.productionAction )
-#         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeProductionAction( [], [], False, Misc.MockMockMock.DontCheck() ).returns( self.automaticDependencyProductionAction )
-
-#         self.productionAction.computePreview().returns( "create file1" )
-#         self.automaticDependencyProductionAction.computePreview().returns( "create automaticDependency" )
-
-#         self.m.startTest()
-
-#         action = self.artifact.getProductionAction()
+        model = gvr.Graph("action")
+        n0 = self._node("create file1")
+        n2 = self._node("create automaticDependency")
+        n3 = self._node("mkdir tmp1")
+        n4 = self._node("rm tmp1/file1")
+        model.add(n0)
+        model.add(n2)
+        model.add(n3)
+        model.add(n4)
+        model.add(gvr.Link(n0, n2))
+        model.add(gvr.Link(n0, n3))
+        model.add(gvr.Link(n0, n4))
         
-#         model = Graph( "action" )
-#         model.nodeAttr[ "shape" ] = "box"
-#         n0 = Node( "create file1" )
-#         n2 = Node( "create automaticDependency" )
-#         n3 = Node( "mkdir -p tmp1" )
-#         n4 = Node( "rm -f " + os.path.join( "tmp1", "file1" ) )
-#         model.add( n0 )
-#         model.add( n2 )
-#         model.add( n3 )
-#         model.add( n4 )
-#         model.add( Link( n0, n2 ) )
-#         model.add( Link( n0, n3 ) )
-#         model.add( Link( n0, n4 ) )
-        
-#         self.assertProductionActionHasGraph(model)
+        self.assertProductionActionHasGraph(model)
 
 class DrawGraph( Misc.MockMockMock.TestCase ):
     def __assertDotEqual(self, g1, g2):
