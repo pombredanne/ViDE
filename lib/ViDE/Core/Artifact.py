@@ -123,7 +123,7 @@ class AtomicArtifact( Artifact ):
                     productionAction.addDependency( actions.DeleteFile( f ) )
         else:
             Log.debug( "Do not produce", self.__files )
-            productionAction = NullAction()
+            productionAction = actions.NullAction()
         for d in self.__strongDependencies + self.__orderOnlyDependencies + self.__automaticDependencies:
             if d.mustBeProduced( assumeNew, assumeOld, touch ):
                 predecessorAction = d.getProductionAction( assumeNew, assumeOld, touch, createDirectoryActions )

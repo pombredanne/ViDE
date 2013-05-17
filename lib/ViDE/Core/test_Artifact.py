@@ -142,39 +142,53 @@ class BasicCompoundArtifact(ArtifactTestCase):
         action2 = self.artifact.getProductionAction()
         self.assertTrue( action1 is action2 )
 
-# class ProductionReasons( Misc.MockMockMock.TestCase ):
-#     def setUp( self ):
-#         Misc.MockMockMock.TestCase.setUp( self )
-#         self.strongDependency = self.m.createMock( "self.strongDependency", Artifact, "Dependency", False )
-#         self.orderOnlyDependency = self.m.createMock( "self.orderOnlyDependency", Artifact, "Order only dependency", False )
-#         self.automaticDependency = self.m.createMock( "self.automaticDependency", Artifact, "Automatic dependency", False )
-#         self.artifact = self.m.createMock( "self.artifact", AtomicArtifact, "AtomicArtifact", [ os.path.join( "tmp1", "file1" ) ], [ self.strongDependency ], [ self.orderOnlyDependency ], [ self.automaticDependency ], False )
-#         AtomicArtifact._AtomicArtifact__fileIsMissing = self.m.createMock( "AtomicArtifact._AtomicArtifact__fileIsMissing" )
-#         self.productionAction = self.m.createMock( "self.productionAction", Action )
-#         self.strongDependencyProductionAction = self.m.createMock( "self.strongDependencyProductionAction", Action )
-#         self.orderOnlyDependencyProductionAction = self.m.createMock( "self.orderOnlyDependencyProductionAction", Action )
-#         self.automaticDependencyProductionAction = self.m.createMock( "self.automaticDependencyProductionAction", Action )
-#         self.strongDependency.getNewestFile = self.m.createMock( "self.strongDependency.getNewestFile" )
-#         self.orderOnlyDependency.getNewestFile = self.m.createMock( "self.orderOnlyDependency.getNewestFile" )
-#         self.automaticDependency.getNewestFile = self.m.createMock( "self.automaticDependency.getNewestFile" )
-#         self.artifact.getOldestFile = self.m.createMock( "self.artifact.getOldestFile" )
+class ProductionReasons(ArtifactTestCase):
+    def setUp(self):
+        ArtifactTestCase.setUp(self)
 
-#     def testGetProductionActionWithNoReasonToProduce( self ):
-#         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( False )
-#         self.strongDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.automaticDependency.computeIfMustBeProduced( [], [], False ).returns( False )
-#         self.artifact.getOldestFile( [], [] ).returns( 1200001 )
-#         self.strongDependency.getNewestFile( [], [] ).returns( 1200000 )
-#         self.automaticDependency.getNewestFile( [], [] ).returns( 1200000 )
-#         self.orderOnlyDependency.computeIfMustBeProduced( [], [], False ).returns( False )
+        self.strongDependency = Artifact("Dependency", False)
+        self.orderOnlyDependency = Artifact("Order only dependency", False)
+        self.automaticDependency = Artifact("Automatic dependency", False)
+        self.artifact = AtomicArtifact("AtomicArtifact", ["tmp1/file1" ], [self.strongDependency], [self.orderOnlyDependency], [self.automaticDependency], False)
 
-#         self.m.startTest()
+        self.fileIsMissing = self.mocks.create("self.fileIsMissing")
+        AtomicArtifact._AtomicArtifact__fileIsMissing = self.fileIsMissing.object
 
-#         action = self.artifact.getProductionAction()
-#         model = Graph( "action" )
-#         model.nodeAttr[ "shape" ] = "box"
-#         model.add( Node( "" ) )
-#         self.assertProductionActionHasGraph(model)
+        self.productionAction = ActionTree.Action(None, "productionAction")
+        self.strongDependencyProductionAction = ActionTree.Action(None, "strongDependencyProductionAction")
+        self.orderOnlyDependencyProductionAction = ActionTree.Action(None, "orderOnlyDependencyProductionAction")
+        self.automaticDependencyProductionAction = ActionTree.Action(None, "automaticDependencyProductionAction")
+
+        self.getStrongDependencyNewestFile = self.mocks.create("self.getStrongDependencyNewestFile")
+        self.strongDependency.getNewestFile = self.getStrongDependencyNewestFile.object
+        self.getOrderOnlyDependencyNewestFile = self.mocks.create("self.getOrderOnlyDependencyNewestFile")
+        self.orderOnlyDependency.getNewestFile = self.getOrderOnlyDependencyNewestFile.object
+        self.getAutomaticDependencyNewestFile = self.mocks.create("self.getAutomaticDependencyNewestFile")
+        self.automaticDependency.getNewestFile = self.getAutomaticDependencyNewestFile.object
+
+        self.computeIfStrongDependencyMustBeProduced = self.mocks.create("self.computeIfStrongDependencyMustBeProduced")
+        self.strongDependency.computeIfMustBeProduced = self.computeIfStrongDependencyMustBeProduced.object
+        self.computeIfOrderOnlyDependencyMustBeProduced = self.mocks.create("self.computeIfOrderOnlyDependencyMustBeProduced")
+        self.orderOnlyDependency.computeIfMustBeProduced = self.computeIfOrderOnlyDependencyMustBeProduced.object
+        self.computeIfAutomaticDependencyMustBeProduced = self.mocks.create("self.computeIfAutomaticDependencyMustBeProduced")
+        self.automaticDependency.computeIfMustBeProduced = self.computeIfAutomaticDependencyMustBeProduced.object
+
+        self.getOldestFile = self.mocks.create("self.getOldestFile")
+        self.artifact.getOldestFile = self.getOldestFile.object
+
+    def testGetProductionActionWithNoReasonToProduce( self ):
+        self.fileIsMissing.expect("tmp1/file1").andReturn(False)
+        self.computeIfStrongDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.computeIfAutomaticDependencyMustBeProduced.expect([], [], False).andReturn(False)
+        self.getOldestFile.expect([], []).andReturn(1200001)
+        self.getStrongDependencyNewestFile.expect([], []).andReturn(1200000)
+        self.getAutomaticDependencyNewestFile.expect([], []).andReturn(1200000)
+        self.computeIfOrderOnlyDependencyMustBeProduced.expect([], [], False).andReturn(False)
+
+        action = self.artifact.getProductionAction()
+        model = gvr.Graph("action")
+        model.add(self._node("nop"))
+        self.assertProductionActionHasGraph(model)
 
 #     def testGetProductionActionWhenFileIsMissing( self ):
 #         AtomicArtifact._AtomicArtifact__fileIsMissing( os.path.join( "tmp1", "file1" ) ).returns( True )
