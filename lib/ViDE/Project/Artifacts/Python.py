@@ -31,6 +31,8 @@ class Script( CopiedArtifact ):
     def getFileName( self ):
         return self.__fileName
 
+
+### @todo Remove this thin useless class. __compile could just be a method of class Module below
 class PythonCompileAction(ActionTree.Action):
     def __init__( self, source, destination ):
         self.__source = source

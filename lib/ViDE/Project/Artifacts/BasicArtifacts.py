@@ -41,6 +41,7 @@ class MonofileInputArtifact( InputArtifact ):
     def getFileName( self ):
         return self.__fileName
 
+### @todo We should be able to copy *any* artifact, not only MonofileInputArtifacts
 class CopiedArtifact( AtomicArtifact ):
     def __init__( self, context, name, source, destination, explicit ):
         self.__source = source

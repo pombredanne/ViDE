@@ -40,7 +40,7 @@ class GeneratedSource( AtomicArtifact ):
         return self.getCached( "cpp", lambda: Project.inProgress.createArtifact( XsdGeneratedSource, self.__cppFileName, self, False ) )
 
     def doGetProductionAction( self ):
-        a = actions.NullAction()
+        a = actions.Sleep(1)
         a.addDependency(actions.TouchFile(self.__hppFileName))
         a.addDependency(actions.TouchFile(self.__cppFileName))
         return a
