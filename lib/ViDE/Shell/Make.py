@@ -1,36 +1,36 @@
 # Third-party libraries
 import ActionTree.Drawings
 from ActionTree import CompoundException
+import InteractiveCommandLine as icl
 
 # Project
-from Misc import InteractiveCommandLineProgram as ICLP
 from ViDE import Log
 from ViDE.Context import Context
 from CommandWithContext import CommandWithContext
 
-class Make( CommandWithContext ):
-    def __init__( self, program ):
-        CommandWithContext.__init__( self, program )
+class Make(CommandWithContext):
+    def __init__(self, program):
+        CommandWithContext.__init__(self, program, "make", "build the project")
         self.jobs = -1
-        self.addOption( [ "j", "jobs" ], "jobs", ICLP.StoreArgument( "JOBS" ), "use JOBS parallel jobs" )
+        self.addOption(icl.StoringOption("jobs", "use JOBS parallel jobs", self, "jobs", icl.ValueFromOneArgument("JOBS", int)))
         self.keepGoing = False
-        self.addOption( [ "k", "keep-going" ], "keepGoing", ICLP.StoreConstant( True ), "keep going in case of failure" )
+        self.addOption(icl.StoringOption("keep-going", "keep going in case of failure", self, "keepGoing", icl.ConstantValue(True)))
         self.dryRun = False
-        self.addOption( [ "n", "dry-run" ], "dryRun", ICLP.StoreConstant( True ), "print commands instead of executing them" )
-        fakeAge = self.createOptionGroup( "Faking file age", "" )
+        self.addOption(icl.StoringOption("dry-run", "print commands instead of executing them", self, "dryRun", icl.ConstantValue(True)))
+        fakeAge = self.createOptionGroup("Faking file age")
         self.assumeNew = []
-        fakeAge.addOption( [ "W", "what-if", "new-file", "assume-new" ], "assumeNew", ICLP.AppendArgument( "FILE" ), "assume that FILE is newer than its dependants" )
+        fakeAge.addOption(icl.AppendingOption("assume-new", "assume that FILE is newer than its dependants", self.assumeNew, icl.ValueFromOneArgument("FILE")))
         self.assumeOld = []
-        fakeAge.addOption( [ "o", "old-file", "assume-old" ], "assumeOld", ICLP.AppendArgument( "FILE" ), "assume that FILE is older than its dependants" )
+        fakeAge.addOption(icl.AppendingOption("assume-old", "assume that FILE is older than its dependants", self.assumeOld, icl.ValueFromOneArgument("FILE")))
         self.touch = False
-        self.addOption( [ "t", "touch" ], "touch", ICLP.StoreConstant( True ), "touch targets instead of remaking them")
+        self.addOption(icl.StoringOption("touch", "touch targets instead of remaking them", self, "touch", icl.ConstantValue(True)))
         ### @todo Add an option to build with all buildkits
         
-    def executeWithContext( self, context, args ):
-        action = context.project.getBuildAction( assumeNew = self.assumeNew, assumeOld = self.assumeOld, touch = self.touch )
+    def executeWithContext(self, context):
+        action = context.project.getBuildAction(assumeNew=self.assumeNew, assumeOld=self.assumeOld, touch=self.touch)
         # @todo project's include graph
         if self.dryRun:
-            print "\n".join( action.preview() )
+            print "\n".join(action.getPreview())
         else:
             try:
                 action.execute(self.jobs, self.keepGoing)
