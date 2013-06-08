@@ -5,6 +5,8 @@ import InteractiveCommandLine as icl
 from CommandWithContext import CommandWithContext
 from ViDE.Context import Context
 
+
+### @todo Merge with commands 'debug' and 'valgrind', by adding options
 class Run(CommandWithContext):
     def __init__(self, program):
         CommandWithContext.__init__(self, program, "run", "run an executable file")
