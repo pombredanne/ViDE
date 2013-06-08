@@ -5,8 +5,8 @@ import InteractiveCommandLine as icl
 from ViDE import Log
 # from ViDE.Shell.AutoTest import AutoTest
 from ViDE.Shell.Make import Make
-# from ViDE.Shell.Run import Run
-# from ViDE.Shell.Debug import Debug
+from ViDE.Shell.Run import Run
+from ViDE.Shell.Debug import Debug
 # from ViDE.Shell.Valgrind import Valgrind
 # from ViDE.Shell.CheckImports import CheckImports
 
@@ -23,9 +23,9 @@ class Shell(icl.Program):
         generation = self.createCommandGroup("Artifact generation")
         generation.addCommand(Make(self))
         
-        # running = self.createCommandGroup( "Executable artifact running", "" )
-        # running.addCommand( "run", Run, "run an executable file" )
-        # running.addCommand( "debug", Debug, "debug an executable file" )
+        running = self.createCommandGroup("Executable artifact running")
+        running.addCommand(Run(self))
+        running.addCommand(Debug(self))
         # running.addCommand( "valgrind", Valgrind, "run an executable file in valgrind" )
 
         # autodiagnostic = self.createCommandGroup( "ViDE's auto diagnostic", "" )
@@ -34,4 +34,3 @@ class Shell(icl.Program):
 
         # self.addHelpCommand()
         # self.addExitCommand()
-

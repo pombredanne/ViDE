@@ -144,8 +144,8 @@ class Gcc( Buildkit ):
                     context = self.context
                 )
 
-            def debug( self, arguments ):
-                Subprocess.execute( [ "gdb", self.__fileName ] + arguments, context = self.context )
+            def debug( self, *arguments ):
+                Subprocess.execute( [ "gdb", self.__fileName ] + list(arguments), context = self.context )
 
             def valgrind( self ):
                 Subprocess.execute( [ "valgrind", "--leak-check=full", self.__fileName ], context = self.context )

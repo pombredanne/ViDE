@@ -143,8 +143,8 @@ class Executable( LinkedBinary ):
         LinkedBinary.__init__( self, context, name, files, objects, localLibraries, externalLibraries, explicit )
         self.__executableFile = files[ 0 ]
 
-    def run( self, arguments ):
-        Subprocess.execute( [ self.__executableFile ] + arguments, context = self.context, silent = True )
+    def run( self, *arguments ):
+        Subprocess.execute( [ self.__executableFile ] + list(arguments), context = self.context, silent = True )
 
     def getFileName( self ):
         return self.__executableFile

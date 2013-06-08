@@ -22,11 +22,11 @@ class Script( CopiedArtifact ):
             explicit = explicit
         )
 
-    def run( self, arguments ):
-        Subprocess.execute( [ "python", self.__fileName ] + arguments, context = self.context, silent = True )
+    def run( self, *arguments ):
+        Subprocess.execute( [ "python", self.__fileName ] + list(arguments), context = self.context, silent = True )
 
-    def debug( self, arguments ):
-        Subprocess.execute( [ "python", "-mpdb", self.__fileName ] + arguments, context = self.context )
+    def debug( self, *arguments ):
+        Subprocess.execute( [ "python", "-mpdb", self.__fileName ] + list(arguments), context = self.context )
 
     def getFileName( self ):
         return self.__fileName
