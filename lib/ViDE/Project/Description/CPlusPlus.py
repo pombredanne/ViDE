@@ -34,7 +34,7 @@ def CppSource( source ):
     return __CppSource( source, True )
 
 def CppObject( source, additionalDefines = [], localLibraries = [], externalLibraries = [] ):
-    return __CppObject( __CppSource( source, False ), additionalDefines, localLibraries, externalLibraries, True )
+    return __CppObject( __CppSource( source ), additionalDefines, localLibraries, externalLibraries, True )
 
 def CppExecutable( name, sources = [], objects = [], localLibraries = [], externalLibraries = [] ):
     return __Executable( name, __CppObjects( __CppSources( sources ), objects, [], localLibraries, externalLibraries ), localLibraries, externalLibraries, True )

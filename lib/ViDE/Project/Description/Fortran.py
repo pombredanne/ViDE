@@ -22,7 +22,7 @@ def FortranSource( source ):
     return __FortranSource( source, True )
 
 def FortranObject( source, additionalDefines = [] ):
-    return __FortranObject( __FortranSource( source, False ), True )
+    return __FortranObject( __FortranSource( source ), True )
 
 def FortranExecutable( name, sources = [], objects = [], localLibraries = [], externalLibraries = [] ):
     return __Executable( name, __FortranObjects( __FortranSources( sources ), objects ), localLibraries, externalLibraries, True )
