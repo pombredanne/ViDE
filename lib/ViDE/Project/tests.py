@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+import textwrap
+
+import ProjectDescription
 
 
 class EvalExecTestCase(unittest.TestCase):
@@ -21,5 +24,16 @@ class EvalExecTestCase(unittest.TestCase):
         self.assertIn("a", d)
         self.assertEqual(d["a"], 42)
         self.assertIn("os", d)
+
+
+class ProjectLoadingTestCase(unittest.TestCase):
+    def testLoadSimplestProjectDescription(self):
+        p = ProjectDescription.fromString(textwrap.dedent("""\
+            Project(
+                name="Project name"
+            )
+        """))
+        self.assertEqual(p.name, "Project name")
+
 
 unittest.main()
