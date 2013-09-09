@@ -34,6 +34,42 @@ class ProjectLoadingTestCase(unittest.TestCase):
             )
         """))
         self.assertEqual(p.name, "Project name")
+        self.assertEqual(len(p.artifacts), 0)
+
+    def testLoadProjectDescriptionWithPythonArtifacts(self):
+        p = ProjectDescription.fromString(textwrap.dedent("""\
+            Project(
+                name="Project name"
+            )
+
+            PythonModule(
+                source="a.py"
+            )
+
+            b1 = PythonModule(
+                source="pack/b/b1.py",
+                strip=lambda f: f[5:]
+            )
+
+            b3 = CppPythonModule(
+                name="b.b3",
+                sources=["b3.cpp"],
+                localLibraries=[]
+            )
+
+            PythonPackage(
+                name="b",
+                sources=[PythonSource("pack/b/__init__.py"), "pack/b/b2.py"],
+                modules=[b1, b3],
+                strip=lambda f: f[5:]
+            )
+
+            PythonScript(
+                source="hello.py"
+            )
+        """))
+        self.assertEqual(p.name, "Project name")
+        self.assertEqual(len(p.artifacts), 6)
 
 
 unittest.main()
