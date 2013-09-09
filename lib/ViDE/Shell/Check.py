@@ -9,4 +9,5 @@ class Check(ICL.Command):
 
     def execute(self):
         subprocess.check_call(["pep8", "."])
-        # Call pylint, and other static code analysis programs based on languages in project
+        # Call pylint, and other static code analysis programs
+        # based on languages in project
