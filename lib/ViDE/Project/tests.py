@@ -71,5 +71,5 @@ class ProjectLoadingTestCase(unittest.TestCase):
         self.assertEqual(p.name, "Project name")
         self.assertEqual(len(p.artifacts), 6)
 
-
-unittest.main()
+if __name__ == "__main__":
+    unittest.main()

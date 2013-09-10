@@ -1,4 +1,5 @@
 import unittest
+import itertools
 
 
 def transformGraph(root, children, transform):
@@ -6,13 +7,16 @@ def transformGraph(root, children, transform):
 
     def goDeeper(node):
         nodeChildren = children(node)
-        for child in nodeChildren:
+        for child in itertools.chain.from_iterable(nodeChildren.itervalues()):
             goDeeper(child)
         if id(node) not in transformed:
-            transformed[id(node)] = transform(
-                node,
-                [transformed[id(child)] for child in nodeChildren]
-            )
+            transformedChildren = {}
+            for category, childs in nodeChildren.iteritems():
+                transformedChildren[category] = [
+                    transformed[id(child)]
+                    for child in childs
+                ]
+            transformed[id(node)] = transform(node, transformedChildren)
 
     goDeeper(root)
 
@@ -34,8 +38,8 @@ class TestCase(unittest.TestCase):
 
         h = transformGraph(
             g,
-            lambda n: n[1],
-            lambda n, children: (n[0].lower(), children)
+            lambda n: {"children": n[1]},
+            lambda n, children: (n[0].lower(), children["children"])
         )
 
         self.assertEqual(
@@ -61,8 +65,8 @@ class TestCase(unittest.TestCase):
 
         h = transformGraph(
             g,
-            lambda n: n[1],
-            lambda n, children: (n[0].lower(), children)
+            lambda n: {"children": n[1]},
+            lambda n, children: (n[0].lower(), children["children"])
         )
 
         self.assertEqual(
@@ -79,5 +83,5 @@ class TestCase(unittest.TestCase):
 
         self.assertIs(h[1][0][1][0], h[1][1][1][0])
 
-
-unittest.main()
+if __name__ == "__main__":
+    unittest.main()
