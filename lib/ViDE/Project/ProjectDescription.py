@@ -142,7 +142,7 @@ class ProjectLoadingTestCase(unittest.TestCase):
             PythonPackage(
                 name="b",
                 sources=[PythonSource("pack/b/__init__.py"), "pack/b/b2.py"],
-                modules=[b1, b3],
+                packages=[b1, b3],
                 strip=lambda f: f[5:]
             )
 
@@ -159,7 +159,7 @@ class ProjectLoadingTestCase(unittest.TestCase):
                 "a.py",
                 "b",
                 "b3.cpp",
-                "hello.py",
+                "hello",
                 "hello.py",
                 "obj/b3.cpp.o",
                 "pack/b/__init__.py",

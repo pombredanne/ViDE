@@ -77,6 +77,10 @@ class AtomicArtifact(_ArtifactWithFiles):
         self.__orderOnlyDependencies = orderOnlyDependencies
         self.__subs = subatomicArtifacts
 
+    @property
+    def orderOnlyDependencies(self):
+        return self.__orderOnlyDependencies
+
     def _createGraphNodeAndLinks(self, memo):
         if (
             len(self.__subs) == 0

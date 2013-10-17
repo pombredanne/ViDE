@@ -13,10 +13,15 @@ ab1c2 = PythonModule(
 
 ab1 = PythonPackage(
     name="a.b1",
-    modules=[ab1c1, ab1c2]
+    packages=[ab1c1, ab1c2]
 )
 
 a = PythonPackage(
     name="a",
-    modules=[ab1]
+    packages=[ab1]
 )
+
+test = PythonScript("test.py", packages=[a])
+
+UnitTest(test, "World", "Hello, World!")
+UnitTest(test, "Vincent", "Hello, Vincent!")

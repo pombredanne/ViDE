@@ -13,14 +13,17 @@ class Source(Artifacts.InputArtifact):
 
 
 class Script(Artifacts.AtomicArtifact):
-    def __init__(self, source):
+    def __init__(self, source, packages):
         assert isinstance(source, Source)
+        assert all(isinstance(p, (Module, CppModule, Package)) for p in packages)
         Artifacts.AtomicArtifact.__init__(
             self,
-            name=source.name,
-            files=["bin/" + source.name],
-            strongDependencies=[source]
+            name=source.name[:-3],
+            files=["bin/" + source.name[:-3]],
+            strongDependencies=[source],
+            orderOnlyDependencies=packages
         )
+        self.run = None  # @todo
 
 
 class Module(Artifacts.AtomicArtifact):
@@ -35,12 +38,12 @@ class Module(Artifacts.AtomicArtifact):
 
 
 class Package(Artifacts.CompoundArtifact):
-    def __init__(self, name, modules):
-        assert all(isinstance(m, (Module, CppModule, Package)) for m in modules)
+    def __init__(self, name, packages):
+        assert all(isinstance(p, (Module, CppModule, Package)) for p in packages)
         Artifacts.CompoundArtifact.__init__(
             self,
             name=name,
-            components=modules
+            components=packages
         )
 
 
