@@ -120,10 +120,6 @@ class ProjectLoadingTestCase(unittest.TestCase):
 
     def testLoadProjectDescriptionWithPythonArtifacts(self):
         p = fromString(textwrap.dedent("""\
-            Project(
-                name="Project name"
-            )
-
             PythonModule(
                 source="a.py"
             )
@@ -150,8 +146,6 @@ class ProjectLoadingTestCase(unittest.TestCase):
                 source="hello.py"
             )
         """))
-        self.assertEqual(p.name, "Project name")
-        self.assertEqual(len(p.artifacts), 9)
         self.assertEqual(
             sorted(a.name for a in p.artifacts),
             [
@@ -164,6 +158,28 @@ class ProjectLoadingTestCase(unittest.TestCase):
                 "obj/b3.cpp.o",
                 "pack/b/__init__.py",
                 "pack/b/b1.py",
+            ]
+        )
+
+    def testLoadProjectDescriptionWithTestingArtifacts(self):
+        p = fromString(textwrap.dedent("""\
+            bar = PythonSource("bar.py")
+
+            UnitTest(PythonScript(
+                source="hello.py",
+                packages=["foo.py", bar]
+            ))
+        """))
+        self.assertEqual(
+            sorted(a.name for a in p.artifacts),
+            [
+                "bar",
+                "bar.py",
+                "foo",
+                "foo.py",
+                "hello",
+                "hello.py",
+                "tst/hello.ok",
             ]
         )
 

@@ -25,8 +25,7 @@ def PythonSource(source):
 
 
 def PythonScript(source, packages=[]):
-    # @todo packages could contain strings (a.py) and PythonSources that should be transformed in PythonModules
-    return Python.Script(PythonSource(source), packages)
+    return Python.Script(PythonSource(source), [PythonModule(p) if isinstance(p, (str, unicode, Python.Source)) else p for p in packages])
 
 
 def PythonModule(source, strip=identity):
