@@ -151,7 +151,7 @@ def getGraphOfArtifacts(artifacts):
                 self.__nodesById[id_] = node
             return node
 
-    graph = gv.Graph("artifact")
+    graph = gv.Graph("artifacts")
     graph.set("ranksep", "1")
     graph.nodeAttr.set("shape", "box")
     memo = Memo()
@@ -165,7 +165,7 @@ def getGraphOfArtifacts(artifacts):
 class GraphTestCase(unittest.TestCase):
     def expect(self, *expectedMidleOfDotString):
         expectedBeginOfDotString = (
-            'digraph "artifact" ' +
+            'digraph "artifacts" ' +
             '{compound="true";ranksep="1";node [shape="box"];'
         )
         expectedEndOfDotString = '}'

@@ -24,4 +24,4 @@ done
 coverage combine
 coverage report --show-missing "--include=lib/*"
 
-pep8 . || exit 1
+pep8 --max-line-length=150 . || exit 1

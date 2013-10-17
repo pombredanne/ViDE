@@ -17,5 +17,4 @@ class Graph(ICL.Command):
         graph = ViDE.Project.Artifacts.Artifacts.getGraphOfArtifacts(
             project.artifacts
         )
-        print graph.dotString()
         graph.drawTo("project.png")
