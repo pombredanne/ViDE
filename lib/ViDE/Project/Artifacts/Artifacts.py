@@ -48,6 +48,12 @@ class InputArtifact(_ArtifactWithFiles):
     An artifact that never needs to be produced
     """
 
+    def getLinkedArtifacts(self):
+        return []
+
+    def getContainedArtifacts(self):
+        return []
+
 
 class AtomicArtifact(_ArtifactWithFiles):
     """
@@ -101,6 +107,12 @@ class AtomicArtifact(_ArtifactWithFiles):
 
         return node, links
 
+    def getLinkedArtifacts(self):
+        return self.__strongDependencies + self.__orderOnlyDependencies
+
+    def getContainedArtifacts(self):
+        return self.__subs
+
 
 class CompoundArtifact(_Artifact):
     """
@@ -128,12 +140,24 @@ class CompoundArtifact(_Artifact):
             node.add(memo.getOrCreateNode(component))
         return node, []
 
+    def getLinkedArtifacts(self):
+        return []
+
+    def getContainedArtifacts(self):
+        return self.__components
+
 
 class SubatomicArtifact(_ArtifactWithFiles):
     """
     An artifact that is produced by the production action of its
     atomicArtifact, but is useful on its own, for example as a dependency.
     """
+
+    def getLinkedArtifacts(self):
+        return []
+
+    def getContainedArtifacts(self):
+        return []
 
 
 def getGraphOfArtifacts(artifacts):

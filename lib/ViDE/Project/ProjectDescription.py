@@ -35,7 +35,26 @@ class ProjectBuilder:
         exec s in d
 
     def createProject(self):
-        return ProjectDescription(self.name, self.artifacts)
+        return ProjectDescription(self.name, self.__extractTopLevelArtifacts())
+
+    def __extractTopLevelArtifacts(self):
+        artifactsToWalk = set(self.artifacts)
+        allArtifacts = set()
+        while len(artifactsToWalk) != 0:
+            artifact = artifactsToWalk.pop()
+            allArtifacts.add(artifact)
+            for a in artifact.getLinkedArtifacts():
+                artifactsToWalk.add(a)
+
+        topLevelArtifacts = set(allArtifacts)
+        artifactsToWalk = allArtifacts
+        while len(artifactsToWalk) != 0:
+            artifact = artifactsToWalk.pop()
+            for a in artifact.getContainedArtifacts():
+                artifactsToWalk.add(a)
+                topLevelArtifacts.discard(a)
+
+        return list(topLevelArtifacts)
 
 
 def fromString(s):
@@ -62,6 +81,31 @@ class EvalExecTestCase(unittest.TestCase):
         self.assertIn("a", d)
         self.assertEqual(d["a"], 42)
         self.assertIn("os", d)
+
+
+class ProjectBuildingTestCase(unittest.TestCase):
+    def testBuildProjectWithImplicitDependencies(self):
+        builder = ProjectBuilder()
+        x = builder.createArtifact(Artifacts.Artifacts.SubatomicArtifact, "x", ["a"])
+        a = Artifacts.Artifacts.AtomicArtifact("a", ["a"], [], [], [x])
+        b = Artifacts.Artifacts.AtomicArtifact("b", ["b"])
+        c = Artifacts.Artifacts.AtomicArtifact("c", ["c"], [a], [b])
+        d = builder.createArtifact(Artifacts.Artifacts.AtomicArtifact, "d", ["d"], [c])
+        p = builder.createProject()
+        self.assertEqual(len(p.artifacts), 4)
+        self.assertIn(a, p.artifacts)
+        self.assertIn(b, p.artifacts)
+        self.assertIn(c, p.artifacts)
+        self.assertIn(d, p.artifacts)
+
+    def testBuildProjectWithExplicitComponents(self):
+        builder = ProjectBuilder()
+        a = builder.createArtifact(Artifacts.Artifacts.AtomicArtifact, "a", ["a"])
+        b = builder.createArtifact(Artifacts.Artifacts.CompoundArtifact, "b", [a])
+        c = builder.createArtifact(Artifacts.Artifacts.CompoundArtifact, "c", [b])
+        p = builder.createProject()
+        self.assertEqual(len(p.artifacts), 1)
+        self.assertIn(c, p.artifacts)
 
 
 class ProjectLoadingTestCase(unittest.TestCase):
@@ -107,13 +151,21 @@ class ProjectLoadingTestCase(unittest.TestCase):
             )
         """))
         self.assertEqual(p.name, "Project name")
-        self.assertEqual(len(p.artifacts), 6)
-        self.assertEqual(p.artifacts[0].name, "a")
-        self.assertEqual(p.artifacts[1].name, "b.b1")
-        self.assertEqual(p.artifacts[2].name, "b.b3")
-        self.assertEqual(p.artifacts[3].name, "pack/b/__init__.py")
-        self.assertEqual(p.artifacts[4].name, "b")
-        self.assertEqual(p.artifacts[5].name, "hello.py")
+        self.assertEqual(len(p.artifacts), 9)
+        self.assertEqual(
+            sorted(a.name for a in p.artifacts),
+            [
+                "a",
+                "a.py",
+                "b",
+                "b3.cpp",
+                "hello.py",
+                "hello.py",
+                "obj/b3.cpp.o",
+                "pack/b/__init__.py",
+                "pack/b/b1.py",
+            ]
+        )
 
 
 if __name__ == "__main__":
