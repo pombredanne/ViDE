@@ -36,7 +36,7 @@ class Module(Artifacts.AtomicArtifact):
 
 class Package(Artifacts.CompoundArtifact):
     def __init__(self, name, modules):
-        assert all(isinstance(m, (Module, CppModule)) for m in modules)
+        assert all(isinstance(m, (Module, CppModule, Package)) for m in modules)
         Artifacts.CompoundArtifact.__init__(
             self,
             name=name,
@@ -50,6 +50,6 @@ class CppModule(Artifacts.AtomicArtifact):
         Artifacts.AtomicArtifact.__init__(
             self,
             name=name,
-            files=[name + ".pyd"],
+            files=["pyc/" + name.replace(".", "/") + ".pyd"],
             strongDependencies=objects
         )

@@ -10,10 +10,11 @@ class Source(Artifacts.InputArtifact):
 class ObjectFile(Artifacts.AtomicArtifact):
     def __init__(self, source):
         assert isinstance(source, Source)
+        obj = "obj/" + source.name + ".o"
         Artifacts.AtomicArtifact.__init__(
             self,
-            name=source.name + ".o",
-            files=[source.name + ".o"],
+            name=obj,
+            files=[obj],
             strongDependencies=[source]
         )
         self.source = source
