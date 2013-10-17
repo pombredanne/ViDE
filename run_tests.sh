@@ -1,13 +1,10 @@
 #!/bin/bash
 
-export PATH=$(pwd)/bin:$PATH
-export PYTHONPATH=$(pwd)/lib
-
 coverage erase
 
 for f in $(find lib -name "*.py")
 do
-    coverage run --branch --parallel-mode $f || exit 1
+    PYTHONPATH=lib coverage run --branch --parallel-mode $f || exit 1
 done
 
 coverage combine
