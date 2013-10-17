@@ -11,7 +11,11 @@ class Graph(ICL.Command):
         )
 
     def execute(self):
-        project = ViDE.Project.ProjectDescription.fromString(open("videfile.py").read())
-        graph = ViDE.Project.Artifacts.Artifacts.getGraphOfArtifacts(project.artifacts)
+        project = ViDE.Project.ProjectDescription.fromString(
+            open("videfile.py").read()
+        )
+        graph = ViDE.Project.Artifacts.Artifacts.getGraphOfArtifacts(
+            project.artifacts
+        )
         print graph.dotString()
         graph.drawTo("project.png")

@@ -15,7 +15,13 @@ class Script:
 class Module(Artifacts.AtomicArtifact):
     def __init__(self, source, strip):
         assert isinstance(source, Source)
-        Artifacts.AtomicArtifact.__init__(self, source.name + "c", [source.name + "c"], [source], [])
+        Artifacts.AtomicArtifact.__init__(
+            self,
+            source.name + "c",
+            [source.name + "c"],
+            [source],
+            []
+        )
 
 
 class Package(Artifacts.CompoundArtifact):

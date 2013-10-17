@@ -69,9 +69,6 @@ class AtomicArtifact(_ArtifactWithFiles):
         self.__orderOnlyDependencies = orderOnlyDependencies
         self.__subs = subatomicArtifacts
 
-    def _getRelatedNodes(self):
-        return self.__strongDependencies + self.__orderOnlyDependencies
-
     def _createGraphNodeAndLinks(self, memo):
         if (
             len(self.__subs) == 0
@@ -114,12 +111,12 @@ class CompoundArtifact(_Artifact):
         assert len(components) > 0
         self.__components = components
 
-    @property
-    def files(self):
-        allFiles = []
-        for c in self.__components:
-            allFiles += c.files
-        return allFiles
+    # @property
+    # def files(self):
+    #     allFiles = []
+    #     for c in self.__components:
+    #         allFiles += c.files
+    #     return allFiles
 
     def _createGraphNodeAndLinks(self, memo):
         node = gv.Cluster(self.identifier)
