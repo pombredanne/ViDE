@@ -1,2 +1,2 @@
 def foo(s):
-	return "Hello, " + s + "!"
+    return "Hello, " + s + "!"
