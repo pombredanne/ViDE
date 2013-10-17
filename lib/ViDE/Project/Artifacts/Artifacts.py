@@ -13,6 +13,10 @@ class _Artifact(object):
     def name(self):
         return self.__name
 
+    @property
+    def identifier(self):
+        return gv.makeId(self.__name)
+
 
 class _ArtifactWithFiles(_Artifact):
     def __init__(self, name, files):
@@ -26,13 +30,15 @@ class _ArtifactWithFiles(_Artifact):
 
     def _createGraphNodeAndLinks(self, memo):
         if len(self.__files) == 1 and self.files[0] == self.name:
-            node = gv.Node(self.name)
+            node = gv.Node(self.identifier)
         else:
-            node = gv.Cluster(self.name)
-            node.set("label", self.name)
+            node = gv.Cluster(self.identifier)
             node.set("style", "solid")
             for f in self.files:
-                node.add(gv.Node(f))
+                fileNode = gv.Node(gv.makeId(f))
+                fileNode.set("label", f)
+                node.add(fileNode)
+        node.set("label", self.name)
         return node, []
 
 
@@ -72,17 +78,19 @@ class AtomicArtifact(_ArtifactWithFiles):
             and len(self.files) == 1
             and self.files[0] == self.name
         ):
-            node = gv.Node(self.name)
+            node = gv.Node(self.identifier)
         else:
-            node = gv.Cluster(self.name)
-            node.set("label", self.name)
+            node = gv.Cluster(self.identifier)
             node.set("style", "solid")
             for sub in self.__subs:
                 subNode = memo.getOrCreateNode(sub)
                 subNode.set("style", "dashed")
                 node.add(subNode)
             for f in self.files:
-                node.add(gv.Node(f))
+                fileNode = gv.Node(gv.makeId(f))
+                fileNode.set("label", f)
+                node.add(fileNode)
+        node.set("label", self.name)
 
         links = []
         for d in self.__strongDependencies:
@@ -114,7 +122,7 @@ class CompoundArtifact(_Artifact):
         return allFiles
 
     def _createGraphNodeAndLinks(self, memo):
-        node = gv.Cluster(self.name)
+        node = gv.Cluster(self.identifier)
         node.set("label", self.name)
         node.set("style", "solid")
         for component in self.__components:
@@ -181,7 +189,7 @@ class GraphTestCase(unittest.TestCase):
             dotString[
                 len(expectedBeginOfDotString):-len(expectedEndOfDotString)
             ],
-            "".join(expectedMidleOfDotString)
+            "".join(line.strip() for line in expectedMidleOfDotString)
         )
         self.assertEqual(
             dotString[-len(expectedEndOfDotString):],
@@ -191,20 +199,24 @@ class GraphTestCase(unittest.TestCase):
     def testSingleFileInputArtifact(self):
         self.artifacts = [InputArtifact("input", ["input"])]
         self.expect(
-            'input;'
+            'input[label="input"];'
         )
 
     def testMultiFilesInputArtifact(self):
         self.artifacts = [InputArtifact("input", ["input1", "input2"])]
         self.expect(
             'subgraph cluster_input{',
-            'label="input";style="solid";input1;input2;};'
+            '  label="input";',
+            '  style="solid";',
+            '  input1[label="input1"];',
+            '  input2[label="input2"];',
+            '};'
         )
 
     def testSingleFileAtomicArtifact(self):
         self.artifacts = [AtomicArtifact("atomic", ["atomic"], [], [])]
         self.expect(
-            'atomic;'
+            'atomic[label="atomic"];'
         )
 
     def testMultiFilesAtomicArtifact(self):
@@ -212,8 +224,12 @@ class GraphTestCase(unittest.TestCase):
             AtomicArtifact("atomic", ["atomic1", "atomic2"], [], [])
         ]
         self.expect(
-            'subgraph cluster_atomic{'
-            'label="atomic";style="solid";atomic1;atomic2;};'
+            'subgraph cluster_atomic{',
+            '  label="atomic";',
+            '  style="solid";',
+            '  atomic1[label="atomic1"];',
+            '  atomic2[label="atomic2"];',
+            '};'
         )
 
     def testAtomicArtifactWithDependencies_SingleFile(self):
@@ -222,23 +238,37 @@ class GraphTestCase(unittest.TestCase):
         atomic = AtomicArtifact("atomic", ["atomic"], [strong], [order])
         self.artifacts = [atomic, strong, order]
         self.expect(
-            'atomic;order;strong;',
-            'atomic->order[style="dashed"];atomic->strong;'
+            'atomic[label="atomic"];',
+            'order[label="order"];',
+            'strong[label="strong"];',
+            'atomic->order[style="dashed"];',
+            'atomic->strong;'
         )
 
     def testAtomicArtifactWithDependencies_MultiFiles(self):
-        strong = InputArtifact("strong", ["strong_"])
-        order = InputArtifact("order", ["order_"])
-        atomic = AtomicArtifact("atomic", ["atomic_"], [strong], [order])
+        strong = InputArtifact("strong", ["strongX"])
+        order = InputArtifact("order", ["orderX"])
+        atomic = AtomicArtifact("atomic", ["atomicX"], [strong], [order])
         self.artifacts = [atomic, strong, order]
         self.expect(
-            'subgraph cluster_atomic{label="atomic";style="solid";atomic_;};',
-            'subgraph cluster_order{label="order";style="solid";order_;};',
-            'subgraph cluster_strong{label="strong";style="solid";strong_;};',
-            'atomic_->order_[',
-            'lhead="cluster_order",ltail="cluster_atomic",style="dashed"',
-            '];',
-            'atomic_->strong_[lhead="cluster_strong",ltail="cluster_atomic"];'
+            'subgraph cluster_atomic{',
+            '  label="atomic";',
+            '  style="solid";',
+            '  atomicX[label="atomicX"];',
+            '};',
+            'subgraph cluster_order{',
+            '  label="order";',
+            '  style="solid";',
+            '  orderX[label="orderX"];',
+            '};',
+            'subgraph cluster_strong{',
+            '  label="strong";',
+            '  style="solid";',
+            '  strongX[label="strongX"];',
+            '};',
+            'atomicX->orderX',
+            '  [lhead="cluster_order",ltail="cluster_atomic",style="dashed"];',
+            'atomicX->strongX[lhead="cluster_strong",ltail="cluster_atomic"];'
         )
 
     def testCompoundArtifactWithoutDependencies(self):
@@ -247,53 +277,86 @@ class GraphTestCase(unittest.TestCase):
         compound = CompoundArtifact("compound", [component1, component2])
         self.artifacts = [compound]
         self.expect(
-            'subgraph cluster_compound{'
-            'label="compound";style="solid";component1;component2;};'
+            'subgraph cluster_compound{',
+            '  label="compound";',
+            '  style="solid";',
+            '  component1[label="component1"];',
+            '  component2[label="component2"];',
+            '};'
         )
 
     def testCompoundArtifactWithDependencies(self):
-        dependency = InputArtifact("dependency", ["dependency_"])
+        dependency = InputArtifact("dependency", ["dependencyX"])
         component = AtomicArtifact(
-            "component", ["component_"], [dependency], []
+            "component", ["componentX"], [dependency], []
         )
         compound = CompoundArtifact("compound", [component])
         self.artifacts = [dependency, compound]
         self.expect(
-            'subgraph cluster_compound{label="compound";style="solid";',
-            'subgraph cluster_component{label="component";style="solid";',
-            'component_;};};',
-            'subgraph cluster_dependency{label="dependency";style="solid";',
-            'dependency_;};',
-            'component_->dependency_',
-            '[lhead="cluster_dependency",ltail="cluster_component"];'
+            'subgraph cluster_compound{',
+            '  label="compound";',
+            '  style="solid";',
+            '  subgraph cluster_component{',
+            '    label="component";',
+            '    style="solid";',
+            '    componentX[label="componentX"];',
+            '  };',
+            '};',
+            'subgraph cluster_dependency{',
+            '  label="dependency";',
+            '  style="solid";',
+            '  dependencyX[label="dependencyX"];',
+            '};',
+            'componentX->dependencyX',
+            '  [lhead="cluster_dependency",ltail="cluster_component"];'
         )
 
     def testCompoundArtifactWithClient(self):
-        component = AtomicArtifact("component", ["component_"], [], [])
+        component = AtomicArtifact("component", ["componentX"], [], [])
         compound = CompoundArtifact("compound", [component])
-        client = AtomicArtifact("client", ["client_"], [compound], [])
+        client = AtomicArtifact("client", ["clientX"], [compound], [])
         self.artifacts = [client, compound]
         self.expect(
-            'subgraph cluster_client{label="client";style="solid";client_;};',
-            'subgraph cluster_compound{label="compound";style="solid";',
-            'subgraph cluster_component{label="component";style="solid";',
-            'component_;};};',
-            'client_->component_',
-            '[lhead="cluster_compound",ltail="cluster_client"];'
+            'subgraph cluster_client{',
+            '  label="client";',
+            '  style="solid";',
+            '  clientX[label="clientX"];',
+            '};',
+            'subgraph cluster_compound{',
+            '  label="compound";',
+            '  style="solid";',
+            '  subgraph cluster_component{',
+            '    label="component";',
+            '    style="solid";',
+            '    componentX[label="componentX"];',
+            '  };',
+            '};',
+            'clientX->componentX',
+            '  [lhead="cluster_compound",ltail="cluster_client"];'
         )
 
     def testCompoundArtifactWithClientOfComponent(self):
-        component = AtomicArtifact("component", ["component_"], [], [])
+        component = AtomicArtifact("component", ["componentX"], [], [])
         compound = CompoundArtifact("compound", [component])
-        client = AtomicArtifact("client", ["client_"], [component], [])
+        client = AtomicArtifact("client", ["clientX"], [component], [])
         self.artifacts = [compound, client]
         self.expect(
-            'subgraph cluster_client{label="client";style="solid";client_;};',
-            'subgraph cluster_compound{label="compound";style="solid";',
-            'subgraph cluster_component{label="component";style="solid";',
-            'component_;};};',
-            'client_->component_',
-            '[lhead="cluster_component",ltail="cluster_client"];'
+            'subgraph cluster_client{',
+            '  label="client";',
+            '  style="solid";',
+            '  clientX[label="clientX"];',
+            '};',
+            'subgraph cluster_compound{',
+            '  label="compound";',
+            '  style="solid";',
+            '  subgraph cluster_component{',
+            '    label="component";',
+            '    style="solid";',
+            '    componentX[label="componentX"];',
+            '  };',
+            '};',
+            'clientX->componentX',
+            '  [lhead="cluster_component",ltail="cluster_client"];'
         )
 
     def testSubAtomicArtifact(self):
@@ -301,10 +364,14 @@ class GraphTestCase(unittest.TestCase):
         atomic = AtomicArtifact("atomic", ["atomic2"], [], [], [subatomic])
         self.artifacts = [atomic]
         self.expect(
-            'subgraph cluster_atomic{label="atomic";style="solid";',
-            'atomic2;',
-            'subgraph cluster_subatomic',
-            '{label="subatomic";style="dashed";atomic1;};};'
+            'subgraph cluster_atomic{',
+            '  label="atomic";style="solid";',
+            '  atomic2[label="atomic2"];',
+            '  subgraph cluster_subatomic{',
+            '    label="subatomic";style="dashed";',
+            '    atomic1[label="atomic1"];',
+            '  };',
+            '};'
         )
 
     def testDependencyOnSubatomicArtifact(self):
@@ -319,10 +386,40 @@ class GraphTestCase(unittest.TestCase):
         client = AtomicArtifact("client", ["client"], [sub], [], [])
         self.artifacts = [atomic, client]
         self.expect(
-            'client;',
-            'subgraph cluster_atomic{label="atomic";style="solid";',
-            'file1;subgraph cluster_sub{label="sub";style="dashed";file2;};};',
+            'client[label="client"];',
+            'subgraph cluster_atomic{',
+            '  label="atomic";',
+            '  style="solid";',
+            '  file1[label="file1"];',
+            '  subgraph cluster_sub{',
+            '    label="sub";',
+            '    style="dashed";',
+            '    file2[label="file2"];',
+            '  };',
+            '};',
             'client->file2[lhead="cluster_sub"];'
+        )
+
+    def testNamesWithForbidenCharacters(self):
+        self.artifacts = [
+            AtomicArtifact("foo/bar1.xxx", ["foo/bar1.xxx"], [], []),
+            AtomicArtifact("foo/bar2.xxx", ["foo/baz2.xxx"], [], []),
+            InputArtifact("foo/bar3.xxx", ["foo/bar3.xxx"]),
+            InputArtifact("foo/bar4.xxx", ["foo/baz4.xxx"]),
+        ]
+        self.expect(
+            'foo_2fbar1_2exxx[label="foo/bar1.xxx"];',
+            'foo_2fbar3_2exxx[label="foo/bar3.xxx"];',
+            'subgraph cluster_foo_2fbar2_2exxx{',
+            '  label="foo/bar2.xxx";',
+            '  style="solid";',
+            '  foo_2fbaz2_2exxx[label="foo/baz2.xxx"];',
+            '};',
+            'subgraph cluster_foo_2fbar4_2exxx{',
+            '  label="foo/bar4.xxx";',
+            '  style="solid";',
+            '  foo_2fbaz4_2exxx[label="foo/baz4.xxx"];',
+            '};'
         )
 
 
