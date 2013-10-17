@@ -108,6 +108,12 @@ class ProjectLoadingTestCase(unittest.TestCase):
         """))
         self.assertEqual(p.name, "Project name")
         self.assertEqual(len(p.artifacts), 6)
+        self.assertEqual(p.artifacts[0].name, "a")
+        self.assertEqual(p.artifacts[1].name, "b.b1")
+        self.assertEqual(p.artifacts[2].name, "b.b3")
+        self.assertEqual(p.artifacts[3].name, "pack/b/__init__.py")
+        self.assertEqual(p.artifacts[4].name, "b")
+        self.assertEqual(p.artifacts[5].name, "hello.py")
 
 
 if __name__ == "__main__":

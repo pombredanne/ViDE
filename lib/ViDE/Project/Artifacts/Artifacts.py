@@ -7,6 +7,7 @@ import AnotherPyGraphvizAgain.Compounds as gv
 
 class _Artifact(object):
     def __init__(self, name):
+        assert isinstance(name, (str, unicode))
         self.__name = name
 
     @property
@@ -54,7 +55,8 @@ class AtomicArtifact(_ArtifactWithFiles):
     """
 
     def __init__(self, name, files,
-                 strongDependencies, orderOnlyDependencies,
+                 strongDependencies=[],
+                 orderOnlyDependencies=[],
                  subatomicArtifacts=[]):
         """
         :param: strongDependencies If a strong dependency is rebuilt,
@@ -168,7 +170,7 @@ class GraphTestCase(unittest.TestCase):
         )
         expectedEndOfDotString = '}'
 
-        for (_, _, functionName, _) in traceback.extract_stack():
+        for (_, _, functionName, _) in traceback.extract_stack():  # pragma no branch (but we don't care, it's test code)
             if functionName.startswith("test"):
                 testName = self.__class__.__name__ + "." + functionName
                 break

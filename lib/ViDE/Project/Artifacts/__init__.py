@@ -1,6 +1,19 @@
 import Python
+import Cpp
+
 
 identity = lambda s: s
+
+
+def CppSource(source):
+    if isinstance(source, (str, unicode)):
+        return Cpp.Source(source)
+    else:
+        return source
+
+
+def CppObjectFile(source):
+    return Cpp.ObjectFile(CppSource(source))
 
 
 def PythonSource(source):
@@ -20,13 +33,13 @@ def PythonModule(source, strip=identity):
 
 def CppPythonModule(name, sources=[], objects=[],
                     localLibraries=[], externalLibraries=[]):
-    return Python.CModule()
+    return Python.CppModule(name, [CppObjectFile(CppSource(s)) for s in sources] + objects)
 
 
 def PythonPackage(name, sources=[], modules=[], strip=identity):
     return Python.Package(
         name,
-        [PythonModule(source, strip) for source in sources] + modules
+        [PythonModule(s, strip) for s in sources] + modules
     )
 
 
@@ -36,4 +49,6 @@ allFactories = [
     PythonPackage,
     PythonScript,
     CppPythonModule,
+    CppSource,
+    CppObjectFile,
 ]

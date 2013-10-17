@@ -1,15 +1,26 @@
 import Artifacts
+import Cpp
 
 
 class Source(Artifacts.InputArtifact):
     def __init__(self, source):
         assert isinstance(source, (str, unicode))
-        Artifacts.InputArtifact.__init__(self, source, [source])
+        Artifacts.InputArtifact.__init__(
+            self,
+            name=source,
+            files=[source]
+        )
 
 
-class Script:
+class Script(Artifacts.AtomicArtifact):
     def __init__(self, source):
         assert isinstance(source, Source)
+        Artifacts.AtomicArtifact.__init__(
+            self,
+            name=source.name,
+            files=["bin/" + source.name],
+            strongDependencies=[source]
+        )
 
 
 class Module(Artifacts.AtomicArtifact):
@@ -17,20 +28,28 @@ class Module(Artifacts.AtomicArtifact):
         assert isinstance(source, Source)
         Artifacts.AtomicArtifact.__init__(
             self,
-            source.name + "c",
-            [source.name + "c"],
-            [source],
-            []
+            name=strip(source.name)[:-3].replace("/", "."),
+            files=["pyc/" + strip(source.name) + "c"],
+            strongDependencies=[source]
         )
 
 
 class Package(Artifacts.CompoundArtifact):
     def __init__(self, name, modules):
-        assert isinstance(name, (str, unicode))
-        assert all(isinstance(module, (Module, CModule)) for module in modules)
-        Artifacts.CompoundArtifact.__init__(self, name, modules)
+        assert all(isinstance(m, (Module, CppModule)) for m in modules)
+        Artifacts.CompoundArtifact.__init__(
+            self,
+            name=name,
+            components=modules
+        )
 
 
-class CModule:
-    def __init__(self, *a, **k):
-        pass
+class CppModule(Artifacts.AtomicArtifact):
+    def __init__(self, name, objects):
+        assert all(isinstance(o, (Cpp.ObjectFile)) for o in objects)
+        Artifacts.AtomicArtifact.__init__(
+            self,
+            name=name,
+            files=[name + ".pyd"],
+            strongDependencies=objects
+        )
