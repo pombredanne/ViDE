@@ -1,6 +1,9 @@
 import unittest
 import traceback
 import os.path
+import sys
+import ActionTree
+import MockMockMock
 
 import AnotherPyGraphvizAgain.Compounds as gv
 
@@ -17,6 +20,31 @@ class _Artifact(object):
     @property
     def identifier(self):
         return gv.makeId(self.__name)
+
+    @staticmethod
+    def _getFileModificationTime(f):
+        return os.stat(f).st_mtime  # pragma no cover (mocked system call)
+
+    @staticmethod
+    def _fileExists(f):
+        return os.path.exists(f)  # pragma no cover (mocked system call)
+
+    def _getNewestFileModificationTime(self, assumeOld, assumeNew):
+        return max(self.__getCombinedFileModificationTime(f, assumeOld, assumeNew) for f in self.files)
+
+    def _getOldestFileModificationTime(self, assumeOld, assumeNew):
+        return min(self.__getCombinedFileModificationTime(f, assumeOld, assumeNew) for f in self.files)
+
+    @staticmethod
+    def __getCombinedFileModificationTime(f, assumeOld, assumeNew):
+        if f in assumeOld:
+            return 0
+        elif not _Artifact._fileExists(f):
+            return 0
+        elif f in assumeNew:
+            return sys.maxint
+        else:
+            return _Artifact._getFileModificationTime(f)
 
 
 class _ArtifactWithFiles(_Artifact):
@@ -63,6 +91,9 @@ class InputArtifact(_ArtifactWithFiles):
 
     def getContainedArtifacts(self):
         return []
+
+    def _mustBeProduced(self, assumeOld, assumeNew):
+        return False
 
 
 class AtomicArtifact(_ArtifactWithSeveralFiles):
@@ -130,6 +161,20 @@ class AtomicArtifact(_ArtifactWithSeveralFiles):
     def check(self):
         pass
 
+    def _mustBeProduced(self, assumeOld, assumeNew):
+        oldestFileModificationTime = self._getOldestFileModificationTime(assumeOld, assumeNew)
+        if oldestFileModificationTime == 0:
+            return True
+        for d in self.__orderOnlyDependencies:
+            if d._mustBeProduced(assumeOld, assumeNew):
+                return True
+        for d in self.__strongDependencies:
+            if d._mustBeProduced(assumeOld, assumeNew):
+                return True
+            if d._getNewestFileModificationTime(assumeOld, assumeNew) > oldestFileModificationTime:
+                return True
+        return False
+
 
 class CompoundArtifact(_Artifact):
     """
@@ -166,6 +211,9 @@ class CompoundArtifact(_Artifact):
     def check(self):
         for c in self.__components:
             c.check()
+
+    def _mustBeProduced(self, assumeOld, assumeNew):
+        return any(c._mustBeProduced(assumeOld, assumeNew) for c in self.__components)
 
 
 class SubatomicArtifact(_ArtifactWithSeveralFiles):
@@ -471,6 +519,102 @@ class CheckTestCase(unittest.TestCase):
         mock = Mock()
         CompoundArtifact("foo", [mock]).check()
         self.assertTrue(mock.checked)
+
+
+class MustBeProducedTestCase(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.mocks = MockMockMock.Engine()
+        self.fileExists = self.mocks.create("fileExists")
+        self.originalFileExists = _Artifact._fileExists
+        _Artifact._fileExists = self.fileExists.object
+        self.getFileModificationTime = self.mocks.create("getFileModificationTime")
+        self.originalGetFileModificationTime = _Artifact._getFileModificationTime
+        _Artifact._getFileModificationTime = self.getFileModificationTime.object
+
+    def tearDown(self):
+        _Artifact._fileExists = self.originalFileExists
+        _Artifact._getFileModificationTime = self.originalGetFileModificationTime
+        unittest.TestCase.tearDown(self)
+        self.mocks.tearDown()
+
+    def testAtomicArtifactMustBeProducedBecauseFileDoesNotExist(self):
+        a = AtomicArtifact("foo", ["foo"])
+        self.fileExists.expect("foo").andReturn(False)
+        self.assertTrue(a._mustBeProduced([], []))
+
+    def testAtomicArtifactMustBeProducedBecauseFileIsAssumedOld(self):
+        a = AtomicArtifact("foo", ["foo"])
+        self.assertTrue(a._mustBeProduced(["foo"], []))
+
+    def testAtomicArtifactMustNotBeProducedBecauseFileIsAssumedNew(self):
+        a = AtomicArtifact("foo", ["foo"])
+        self.fileExists.expect("foo").andReturn(True)
+        self.assertFalse(a._mustBeProduced([], ["foo"]))
+
+    def testAtomicArtifactMustNotBeProduced(self):
+        a = AtomicArtifact("foo", ["foo"])
+        self.fileExists.expect("foo").andReturn(True)
+        self.getFileModificationTime.expect("foo").andReturn(42)
+        self.assertFalse(a._mustBeProduced([], []))
+
+    def testAtomicArtifactMustBeProducedBecauseFileIsAssumedNewButDoesNotExist(self):
+        a = AtomicArtifact("foo", ["foo"])
+        self.fileExists.expect("foo").andReturn(False)
+        self.assertTrue(a._mustBeProduced([], ["foo"]))
+
+    def testAtomicArtifactMustBeProducedBecauseStrongDependencyIsNewer(self):
+        a = AtomicArtifact("foo", ["foo"])
+        b = AtomicArtifact("bar", ["bar"], [a])
+        self.fileExists.expect("bar").andReturn(True)
+        self.getFileModificationTime.expect("bar").andReturn(42)
+        self.fileExists.expect("foo").andReturn(True)
+        self.getFileModificationTime.expect("foo").andReturn(43)
+        self.fileExists.expect("foo").andReturn(True)
+        self.getFileModificationTime.expect("foo").andReturn(43)
+        self.assertTrue(b._mustBeProduced([], []))
+
+    def testAtomicArtifactMustBeProducedBecauseStrongDependencyMustBeProduced(self):
+        a = AtomicArtifact("foo", ["foo"])
+        b = AtomicArtifact("bar", ["bar"], [a])
+        self.fileExists.expect("bar").andReturn(True)
+        self.getFileModificationTime.expect("bar").andReturn(42)
+        self.fileExists.expect("foo").andReturn(False)
+        self.assertTrue(b._mustBeProduced([], []))
+
+    def testAtomicArtifactMustBeProducedBecauseOrderOnlyDependencyMustBeProduced(self):
+        a = AtomicArtifact("foo", ["foo"])
+        b = AtomicArtifact("bar", ["bar"], [], [a])
+        self.fileExists.expect("bar").andReturn(True)
+        self.getFileModificationTime.expect("bar").andReturn(42)
+        self.fileExists.expect("foo").andReturn(False)
+        self.assertTrue(b._mustBeProduced([], []))
+
+    def testAtomicArtifactMustNotBeProducedEvenIfOrderOnlyDependencyIsNewer(self):
+        a = AtomicArtifact("foo", ["foo"])
+        b = AtomicArtifact("bar", ["bar"], [], [a])
+        self.fileExists.expect("bar").andReturn(True)
+        self.getFileModificationTime.expect("bar").andReturn(42)
+        self.fileExists.expect("foo").andReturn(True)
+        self.getFileModificationTime.expect("foo").andReturn(43)
+        self.assertFalse(b._mustBeProduced([], []))
+
+    def testCompoundArtifactMustBeProducedBecauseComponentMustBeProduced(self):
+        a = AtomicArtifact("foo", ["foo"])
+        b = CompoundArtifact("bar", [a])
+        self.fileExists.expect("foo").andReturn(False)
+        self.assertTrue(b._mustBeProduced([], []))
+
+    def testCompoundArtifactMustNotBeProduced(self):
+        a = AtomicArtifact("foo", ["foo"])
+        b = CompoundArtifact("bar", [a])
+        self.fileExists.expect("foo").andReturn(True)
+        self.getFileModificationTime.expect("foo").andReturn(42)
+        self.assertFalse(b._mustBeProduced([], []))
+
+    def testInputArtifactMustNotBeProduced(self):
+        a = InputArtifact("foo")
+        self.assertFalse(a._mustBeProduced([], []))
 
 
 if __name__ == "__main__":
