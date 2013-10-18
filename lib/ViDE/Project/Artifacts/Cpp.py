@@ -4,7 +4,10 @@ import Artifacts
 class Source(Artifacts.InputArtifact):
     def __init__(self, source):
         assert isinstance(source, (str, unicode))
-        Artifacts.InputArtifact.__init__(self, source, [source])
+        Artifacts.InputArtifact.__init__(
+            self,
+            file=source
+        )
 
 
 class ObjectFile(Artifacts.AtomicArtifact):

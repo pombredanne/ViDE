@@ -7,8 +7,7 @@ class Source(Artifacts.InputArtifact):
         assert isinstance(source, (str, unicode))
         Artifacts.InputArtifact.__init__(
             self,
-            name=source,
-            files=[source]
+            file=source
         )
 
 

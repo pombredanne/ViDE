@@ -20,17 +20,8 @@ class _Artifact(object):
 
 
 class _ArtifactWithFiles(_Artifact):
-    def __init__(self, name, files):
-        _Artifact.__init__(self, name)
-        assert len(files) > 0
-        self.__files = set(files)
-
-    @property
-    def files(self):
-        return sorted(self.__files)
-
     def _createGraphNodeAndLinks(self, memo):
-        if len(self.__files) == 1 and self.files[0] == self.name:
+        if len(self.files) == 1 and self.files[0] == self.name:
             node = gv.Node(self.identifier)
         else:
             node = gv.Cluster(self.identifier)
@@ -43,10 +34,29 @@ class _ArtifactWithFiles(_Artifact):
         return node, []
 
 
+class _ArtifactWithSeveralFiles(_ArtifactWithFiles):
+    def __init__(self, name, files):
+        _ArtifactWithFiles.__init__(self, name)
+        assert len(files) > 0
+        self.__files = set(files)
+
+    @property
+    def files(self):
+        return sorted(self.__files)
+
+
 class InputArtifact(_ArtifactWithFiles):
     """
     An artifact that never needs to be produced
     """
+
+    def __init__(self, file):
+        _ArtifactWithFiles.__init__(self, file)
+        self.__file = file
+
+    @property
+    def files(self):
+        return [self.__file]
 
     def getLinkedArtifacts(self):
         return []
@@ -55,7 +65,7 @@ class InputArtifact(_ArtifactWithFiles):
         return []
 
 
-class AtomicArtifact(_ArtifactWithFiles):
+class AtomicArtifact(_ArtifactWithSeveralFiles):
     """
     An artifact that is produced by a single action.
     """
@@ -72,7 +82,7 @@ class AtomicArtifact(_ArtifactWithFiles):
         then it must be build before the artifact. But if an order-only
         dependency is rebuilt, the artifact doesn't need to be rebuilt.
         """
-        _ArtifactWithFiles.__init__(self, name, files)
+        _ArtifactWithSeveralFiles.__init__(self, name, files)
         self.__strongDependencies = strongDependencies
         self.__orderOnlyDependencies = orderOnlyDependencies
         self.__subs = subatomicArtifacts
@@ -151,7 +161,7 @@ class CompoundArtifact(_Artifact):
         return self.__components
 
 
-class SubatomicArtifact(_ArtifactWithFiles):
+class SubatomicArtifact(_ArtifactWithSeveralFiles):
     """
     An artifact that is produced by the production action of its
     atomicArtifact, but is useful on its own, for example as a dependency.
@@ -223,32 +233,21 @@ class GraphTestCase(unittest.TestCase):
             expectedEndOfDotString
         )
 
-    def testSingleFileInputArtifact(self):
-        self.artifacts = [InputArtifact("input", ["input"])]
+    def testInputArtifact(self):
+        self.artifacts = [InputArtifact("input")]
         self.expect(
             'input[label="input"];'
         )
 
-    def testMultiFilesInputArtifact(self):
-        self.artifacts = [InputArtifact("input", ["input1", "input2"])]
-        self.expect(
-            'subgraph cluster_input{',
-            '  label="input";',
-            '  style="solid";',
-            '  input1[label="input1"];',
-            '  input2[label="input2"];',
-            '};'
-        )
-
     def testSingleFileAtomicArtifact(self):
-        self.artifacts = [AtomicArtifact("atomic", ["atomic"], [], [])]
+        self.artifacts = [AtomicArtifact("atomic", ["atomic"])]
         self.expect(
             'atomic[label="atomic"];'
         )
 
     def testMultiFilesAtomicArtifact(self):
         self.artifacts = [
-            AtomicArtifact("atomic", ["atomic1", "atomic2"], [], [])
+            AtomicArtifact("atomic", ["atomic1", "atomic2"])
         ]
         self.expect(
             'subgraph cluster_atomic{',
@@ -260,8 +259,8 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testAtomicArtifactWithDependencies_SingleFile(self):
-        strong = InputArtifact("strong", ["strong"])
-        order = InputArtifact("order", ["order"])
+        strong = AtomicArtifact("strong", ["strong"])
+        order = AtomicArtifact("order", ["order"])
         atomic = AtomicArtifact("atomic", ["atomic"], [strong], [order])
         self.artifacts = [atomic, strong, order]
         self.expect(
@@ -273,8 +272,8 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testAtomicArtifactWithDependencies_MultiFiles(self):
-        strong = InputArtifact("strong", ["strongX"])
-        order = InputArtifact("order", ["orderX"])
+        strong = AtomicArtifact("strong", ["strongX"])
+        order = AtomicArtifact("order", ["orderX"])
         atomic = AtomicArtifact("atomic", ["atomicX"], [strong], [order])
         self.artifacts = [atomic, strong, order]
         self.expect(
@@ -299,8 +298,8 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testCompoundArtifactWithoutDependencies(self):
-        component1 = InputArtifact("component1", ["component1"])
-        component2 = AtomicArtifact("component2", ["component2"], [], [])
+        component1 = InputArtifact("component1")
+        component2 = AtomicArtifact("component2", ["component2"])
         compound = CompoundArtifact("compound", [component1, component2])
         self.artifacts = [compound]
         self.expect(
@@ -313,9 +312,9 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testCompoundArtifactWithDependencies(self):
-        dependency = InputArtifact("dependency", ["dependencyX"])
+        dependency = AtomicArtifact("dependency", ["dependencyX"])
         component = AtomicArtifact(
-            "component", ["componentX"], [dependency], []
+            "component", ["componentX"], [dependency]
         )
         compound = CompoundArtifact("compound", [component])
         self.artifacts = [dependency, compound]
@@ -339,7 +338,7 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testCompoundArtifactWithClient(self):
-        component = AtomicArtifact("component", ["componentX"], [], [])
+        component = AtomicArtifact("component", ["componentX"])
         compound = CompoundArtifact("compound", [component])
         client = AtomicArtifact("client", ["clientX"], [compound], [])
         self.artifacts = [client, compound]
@@ -363,7 +362,7 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testCompoundArtifactWithClientOfComponent(self):
-        component = AtomicArtifact("component", ["componentX"], [], [])
+        component = AtomicArtifact("component", ["componentX"])
         compound = CompoundArtifact("compound", [component])
         client = AtomicArtifact("client", ["clientX"], [component], [])
         self.artifacts = [compound, client]
@@ -410,7 +409,7 @@ class GraphTestCase(unittest.TestCase):
             [],
             [sub]
         )
-        client = AtomicArtifact("client", ["client"], [sub], [], [])
+        client = AtomicArtifact("client", ["client"], [sub])
         self.artifacts = [atomic, client]
         self.expect(
             'client[label="client"];',
@@ -429,10 +428,9 @@ class GraphTestCase(unittest.TestCase):
 
     def testNamesWithForbidenCharacters(self):
         self.artifacts = [
-            AtomicArtifact("foo/bar1.xxx", ["foo/bar1.xxx"], [], []),
-            AtomicArtifact("foo/bar2.xxx", ["foo/baz2.xxx"], [], []),
-            InputArtifact("foo/bar3.xxx", ["foo/bar3.xxx"]),
-            InputArtifact("foo/bar4.xxx", ["foo/baz4.xxx"]),
+            AtomicArtifact("foo/bar1.xxx", ["foo/bar1.xxx"]),
+            AtomicArtifact("foo/bar2.xxx", ["foo/baz2.xxx"]),
+            InputArtifact("foo/bar3.xxx"),
         ]
         self.expect(
             'foo_2fbar1_2exxx[label="foo/bar1.xxx"];',
@@ -441,11 +439,6 @@ class GraphTestCase(unittest.TestCase):
             '  label="foo/bar2.xxx";',
             '  style="solid";',
             '  foo_2fbaz2_2exxx[label="foo/baz2.xxx"];',
-            '};',
-            'subgraph cluster_foo_2fbar4_2exxx{',
-            '  label="foo/bar4.xxx";',
-            '  style="solid";',
-            '  foo_2fbaz4_2exxx[label="foo/baz4.xxx"];',
             '};'
         )
 
