@@ -9,6 +9,10 @@ class Source(Artifacts.InputArtifact):
             file=source
         )
 
+    def check(self):
+        # @todo Implement static code analysis for C/C++, use at least lint
+        pass
+
 
 class ObjectFile(Artifacts.AtomicArtifact):
     def __init__(self, source):

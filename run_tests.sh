@@ -14,6 +14,7 @@ for p in tst/Projects/*
 do
     cd $p
     coverage run --branch --parallel-mode ../../../bin/vide graph || exit 1
+    coverage run --branch --parallel-mode ../../../bin/vide check || exit 1
     mv .coverage.* ../../..
     cd ../../..
 done

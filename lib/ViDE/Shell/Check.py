@@ -1,6 +1,6 @@
-import subprocess
-
 import InteractiveCommandLine as ICL
+
+import ViDE.Project.ProjectDescription
 
 
 class Check(ICL.Command):
@@ -8,6 +8,9 @@ class Check(ICL.Command):
         ICL.Command.__init__(self, "check", "Run static code checks")
 
     def execute(self):
-        subprocess.check_call(["pep8", "."])
-        # Call pylint, and other static code analysis programs
-        # based on languages in project
+        # @todo Implement check with Actions and touch a file when checks pass (avoid checking unmodified files, include check in vide make)
+        project = ViDE.Project.ProjectDescription.fromString(
+            open("videfile.py").read()
+        )
+        for a in project.artifacts:
+            a.check()

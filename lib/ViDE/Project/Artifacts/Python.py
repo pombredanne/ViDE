@@ -1,3 +1,5 @@
+import subprocess
+
 import Artifacts
 import Cpp
 
@@ -9,6 +11,10 @@ class Source(Artifacts.InputArtifact):
             self,
             file=source
         )
+
+    def check(self):
+        # @todo What other tools could be used? PyLint, and?
+        subprocess.check_call(["pep8"] + self.files)
 
 
 class Script(Artifacts.AtomicArtifact):

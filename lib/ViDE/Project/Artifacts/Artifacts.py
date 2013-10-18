@@ -127,6 +127,9 @@ class AtomicArtifact(_ArtifactWithSeveralFiles):
     def getContainedArtifacts(self):
         return self.__subs
 
+    def check(self):
+        pass
+
 
 class CompoundArtifact(_Artifact):
     """
@@ -159,6 +162,10 @@ class CompoundArtifact(_Artifact):
 
     def getContainedArtifacts(self):
         return self.__components
+
+    def check(self):
+        for c in self.__components:
+            c.check()
 
 
 class SubatomicArtifact(_ArtifactWithSeveralFiles):
@@ -441,6 +448,29 @@ class GraphTestCase(unittest.TestCase):
             '  foo_2fbaz2_2exxx[label="foo/baz2.xxx"];',
             '};'
         )
+
+
+class CheckTestCase(unittest.TestCase):
+    def testCheckAtomicArtifact(self):
+        AtomicArtifact("foo", ["foo"]).check()
+
+    def testCheckInputArtifact(self):
+        self.assertFalse(hasattr(InputArtifact("foo"), "check"))
+
+    def testCheckSubatomicArtifact(self):
+        self.assertFalse(hasattr(SubatomicArtifact("foo", ["foo"]), "check"))
+
+    def testCheckCompoundArtifact(self):
+        class Mock:
+            def __init__(self):
+                self.checked = False
+
+            def check(self):
+                self.checked = True
+
+        mock = Mock()
+        CompoundArtifact("foo", [mock]).check()
+        self.assertTrue(mock.checked)
 
 
 if __name__ == "__main__":
