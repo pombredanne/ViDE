@@ -1,7 +1,6 @@
 import InteractiveCommandLine as ICL
 
 import ViDE.Project.ProjectDescription
-import ViDE.Project.Artifacts.Artifacts
 
 
 class Graph(ICL.Command):
@@ -14,7 +13,4 @@ class Graph(ICL.Command):
         project = ViDE.Project.ProjectDescription.fromString(
             open("videfile.py").read()
         )
-        graph = ViDE.Project.Artifacts.Artifacts.getGraphOfArtifacts(
-            project.artifacts
-        )
-        graph.drawTo("project.png")
+        project.getGraph().drawTo("project.png")

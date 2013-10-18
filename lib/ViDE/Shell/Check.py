@@ -12,5 +12,4 @@ class Check(ICL.Command):
         project = ViDE.Project.ProjectDescription.fromString(
             open("videfile.py").read()
         )
-        for a in project.artifacts:
-            a.check()
+        project.check()

@@ -6,10 +6,21 @@ import textwrap
 import Artifacts
 
 
-class ProjectDescription:
+class ProjectDescription(object):
     def __init__(self, name, artifacts):
-        self.name = name
-        self.artifacts = artifacts
+        self.__name = name
+        self.__artifacts = artifacts
+
+    @property
+    def name(self):
+        return self.__name
+
+    def getGraph(self):
+        return Artifacts.Artifacts.getGraphOfArtifacts(self.__artifacts)
+
+    def check(self):
+        for a in self.__artifacts:
+            a.check()
 
 
 class ProjectBuilder:
@@ -92,11 +103,11 @@ class ProjectBuildingTestCase(unittest.TestCase):
         c = Artifacts.Artifacts.AtomicArtifact("c", ["c"], [a], [b])
         d = builder.createArtifact(Artifacts.Artifacts.AtomicArtifact, "d", ["d"], [c])
         p = builder.createProject()
-        self.assertEqual(len(p.artifacts), 4)
-        self.assertIn(a, p.artifacts)
-        self.assertIn(b, p.artifacts)
-        self.assertIn(c, p.artifacts)
-        self.assertIn(d, p.artifacts)
+        self.assertEqual(len(p._ProjectDescription__artifacts), 4)
+        self.assertIn(a, p._ProjectDescription__artifacts)
+        self.assertIn(b, p._ProjectDescription__artifacts)
+        self.assertIn(c, p._ProjectDescription__artifacts)
+        self.assertIn(d, p._ProjectDescription__artifacts)
 
     def testBuildProjectWithExplicitComponents(self):
         builder = ProjectBuilder()
@@ -104,8 +115,8 @@ class ProjectBuildingTestCase(unittest.TestCase):
         b = builder.createArtifact(Artifacts.Artifacts.CompoundArtifact, "b", [a])
         c = builder.createArtifact(Artifacts.Artifacts.CompoundArtifact, "c", [b])
         p = builder.createProject()
-        self.assertEqual(len(p.artifacts), 1)
-        self.assertIn(c, p.artifacts)
+        self.assertEqual(len(p._ProjectDescription__artifacts), 1)
+        self.assertIn(c, p._ProjectDescription__artifacts)
 
 
 class ProjectLoadingTestCase(unittest.TestCase):
@@ -116,7 +127,7 @@ class ProjectLoadingTestCase(unittest.TestCase):
             )
         """))
         self.assertEqual(p.name, "Project name")
-        self.assertEqual(len(p.artifacts), 0)
+        self.assertEqual(len(p._ProjectDescription__artifacts), 0)
 
     def testLoadProjectDescriptionWithPythonArtifacts(self):
         p = fromString(textwrap.dedent("""\
@@ -147,7 +158,7 @@ class ProjectLoadingTestCase(unittest.TestCase):
             )
         """))
         self.assertEqual(
-            sorted(a.name for a in p.artifacts),
+            sorted(a.name for a in p._ProjectDescription__artifacts),
             [
                 "a",
                 "a.py",
@@ -171,7 +182,7 @@ class ProjectLoadingTestCase(unittest.TestCase):
             ))
         """))
         self.assertEqual(
-            sorted(a.name for a in p.artifacts),
+            sorted(a.name for a in p._ProjectDescription__artifacts),
             [
                 "bar",
                 "bar.py",
