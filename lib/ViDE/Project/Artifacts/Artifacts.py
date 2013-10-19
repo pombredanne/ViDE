@@ -2,6 +2,7 @@ import unittest
 import os.path
 import sys
 import ActionTree
+import ActionTree.StockActions
 import MockMockMock
 
 import AnotherPyGraphvizAgain.Compounds as gv
@@ -637,6 +638,29 @@ class MustBeProducedTestCase(unittest.TestCase):
     def testInputArtifactMustNotBeProduced(self):
         a = InputArtifact("foo")
         self.assertFalse(a._mustBeProduced([], []))
+
+
+class GetBuildActionTestCase(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.mocks = MockMockMock.Engine()
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.mocks.tearDown()
+
+    def testAtomicArtifactWithoutDependenciesInCompoundArtifacts(self):
+        atomic = AtomicArtifact("atomic", ["foo/bar/baz"])
+        innerCompound = CompoundArtifact("innerCompound", [atomic])
+        outerCompound = CompoundArtifact("outerCompound", [innerCompound])
+        memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
+
+        m = self.mocks.replace("atomic._mustBeProduced")
+        m.expect([], []).andReturn(True)
+        m.expect([], []).andReturn(True)
+
+        action = memo.getOrCreateActionForArtifact(outerCompound)
+        self.assertEqual(action.getPreview(), ["mkdir foo/bar", "touch foo/bar/baz", "nop", "nop"])
 
 
 if __name__ == "__main__":
