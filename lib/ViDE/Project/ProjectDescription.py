@@ -8,32 +8,6 @@ import MockMockMock
 import Artifacts
 
 
-class _GetActionMemo:
-    def __init__(self, assumeOld, assumeNew, create):
-        self.__assumeOld = assumeOld
-        self.__assumeNew = assumeNew
-        self.__create = create
-        self.__actionsForArtifact = dict()
-        self.__actionsForDirectories = dict()
-
-    def getOrCreateActionForArtifact(self, artifact):
-        artifactId = id(artifact)
-        if artifactId not in self.__actionsForArtifact:
-            self.__actionsForArtifact[artifactId] = artifact._createAction(self)
-        return self.__actionsForArtifact[artifactId]
-
-    def getOrCreateActionForDirectory(self, directory):
-        if directory not in self.__actionsForDirectories:
-            self.__actionsForDirectories[directory] = ActionTree.StockActions.CreateDirectory(directory)
-        return self.__actionsForDirectories[directory]
-
-    def mustCreateAction(self, artifact):
-        return artifact._mustBeProduced(self.__assumeOld, self.__assumeNew)
-
-    def createBaseAction(self, artifact):
-        return self.__create(artifact)
-
-
 class ProjectDescription(object):
     def __init__(self, name, artifacts):
         self.__name = name
@@ -51,10 +25,10 @@ class ProjectDescription(object):
             a.check()
 
     def getTouchAction(self, assumeOld, assumeNew):
-        return _GetActionMemo(assumeOld, assumeNew, lambda a: a._createBaseTouchAction()).getOrCreateActionForArtifact(self)
+        return Artifacts.Artifacts._MemoForGetAction(assumeOld, assumeNew, lambda a: a._createBaseTouchAction()).getOrCreateActionForArtifact(self)
 
     def getBuildAction(self, assumeOld, assumeNew):
-        return _GetActionMemo(assumeOld, assumeNew, lambda a: a._createBaseBuildAction()).getOrCreateActionForArtifact(self)
+        return Artifacts.Artifacts._MemoForGetAction(assumeOld, assumeNew, lambda a: a._createBaseBuildAction()).getOrCreateActionForArtifact(self)
 
     def _createAction(self, memo):
         action = ActionTree.StockActions.NullAction()

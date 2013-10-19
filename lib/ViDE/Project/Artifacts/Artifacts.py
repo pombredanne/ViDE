@@ -7,6 +7,32 @@ import MockMockMock
 import AnotherPyGraphvizAgain.Compounds as gv
 
 
+class _MemoForGetAction:
+    def __init__(self, assumeOld, assumeNew, create):
+        self.__assumeOld = assumeOld
+        self.__assumeNew = assumeNew
+        self.__create = create
+        self.__actionsForArtifact = dict()
+        self.__actionsForDirectories = dict()
+
+    def getOrCreateActionForArtifact(self, artifact):
+        artifactId = id(artifact)
+        if artifactId not in self.__actionsForArtifact:
+            self.__actionsForArtifact[artifactId] = artifact._createAction(self)
+        return self.__actionsForArtifact[artifactId]
+
+    def getOrCreateActionForDirectory(self, directory):
+        if directory not in self.__actionsForDirectories:
+            self.__actionsForDirectories[directory] = ActionTree.StockActions.CreateDirectory(directory)
+        return self.__actionsForDirectories[directory]
+
+    def mustCreateAction(self, artifact):
+        return artifact._mustBeProduced(self.__assumeOld, self.__assumeNew)
+
+    def createBaseAction(self, artifact):
+        return self.__create(artifact)
+
+
 class _Artifact(object):
     def __init__(self, name):
         assert isinstance(name, (str, unicode))
