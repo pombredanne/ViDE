@@ -44,6 +44,10 @@ def PythonPackage(name, sources=[], packages=[], strip=identity):
     )
 
 
+def UnitTest(script, *arguments):
+    return Testing.UnitTest(script, list(arguments))
+
+
 allFactories = [
     CppSource,
     CppObjectFile,
@@ -52,5 +56,5 @@ allFactories = [
     PythonPackage,
     PythonScript,
     CppPythonModule,
-    Testing.UnitTest,
+    UnitTest,
 ]
