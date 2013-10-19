@@ -316,8 +316,8 @@ class GraphTestCase(unittest.TestCase):
         expectedEndOfDotString = '}'
 
         graph = getGraphOfArtifacts(self.artifacts)
-        fileName = os.path.join(os.path.dirname(__file__), self.__class__.__name__ + "." + self._testMethodName + ".png")
-        graph.drawTo(fileName)
+        # fileName = os.path.join(os.path.dirname(__file__), self.__class__.__name__ + "." + self._testMethodName + ".png")
+        # graph.drawTo(fileName)
 
         dotString = graph.dotString()
         self.assertEqual(
