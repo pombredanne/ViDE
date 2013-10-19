@@ -1,3 +1,6 @@
+import subprocess
+import ActionTree
+
 import Artifacts
 
 
@@ -12,3 +15,12 @@ class UnitTest(Artifacts.AtomicArtifact):
             files=[marker],
             strongDependencies=[executable] + executable.orderOnlyDependencies
         )
+        self.executable = executable
+        self.arguments = list(arguments)
+
+    def _createBaseBuildAction(self):
+        return ActionTree.Action(self.__build, self.executable.name + ' "' + '" "'.join(self.arguments) + '"')
+
+    def __build(self):
+        self.executable.run(self.arguments)
+        open(self.files[0], "w").close()

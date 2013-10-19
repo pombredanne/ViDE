@@ -161,13 +161,22 @@ class AtomicArtifact(_ArtifactWithSeveralFiles):
     def check(self):
         pass
 
+    def _createAction(self, memo):
+        a = memo.createBaseAction(self)
+        for f in self.files:
+            a.addDependency(memo.getOrCreateActionForDirectory(os.path.dirname(f)))
+        for d in self.__strongDependencies + self.__orderOnlyDependencies:
+            if memo.mustCreateAction(d):
+                a.addDependency(memo.getOrCreateActionForArtifact(d))
+        return a
+
+    def _createBaseTouchAction(self):
+        return ActionTree.StockActions.TouchFiles(self.files)
+
     def _mustBeProduced(self, assumeOld, assumeNew):
         oldestFileModificationTime = self._getOldestFileModificationTime(assumeOld, assumeNew)
         if oldestFileModificationTime == 0:
             return True
-        for d in self.__orderOnlyDependencies:
-            if d._mustBeProduced(assumeOld, assumeNew):
-                return True
         for d in self.__strongDependencies:
             if d._mustBeProduced(assumeOld, assumeNew):
                 return True
@@ -187,12 +196,12 @@ class CompoundArtifact(_Artifact):
         assert len(components) > 0
         self.__components = components
 
-    # @property
-    # def files(self):
-    #     allFiles = []
-    #     for c in self.__components:
-    #         allFiles += c.files
-    #     return allFiles
+    @property
+    def files(self):
+        allFiles = []
+        for c in self.__components:
+            allFiles += c.files
+        return allFiles
 
     def _createGraphNodeAndLinks(self, memo):
         node = gv.Cluster(self.identifier)
@@ -211,6 +220,19 @@ class CompoundArtifact(_Artifact):
     def check(self):
         for c in self.__components:
             c.check()
+
+    def _createAction(self, memo):
+        a = memo.createBaseAction(self)
+        for c in self.__components:
+            if memo.mustCreateAction(c):
+                a.addDependency(memo.getOrCreateActionForArtifact(c))
+        return a
+
+    def _createBaseTouchAction(self):
+        return ActionTree.StockActions.NullAction()
+
+    def _createBaseBuildAction(self):
+        return ActionTree.StockActions.NullAction()
 
     def _mustBeProduced(self, assumeOld, assumeNew):
         return any(c._mustBeProduced(assumeOld, assumeNew) for c in self.__components)
@@ -582,21 +604,11 @@ class MustBeProducedTestCase(unittest.TestCase):
         self.fileExists.expect("foo").andReturn(False)
         self.assertTrue(b._mustBeProduced([], []))
 
-    def testAtomicArtifactMustBeProducedBecauseOrderOnlyDependencyMustBeProduced(self):
+    def testAtomicArtifactMustNotBeProducedRegardlessOfOnlyDependency(self):
         a = AtomicArtifact("foo", ["foo"])
         b = AtomicArtifact("bar", ["bar"], [], [a])
         self.fileExists.expect("bar").andReturn(True)
         self.getFileModificationTime.expect("bar").andReturn(42)
-        self.fileExists.expect("foo").andReturn(False)
-        self.assertTrue(b._mustBeProduced([], []))
-
-    def testAtomicArtifactMustNotBeProducedEvenIfOrderOnlyDependencyIsNewer(self):
-        a = AtomicArtifact("foo", ["foo"])
-        b = AtomicArtifact("bar", ["bar"], [], [a])
-        self.fileExists.expect("bar").andReturn(True)
-        self.getFileModificationTime.expect("bar").andReturn(42)
-        self.fileExists.expect("foo").andReturn(True)
-        self.getFileModificationTime.expect("foo").andReturn(43)
         self.assertFalse(b._mustBeProduced([], []))
 
     def testCompoundArtifactMustBeProducedBecauseComponentMustBeProduced(self):

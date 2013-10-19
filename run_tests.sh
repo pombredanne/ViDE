@@ -13,8 +13,11 @@ coverage report --show-missing "--include=lib/*" "--omit=lib/ViDE/Shell/*"
 for p in tst/Projects/*
 do
     cd $p
+    rm -rf tst obj pyc bin *.png
     coverage run --branch --parallel-mode ../../../bin/vide graph || exit 1
     coverage run --branch --parallel-mode ../../../bin/vide check || exit 1
+    coverage run --branch --parallel-mode ../../../bin/vide build --touch --preview || exit 1
+    coverage run --branch --parallel-mode ../../../bin/vide build || exit 1
     mv .coverage.* ../../..
     cd ../../..
 done

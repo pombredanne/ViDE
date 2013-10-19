@@ -1,4 +1,9 @@
+import py_compile
+import re
+import os
+import shutil
 import subprocess
+import ActionTree
 
 import Artifacts
 import Cpp
@@ -28,7 +33,19 @@ class Script(Artifacts.AtomicArtifact):
             strongDependencies=[source],
             orderOnlyDependencies=packages
         )
-        self.run = None  # @todo
+        self.source = source
+
+    def run(self, arguments):
+        os.environ["PYTHONPATH"] = "pyc"
+        subprocess.check_call([self.files[0]] + arguments)
+        del os.environ["PYTHONPATH"]
+
+    def _createBaseBuildAction(self):
+        return ActionTree.Action(self.__build, "cp " + self.source.name + " " + self.files[0])
+
+    def __build(self):
+        shutil.copyfile(self.source.name, self.files[0])
+        os.chmod(self.files[0], 0775)
 
 
 class Module(Artifacts.AtomicArtifact):
@@ -40,6 +57,13 @@ class Module(Artifacts.AtomicArtifact):
             files=["pyc/" + strip(source.name) + "c"],
             strongDependencies=[source]
         )
+        self.source = source
+
+    def _createBaseBuildAction(self):
+        return ActionTree.Action(self.__build, "pyton -m py_compile " + self.source.name)
+
+    def __build(self):
+        py_compile.compile(self.source.name, self.files[0], doraise=True)
 
 
 class Package(Artifacts.CompoundArtifact):
@@ -58,6 +82,16 @@ class CppModule(Artifacts.AtomicArtifact):
         Artifacts.AtomicArtifact.__init__(
             self,
             name=name,
-            files=["pyc/" + name.replace(".", "/") + ".pyd"],
+            files=["pyc/" + name.replace(".", "/") + ".so"],
             strongDependencies=objects
         )
+        self.objects = objects
+
+    def _createBaseBuildAction(self):
+        return ActionTree.Action(self.__build, "g++ -o " + self.name)
+
+    __spaces = re.compile(" +")
+
+    def __build(self):
+        pythonLibs = CppModule.__spaces.split(subprocess.check_output(["python-config", "--libs"]).strip())
+        subprocess.check_call(["g++", "-shared", "-o", self.files[0]] + [o.name for o in self.objects] + ["-lboost_python"] + pythonLibs)

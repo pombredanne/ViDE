@@ -13,11 +13,13 @@ abc2 = PythonModule(
 
 ab = PythonPackage(
     name="a.b",
+    sources=["a/b/__init__.py"],
     packages=[abc1, abc2]
 )
 
 a = PythonPackage(
     name="a",
+    sources=["a/__init__.py"],
     packages=[ab]
 )
 

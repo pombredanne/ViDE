@@ -3,6 +3,7 @@ import InteractiveCommandLine as ICL
 import Check
 import Test
 import Graph
+import Build
 
 
 class Program(ICL.Program):
@@ -11,3 +12,4 @@ class Program(ICL.Program):
         self.addCommand(Check.Check())
         self.addCommand(Test.Test())
         self.addCommand(Graph.Graph())
+        self.addCommand(Build.Build())
