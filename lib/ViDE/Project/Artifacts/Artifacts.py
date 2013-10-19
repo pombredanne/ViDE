@@ -52,6 +52,7 @@ class _MemoForGetAction:
         return min(self.__getCombinedFileModificationTime(f) for f in files)
 
     def __getCombinedFileModificationTime(self, f):
+        assert isinstance(f, str), f
         if f in self.__assumeOld:
             return 0
         elif not self._fileExists(f):
@@ -642,6 +643,26 @@ class MustBeProducedTestCase(unittest.TestCase):
         self.getFileModificationTime.expect("foo").andReturn(42)
         self.assertFalse(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
+    def testCompoundArtifactAtomicDependOnCompound(self):
+        atomic1 = AtomicArtifact("atomic1", ["atomic1"])
+        atomic2 = AtomicArtifact("atomic2", ["atomic2"])
+        compound = CompoundArtifact("compound", [atomic1, atomic2])
+        topLevel = AtomicArtifact("topLevel", ["topLevel"], strongDependencies=[compound])
+
+        self.fileExists.expect("topLevel").andReturn(True)
+        self.getFileModificationTime.expect("topLevel").andReturn(42)
+        # @todo Avoid this repetition
+        self.fileExists.expect("atomic1").andReturn(True)
+        self.getFileModificationTime.expect("atomic1").andReturn(41)
+        self.fileExists.expect("atomic2").andReturn(True)
+        self.getFileModificationTime.expect("atomic2").andReturn(41)
+        self.fileExists.expect("atomic1").andReturn(True)
+        self.getFileModificationTime.expect("atomic1").andReturn(41)
+        self.fileExists.expect("atomic2").andReturn(True)
+        self.getFileModificationTime.expect("atomic2").andReturn(41)
+
+        self.assertFalse(topLevel._mustBeProduced(_MemoForGetAction([], [], None)))
+
     def testInputArtifactMustNotBeProduced(self):
         a = InputArtifact("foo")
         self.assertFalse(a._mustBeProduced(_MemoForGetAction([], [], None)))
@@ -665,8 +686,8 @@ class GetBuildActionTestCase(unittest.TestCase):
         m = self.mocks.replace("atomic._mustBeProduced")
         m.expect(memo).andReturn(True)
 
-        action = memo.getOrCreateActionForArtifact(outerCompound)
-        self.assertEqual(action.getPreview(), ["mkdir foo/bar", "touch foo/bar/baz", "nop", "nop"])
+        preview = memo.getOrCreateActionForArtifact(outerCompound).getPreview()
+        self.assertEqual(preview, ["mkdir foo/bar", "touch foo/bar/baz", "nop", "nop"])
 
     def testAtomicArtifactWithStrongDependencyNeedingProduction(self):
         dependency = AtomicArtifact("dependency", ["toto/tutu"])
@@ -676,9 +697,12 @@ class GetBuildActionTestCase(unittest.TestCase):
         self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(True)
 
         preview = memo.getOrCreateActionForArtifact(atomic).getPreview()
-        self.assertLess(preview.index("mkdir foo/bar"), preview.index("touch foo/bar/baz"))
-        self.assertLess(preview.index("mkdir toto"), preview.index("touch toto/tutu"))
-        self.assertLess(preview.index("touch toto/tutu"), preview.index("touch foo/bar/baz"))
+        self.assertTrue(
+            preview == ["mkdir toto", "touch toto/tutu", "mkdir foo/bar", "touch foo/bar/baz"]
+            or preview == ["mkdir toto", "mkdir foo/bar", "touch toto/tutu", "touch foo/bar/baz"]
+            or preview == ["mkdir foo/bar", "mkdir toto", "touch toto/tutu", "touch foo/bar/baz"],
+            preview
+        )
 
     def testAtomicArtifactWithStrongDependencyNotNeedingProduction(self):
         dependency = AtomicArtifact("dependency", ["toto/tutu"])
@@ -687,20 +711,38 @@ class GetBuildActionTestCase(unittest.TestCase):
 
         self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(False)
 
-        action = memo.getOrCreateActionForArtifact(atomic)
-        self.assertEqual(action.getPreview(), ["mkdir foo/bar", "touch foo/bar/baz"])
+        preview = memo.getOrCreateActionForArtifact(atomic).getPreview()
+        self.assertEqual(preview, ["mkdir foo/bar", "touch foo/bar/baz"])
 
     def testDiamond(self):
         dependency = AtomicArtifact("dependency", ["foo/dependency"])
         atomic1 = AtomicArtifact("atomic1", ["foo/atomic1"], strongDependencies=[dependency])
         atomic2 = AtomicArtifact("atomic2", ["foo/atomic2"], strongDependencies=[dependency])
-        compound = CompoundArtifact("innerCompound", [atomic1, atomic2])
+        compound = CompoundArtifact("compound", [atomic1, atomic2])
         memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
 
-        self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(False)
+        self.mocks.replace("atomic1._mustBeProduced").expect(memo).andReturn(True)
+        self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(True)
+        self.mocks.replace("atomic2._mustBeProduced").expect(memo).andReturn(True)
 
-        action = memo.getOrCreateActionForArtifact(compound)
-        self.assertEqual(action.getPreview(), ["mkdir foo", "touch foo/dependency", "touch foo/atomic1", "touch foo/atomic2", "nop"])
+        preview = memo.getOrCreateActionForArtifact(compound).getPreview()
+        self.assertTrue(
+            preview == ["mkdir foo", "touch foo/dependency", "touch foo/atomic1", "touch foo/atomic2", "nop"]
+            or preview == ["mkdir foo", "touch foo/dependency", "touch foo/atomic2", "touch foo/atomic1", "nop"],
+            preview
+        )
+
+    def testCompoundPartiallyBuilt(self):
+        atomic1 = AtomicArtifact("atomic1", ["foo/atomic1"])
+        atomic2 = AtomicArtifact("atomic2", ["foo/atomic2"])
+        compound = CompoundArtifact("compound", [atomic1, atomic2])
+        memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
+
+        self.mocks.replace("atomic1._mustBeProduced").expect(memo).andReturn(True)
+        self.mocks.replace("atomic2._mustBeProduced").expect(memo).andReturn(False)
+
+        preview = memo.getOrCreateActionForArtifact(compound).getPreview()
+        self.assertEqual(preview, ["mkdir foo", "touch foo/atomic1", "nop"])
 
 
 if __name__ == "__main__":
