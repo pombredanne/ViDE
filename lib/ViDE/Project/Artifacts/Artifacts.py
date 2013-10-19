@@ -20,14 +20,6 @@ class _Artifact(object):
     def identifier(self):
         return gv.makeId(self.__name)
 
-    @staticmethod
-    def _getFileModificationTime(f):
-        return os.stat(f).st_mtime  # pragma no cover (mocked system call)
-
-    @staticmethod
-    def _fileExists(f):
-        return os.path.exists(f)  # pragma no cover (mocked system call)
-
     def _getNewestFileModificationTime(self, assumeOld, assumeNew):
         return max(self.__getCombinedFileModificationTime(f, assumeOld, assumeNew) for f in self.files)
 
@@ -38,12 +30,12 @@ class _Artifact(object):
     def __getCombinedFileModificationTime(f, assumeOld, assumeNew):
         if f in assumeOld:
             return 0
-        elif not _Artifact._fileExists(f):
+        elif not os.path.exists(f):
             return 0
         elif f in assumeNew:
             return sys.maxint
         else:
-            return _Artifact._getFileModificationTime(f)
+            return os.stat(f).st_mtime
 
 
 class _ArtifactWithFiles(_Artifact):
@@ -538,19 +530,17 @@ class CheckTestCase(unittest.TestCase):
 
 
 class MustBeProducedTestCase(unittest.TestCase):
+    class stat:
+        def __init__(self, mtime):
+            self.st_mtime = mtime
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()
-        self.fileExists = self.mocks.create("fileExists")
-        self.originalFileExists = _Artifact._fileExists
-        _Artifact._fileExists = self.fileExists.object
-        self.getFileModificationTime = self.mocks.create("getFileModificationTime")
-        self.originalGetFileModificationTime = _Artifact._getFileModificationTime
-        _Artifact._getFileModificationTime = self.getFileModificationTime.object
+        self.fileExists = self.mocks.replace("os.path.exists")
+        self.getFileModificationTime = self.mocks.replace("os.stat")
 
     def tearDown(self):
-        _Artifact._fileExists = self.originalFileExists
-        _Artifact._getFileModificationTime = self.originalGetFileModificationTime
         unittest.TestCase.tearDown(self)
         self.mocks.tearDown()
 
@@ -571,7 +561,7 @@ class MustBeProducedTestCase(unittest.TestCase):
     def testAtomicArtifactMustNotBeProduced(self):
         a = AtomicArtifact("foo", ["foo"])
         self.fileExists.expect("foo").andReturn(True)
-        self.getFileModificationTime.expect("foo").andReturn(42)
+        self.getFileModificationTime.expect("foo").andReturn(self.stat(42))
         self.assertFalse(a._mustBeProduced([], []))
 
     def testAtomicArtifactMustBeProducedBecauseFileIsAssumedNewButDoesNotExist(self):
@@ -583,18 +573,18 @@ class MustBeProducedTestCase(unittest.TestCase):
         a = AtomicArtifact("foo", ["foo"])
         b = AtomicArtifact("bar", ["bar"], [a])
         self.fileExists.expect("bar").andReturn(True)
-        self.getFileModificationTime.expect("bar").andReturn(42)
+        self.getFileModificationTime.expect("bar").andReturn(self.stat(42))
         self.fileExists.expect("foo").andReturn(True)
-        self.getFileModificationTime.expect("foo").andReturn(43)
+        self.getFileModificationTime.expect("foo").andReturn(self.stat(43))
         self.fileExists.expect("foo").andReturn(True)
-        self.getFileModificationTime.expect("foo").andReturn(43)
+        self.getFileModificationTime.expect("foo").andReturn(self.stat(43))
         self.assertTrue(b._mustBeProduced([], []))
 
     def testAtomicArtifactMustBeProducedBecauseStrongDependencyMustBeProduced(self):
         a = AtomicArtifact("foo", ["foo"])
         b = AtomicArtifact("bar", ["bar"], [a])
         self.fileExists.expect("bar").andReturn(True)
-        self.getFileModificationTime.expect("bar").andReturn(42)
+        self.getFileModificationTime.expect("bar").andReturn(self.stat(42))
         self.fileExists.expect("foo").andReturn(False)
         self.assertTrue(b._mustBeProduced([], []))
 
@@ -602,7 +592,7 @@ class MustBeProducedTestCase(unittest.TestCase):
         a = AtomicArtifact("foo", ["foo"])
         b = AtomicArtifact("bar", ["bar"], [], [a])
         self.fileExists.expect("bar").andReturn(True)
-        self.getFileModificationTime.expect("bar").andReturn(42)
+        self.getFileModificationTime.expect("bar").andReturn(self.stat(42))
         self.assertFalse(b._mustBeProduced([], []))
 
     def testCompoundArtifactMustBeProducedBecauseComponentMustBeProduced(self):
@@ -615,7 +605,7 @@ class MustBeProducedTestCase(unittest.TestCase):
         a = AtomicArtifact("foo", ["foo"])
         b = CompoundArtifact("bar", [a])
         self.fileExists.expect("foo").andReturn(True)
-        self.getFileModificationTime.expect("foo").andReturn(42)
+        self.getFileModificationTime.expect("foo").andReturn(self.stat(42))
         self.assertFalse(b._mustBeProduced([], []))
 
     def testInputArtifactMustNotBeProduced(self):
