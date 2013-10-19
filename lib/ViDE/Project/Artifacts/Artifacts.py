@@ -27,11 +27,35 @@ class _MemoForGetAction:
             self.__actionsForDirectories[directory] = ActionTree.StockActions.CreateDirectory(directory)
         return self.__actionsForDirectories[directory]
 
-    def mustCreateAction(self, artifact):
-        return artifact._mustBeProduced(self.__assumeOld, self.__assumeNew)
+    def mustBeProduced(self, artifact):
+        return artifact._mustBeProduced(self)
 
     def createBaseAction(self, artifact):
         return self.__create(artifact)
+
+    @staticmethod
+    def _getFileModificationTime(f):
+        return os.stat(f).st_mtime  # pragma no cover (mocked system call)
+
+    @staticmethod
+    def _fileExists(f):
+        return os.path.exists(f)  # pragma no cover (mocked system call)
+
+    def getNewestFileModificationTime(self, files):
+        return max(self.__getCombinedFileModificationTime(f) for f in files)
+
+    def getOldestFileModificationTime(self, files):
+        return min(self.__getCombinedFileModificationTime(f) for f in files)
+
+    def __getCombinedFileModificationTime(self, f):
+        if f in self.__assumeOld:
+            return 0
+        elif not self._fileExists(f):
+            return 0
+        elif f in self.__assumeNew:
+            return sys.maxint
+        else:
+            return self._getFileModificationTime(f)
 
 
 class _Artifact(object):
@@ -46,31 +70,6 @@ class _Artifact(object):
     @property
     def identifier(self):
         return gv.makeId(self.__name)
-
-    @staticmethod
-    def _getFileModificationTime(f):
-        return os.stat(f).st_mtime  # pragma no cover (mocked system call)
-
-    @staticmethod
-    def _fileExists(f):
-        return os.path.exists(f)  # pragma no cover (mocked system call)
-
-    def _getNewestFileModificationTime(self, assumeOld, assumeNew):
-        return max(self.__getCombinedFileModificationTime(f, assumeOld, assumeNew) for f in self.files)
-
-    def _getOldestFileModificationTime(self, assumeOld, assumeNew):
-        return min(self.__getCombinedFileModificationTime(f, assumeOld, assumeNew) for f in self.files)
-
-    @staticmethod
-    def __getCombinedFileModificationTime(f, assumeOld, assumeNew):
-        if f in assumeOld:
-            return 0
-        elif not _Artifact._fileExists(f):
-            return 0
-        elif f in assumeNew:
-            return sys.maxint
-        else:
-            return _Artifact._getFileModificationTime(f)
 
 
 class _ArtifactWithFiles(_Artifact):
@@ -118,7 +117,7 @@ class InputArtifact(_ArtifactWithFiles):
     def getContainedArtifacts(self):
         return []
 
-    def _mustBeProduced(self, assumeOld, assumeNew):
+    def _mustBeProduced(self, memo):
         return False
 
 
@@ -192,21 +191,21 @@ class AtomicArtifact(_ArtifactWithSeveralFiles):
         for f in self.files:
             a.addDependency(memo.getOrCreateActionForDirectory(os.path.dirname(f)))
         for d in self.__strongDependencies + self.__orderOnlyDependencies:
-            if memo.mustCreateAction(d):
+            if memo.mustBeProduced(d):
                 a.addDependency(memo.getOrCreateActionForArtifact(d))
         return a
 
     def _createBaseTouchAction(self):
         return ActionTree.StockActions.TouchFiles(self.files)
 
-    def _mustBeProduced(self, assumeOld, assumeNew):
-        oldestFileModificationTime = self._getOldestFileModificationTime(assumeOld, assumeNew)
+    def _mustBeProduced(self, memo):
+        oldestFileModificationTime = memo.getOldestFileModificationTime(self.files)
         if oldestFileModificationTime == 0:
             return True
         for d in self.__strongDependencies:
-            if d._mustBeProduced(assumeOld, assumeNew):
+            if memo.mustBeProduced(d):
                 return True
-            if d._getNewestFileModificationTime(assumeOld, assumeNew) > oldestFileModificationTime:
+            if memo.getNewestFileModificationTime(d.files) > oldestFileModificationTime:
                 return True
         return False
 
@@ -250,7 +249,7 @@ class CompoundArtifact(_Artifact):
     def _createAction(self, memo):
         a = memo.createBaseAction(self)
         for c in self.__components:
-            if memo.mustCreateAction(c):
+            if memo.mustBeProduced(c):
                 a.addDependency(memo.getOrCreateActionForArtifact(c))
         return a
 
@@ -260,8 +259,8 @@ class CompoundArtifact(_Artifact):
     def _createBaseBuildAction(self):
         return ActionTree.StockActions.NullAction()
 
-    def _mustBeProduced(self, assumeOld, assumeNew):
-        return any(c._mustBeProduced(assumeOld, assumeNew) for c in self.__components)
+    def _mustBeProduced(self, memo):
+        return any(memo.mustBeProduced(c) for c in self.__components)
 
 
 class SubatomicArtifact(_ArtifactWithSeveralFiles):
@@ -568,8 +567,8 @@ class MustBeProducedTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()
-        self.fileExists = self.mocks.replace("_Artifact._fileExists")
-        self.getFileModificationTime = self.mocks.replace("_Artifact._getFileModificationTime")
+        self.fileExists = self.mocks.replace("_MemoForGetAction._fileExists")
+        self.getFileModificationTime = self.mocks.replace("_MemoForGetAction._getFileModificationTime")
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -578,27 +577,27 @@ class MustBeProducedTestCase(unittest.TestCase):
     def testAtomicArtifactMustBeProducedBecauseFileDoesNotExist(self):
         a = AtomicArtifact("foo", ["foo"])
         self.fileExists.expect("foo").andReturn(False)
-        self.assertTrue(a._mustBeProduced([], []))
+        self.assertTrue(a._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testAtomicArtifactMustBeProducedBecauseFileIsAssumedOld(self):
         a = AtomicArtifact("foo", ["foo"])
-        self.assertTrue(a._mustBeProduced(["foo"], []))
+        self.assertTrue(a._mustBeProduced(_MemoForGetAction(["foo"], [], None)))
 
     def testAtomicArtifactMustNotBeProducedBecauseFileIsAssumedNew(self):
         a = AtomicArtifact("foo", ["foo"])
         self.fileExists.expect("foo").andReturn(True)
-        self.assertFalse(a._mustBeProduced([], ["foo"]))
+        self.assertFalse(a._mustBeProduced(_MemoForGetAction([], ["foo"], None)))
 
     def testAtomicArtifactMustNotBeProduced(self):
         a = AtomicArtifact("foo", ["foo"])
         self.fileExists.expect("foo").andReturn(True)
         self.getFileModificationTime.expect("foo").andReturn(42)
-        self.assertFalse(a._mustBeProduced([], []))
+        self.assertFalse(a._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testAtomicArtifactMustBeProducedBecauseFileIsAssumedNewButDoesNotExist(self):
         a = AtomicArtifact("foo", ["foo"])
         self.fileExists.expect("foo").andReturn(False)
-        self.assertTrue(a._mustBeProduced([], ["foo"]))
+        self.assertTrue(a._mustBeProduced(_MemoForGetAction([], ["foo"], None)))
 
     def testAtomicArtifactMustBeProducedBecauseStrongDependencyIsNewer(self):
         a = AtomicArtifact("foo", ["foo"])
@@ -609,7 +608,7 @@ class MustBeProducedTestCase(unittest.TestCase):
         self.getFileModificationTime.expect("foo").andReturn(43)
         self.fileExists.expect("foo").andReturn(True)
         self.getFileModificationTime.expect("foo").andReturn(43)
-        self.assertTrue(b._mustBeProduced([], []))
+        self.assertTrue(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testAtomicArtifactMustBeProducedBecauseStrongDependencyMustBeProduced(self):
         a = AtomicArtifact("foo", ["foo"])
@@ -617,31 +616,31 @@ class MustBeProducedTestCase(unittest.TestCase):
         self.fileExists.expect("bar").andReturn(True)
         self.getFileModificationTime.expect("bar").andReturn(42)
         self.fileExists.expect("foo").andReturn(False)
-        self.assertTrue(b._mustBeProduced([], []))
+        self.assertTrue(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testAtomicArtifactMustNotBeProducedRegardlessOfOnlyDependency(self):
         a = AtomicArtifact("foo", ["foo"])
         b = AtomicArtifact("bar", ["bar"], [], [a])
         self.fileExists.expect("bar").andReturn(True)
         self.getFileModificationTime.expect("bar").andReturn(42)
-        self.assertFalse(b._mustBeProduced([], []))
+        self.assertFalse(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testCompoundArtifactMustBeProducedBecauseComponentMustBeProduced(self):
         a = AtomicArtifact("foo", ["foo"])
         b = CompoundArtifact("bar", [a])
         self.fileExists.expect("foo").andReturn(False)
-        self.assertTrue(b._mustBeProduced([], []))
+        self.assertTrue(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testCompoundArtifactMustNotBeProduced(self):
         a = AtomicArtifact("foo", ["foo"])
         b = CompoundArtifact("bar", [a])
         self.fileExists.expect("foo").andReturn(True)
         self.getFileModificationTime.expect("foo").andReturn(42)
-        self.assertFalse(b._mustBeProduced([], []))
+        self.assertFalse(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testInputArtifactMustNotBeProduced(self):
         a = InputArtifact("foo")
-        self.assertFalse(a._mustBeProduced([], []))
+        self.assertFalse(a._mustBeProduced(_MemoForGetAction([], [], None)))
 
 
 class GetBuildActionTestCase(unittest.TestCase):
@@ -660,8 +659,8 @@ class GetBuildActionTestCase(unittest.TestCase):
         memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
 
         m = self.mocks.replace("atomic._mustBeProduced")
-        m.expect([], []).andReturn(True)
-        m.expect([], []).andReturn(True)
+        m.expect(memo).andReturn(True)
+        m.expect(memo).andReturn(True)
 
         action = memo.getOrCreateActionForArtifact(outerCompound)
         self.assertEqual(action.getPreview(), ["mkdir foo/bar", "touch foo/bar/baz", "nop", "nop"])
