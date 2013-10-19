@@ -33,7 +33,8 @@ class Script(Artifacts.AtomicArtifact):
             name=source.name[:-3],
             files=["bin/" + os.path.basename(source.name)[:-3]],
             strongDependencies=[source],
-            orderOnlyDependencies=packages
+            orderOnlyDependencies=packages,
+            subatomicArtifacts=[]
         )
         self.source = source
 
@@ -57,7 +58,9 @@ class Module(Artifacts.AtomicArtifact):
             self,
             name=strip(source.name)[:-3].replace("/", "."),
             files=["pyc/" + strip(source.name) + "c"],
-            strongDependencies=[source]
+            strongDependencies=[source],
+            orderOnlyDependencies=[],
+            subatomicArtifacts=[]
         )
         self.source = source
 
@@ -85,7 +88,9 @@ class CppModule(Artifacts.AtomicArtifact):
             self,
             name=name,
             files=["pyc/" + name.replace(".", "/") + ".so"],
-            strongDependencies=objects
+            strongDependencies=objects,
+            orderOnlyDependencies=[],
+            subatomicArtifacts=[]
         )
         self.objects = objects
 

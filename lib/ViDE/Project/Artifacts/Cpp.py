@@ -27,7 +27,9 @@ class ObjectFile(Artifacts.AtomicArtifact):
             self,
             name=obj,
             files=[obj],
-            strongDependencies=[source]
+            strongDependencies=[source],
+            orderOnlyDependencies=[],
+            subatomicArtifacts=[]
         )
         self.source = source
 

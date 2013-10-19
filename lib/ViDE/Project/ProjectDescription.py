@@ -33,7 +33,7 @@ class ProjectDescription(object):
     def _createAction(self, memo):
         action = ActionTree.StockActions.NullAction()
         for a in self.__artifacts:
-            if memo.mustCreateAction(a):
+            if memo.mustBeProduced(a):
                 action.addDependency(memo.getOrCreateActionForArtifact(a))
         return action
 
@@ -114,9 +114,9 @@ class ProjectBuildingTestCase(unittest.TestCase):
         builder = ProjectBuilder()
         x = builder.createArtifact(Artifacts.Artifacts.SubatomicArtifact, "x", ["a"])
         a = Artifacts.Artifacts.AtomicArtifact("a", ["a"], [], [], [x])
-        b = Artifacts.Artifacts.AtomicArtifact("b", ["b"])
-        c = Artifacts.Artifacts.AtomicArtifact("c", ["c"], [a], [b])
-        d = builder.createArtifact(Artifacts.Artifacts.AtomicArtifact, "d", ["d"], [c])
+        b = Artifacts.Artifacts.AtomicArtifact("b", ["b"], [], [], [])
+        c = Artifacts.Artifacts.AtomicArtifact("c", ["c"], [a], [b], [])
+        d = builder.createArtifact(Artifacts.Artifacts.AtomicArtifact, "d", ["d"], [c], [], [])
         p = builder.createProject()
         self.assertEqual(len(p._ProjectDescription__artifacts), 4)
         self.assertIn(a, p._ProjectDescription__artifacts)
@@ -126,7 +126,7 @@ class ProjectBuildingTestCase(unittest.TestCase):
 
     def testBuildProjectWithExplicitComponents(self):
         builder = ProjectBuilder()
-        a = builder.createArtifact(Artifacts.Artifacts.AtomicArtifact, "a", ["a"])
+        a = builder.createArtifact(Artifacts.Artifacts.AtomicArtifact, "a", ["a"], [], [], [])
         b = builder.createArtifact(Artifacts.Artifacts.CompoundArtifact, "b", [a])
         c = builder.createArtifact(Artifacts.Artifacts.CompoundArtifact, "c", [b])
         p = builder.createProject()

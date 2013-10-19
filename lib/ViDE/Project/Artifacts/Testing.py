@@ -17,7 +17,9 @@ class UnitTest(Artifacts.AtomicArtifact):
             self,
             name=marker,
             files=[marker],
-            strongDependencies=[executable] + executable.orderOnlyDependencies
+            strongDependencies=[executable] + executable.orderOnlyDependencies,
+            orderOnlyDependencies=[],
+            subatomicArtifacts=[]
         )
         self.executable = executable
         self.arguments = list(arguments)

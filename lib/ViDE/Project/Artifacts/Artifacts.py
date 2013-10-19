@@ -132,9 +132,9 @@ class AtomicArtifact(_ArtifactWithSeveralFiles):
     """
 
     def __init__(self, name, files,
-                 strongDependencies=[],
-                 orderOnlyDependencies=[],
-                 subatomicArtifacts=[]):
+                 strongDependencies,
+                 orderOnlyDependencies,
+                 subatomicArtifacts):
         """
         :param: strongDependencies If a strong dependency is rebuilt,
         then the artifact must be rebuilt.
@@ -342,14 +342,14 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testSingleFileAtomicArtifact(self):
-        self.artifacts = [AtomicArtifact("atomic", ["atomic"])]
+        self.artifacts = [AtomicArtifact("atomic", ["atomic"], [], [], [])]
         self.expect(
             'atomic[label="atomic"];'
         )
 
     def testMultiFilesAtomicArtifact(self):
         self.artifacts = [
-            AtomicArtifact("atomic", ["atomic1", "atomic2"])
+            AtomicArtifact("atomic", ["atomic1", "atomic2"], [], [], [])
         ]
         self.expect(
             'subgraph cluster_atomic{',
@@ -361,9 +361,9 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testAtomicArtifactWithDependencies_SingleFile(self):
-        strong = AtomicArtifact("strong", ["strong"])
-        order = AtomicArtifact("order", ["order"])
-        atomic = AtomicArtifact("atomic", ["atomic"], [strong], [order])
+        strong = AtomicArtifact("strong", ["strong"], [], [], [])
+        order = AtomicArtifact("order", ["order"], [], [], [])
+        atomic = AtomicArtifact("atomic", ["atomic"], [strong], [order], [])
         self.artifacts = [atomic, strong, order]
         self.expect(
             'atomic[label="atomic"];',
@@ -374,9 +374,9 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testAtomicArtifactWithDependencies_MultiFiles(self):
-        strong = AtomicArtifact("strong", ["strongX"])
-        order = AtomicArtifact("order", ["orderX"])
-        atomic = AtomicArtifact("atomic", ["atomicX"], [strong], [order])
+        strong = AtomicArtifact("strong", ["strongX"], [], [], [])
+        order = AtomicArtifact("order", ["orderX"], [], [], [])
+        atomic = AtomicArtifact("atomic", ["atomicX"], [strong], [order], [])
         self.artifacts = [atomic, strong, order]
         self.expect(
             'subgraph cluster_atomic{',
@@ -401,7 +401,7 @@ class GraphTestCase(unittest.TestCase):
 
     def testCompoundArtifactWithoutDependencies(self):
         component1 = InputArtifact("component1")
-        component2 = AtomicArtifact("component2", ["component2"])
+        component2 = AtomicArtifact("component2", ["component2"], [], [], [])
         compound = CompoundArtifact("compound", [component1, component2])
         self.artifacts = [compound]
         self.expect(
@@ -414,10 +414,8 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testCompoundArtifactWithDependencies(self):
-        dependency = AtomicArtifact("dependency", ["dependencyX"])
-        component = AtomicArtifact(
-            "component", ["componentX"], [dependency]
-        )
+        dependency = AtomicArtifact("dependency", ["dependencyX"], [], [], [])
+        component = AtomicArtifact("component", ["componentX"], [dependency], [], [])
         compound = CompoundArtifact("compound", [component])
         self.artifacts = [dependency, compound]
         self.expect(
@@ -440,9 +438,9 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testCompoundArtifactWithClient(self):
-        component = AtomicArtifact("component", ["componentX"])
+        component = AtomicArtifact("component", ["componentX"], [], [], [])
         compound = CompoundArtifact("compound", [component])
-        client = AtomicArtifact("client", ["clientX"], [compound], [])
+        client = AtomicArtifact("client", ["clientX"], [compound], [], [])
         self.artifacts = [client, compound]
         self.expect(
             'subgraph cluster_client{',
@@ -464,9 +462,9 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def testCompoundArtifactWithClientOfComponent(self):
-        component = AtomicArtifact("component", ["componentX"])
+        component = AtomicArtifact("component", ["componentX"], [], [], [])
         compound = CompoundArtifact("compound", [component])
-        client = AtomicArtifact("client", ["clientX"], [component], [])
+        client = AtomicArtifact("client", ["clientX"], [component], [], [])
         self.artifacts = [compound, client]
         self.expect(
             'subgraph cluster_client{',
@@ -511,7 +509,7 @@ class GraphTestCase(unittest.TestCase):
             [],
             [sub]
         )
-        client = AtomicArtifact("client", ["client"], [sub])
+        client = AtomicArtifact("client", ["client"], [sub], [], [])
         self.artifacts = [atomic, client]
         self.expect(
             'client[label="client"];',
@@ -530,8 +528,8 @@ class GraphTestCase(unittest.TestCase):
 
     def testNamesWithForbidenCharacters(self):
         self.artifacts = [
-            AtomicArtifact("foo/bar1.xxx", ["foo/bar1.xxx"]),
-            AtomicArtifact("foo/bar2.xxx", ["foo/baz2.xxx"]),
+            AtomicArtifact("foo/bar1.xxx", ["foo/bar1.xxx"], [], [], []),
+            AtomicArtifact("foo/bar2.xxx", ["foo/baz2.xxx"], [], [], []),
             InputArtifact("foo/bar3.xxx"),
         ]
         self.expect(
@@ -547,7 +545,7 @@ class GraphTestCase(unittest.TestCase):
 
 class CheckTestCase(unittest.TestCase):
     def testCheckAtomicArtifact(self):
-        AtomicArtifact("foo", ["foo"]).check()
+        AtomicArtifact("foo", ["foo"], [], [], []).check()
 
     def testCheckInputArtifact(self):
         self.assertFalse(hasattr(InputArtifact("foo"), "check"))
@@ -580,33 +578,33 @@ class MustBeProducedTestCase(unittest.TestCase):
         self.mocks.tearDown()
 
     def testAtomicArtifactMustBeProducedBecauseFileDoesNotExist(self):
-        a = AtomicArtifact("foo", ["foo"])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
         self.fileExists.expect("foo").andReturn(False)
         self.assertTrue(a._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testAtomicArtifactMustBeProducedBecauseFileIsAssumedOld(self):
-        a = AtomicArtifact("foo", ["foo"])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
         self.assertTrue(a._mustBeProduced(_MemoForGetAction(["foo"], [], None)))
 
     def testAtomicArtifactMustNotBeProducedBecauseFileIsAssumedNew(self):
-        a = AtomicArtifact("foo", ["foo"])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
         self.fileExists.expect("foo").andReturn(True)
         self.assertFalse(a._mustBeProduced(_MemoForGetAction([], ["foo"], None)))
 
     def testAtomicArtifactMustNotBeProduced(self):
-        a = AtomicArtifact("foo", ["foo"])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
         self.fileExists.expect("foo").andReturn(True)
         self.getFileModificationTime.expect("foo").andReturn(42)
         self.assertFalse(a._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testAtomicArtifactMustBeProducedBecauseFileIsAssumedNewButDoesNotExist(self):
-        a = AtomicArtifact("foo", ["foo"])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
         self.fileExists.expect("foo").andReturn(False)
         self.assertTrue(a._mustBeProduced(_MemoForGetAction([], ["foo"], None)))
 
     def testAtomicArtifactMustBeProducedBecauseStrongDependencyIsNewer(self):
-        a = AtomicArtifact("foo", ["foo"])
-        b = AtomicArtifact("bar", ["bar"], [a])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
+        b = AtomicArtifact("bar", ["bar"], [a], [], [])
         self.fileExists.expect("bar").andReturn(True)
         self.getFileModificationTime.expect("bar").andReturn(42)
         self.fileExists.expect("foo").andReturn(True)
@@ -616,38 +614,38 @@ class MustBeProducedTestCase(unittest.TestCase):
         self.assertTrue(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testAtomicArtifactMustBeProducedBecauseStrongDependencyMustBeProduced(self):
-        a = AtomicArtifact("foo", ["foo"])
-        b = AtomicArtifact("bar", ["bar"], [a])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
+        b = AtomicArtifact("bar", ["bar"], [a], [], [])
         self.fileExists.expect("bar").andReturn(True)
         self.getFileModificationTime.expect("bar").andReturn(42)
         self.fileExists.expect("foo").andReturn(False)
         self.assertTrue(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testAtomicArtifactMustNotBeProducedRegardlessOfOnlyDependency(self):
-        a = AtomicArtifact("foo", ["foo"])
-        b = AtomicArtifact("bar", ["bar"], [], [a])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
+        b = AtomicArtifact("bar", ["bar"], [], [a], [])
         self.fileExists.expect("bar").andReturn(True)
         self.getFileModificationTime.expect("bar").andReturn(42)
         self.assertFalse(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testCompoundArtifactMustBeProducedBecauseComponentMustBeProduced(self):
-        a = AtomicArtifact("foo", ["foo"])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
         b = CompoundArtifact("bar", [a])
         self.fileExists.expect("foo").andReturn(False)
         self.assertTrue(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testCompoundArtifactMustNotBeProduced(self):
-        a = AtomicArtifact("foo", ["foo"])
+        a = AtomicArtifact("foo", ["foo"], [], [], [])
         b = CompoundArtifact("bar", [a])
         self.fileExists.expect("foo").andReturn(True)
         self.getFileModificationTime.expect("foo").andReturn(42)
         self.assertFalse(b._mustBeProduced(_MemoForGetAction([], [], None)))
 
     def testCompoundArtifactAtomicDependOnCompound(self):
-        atomic1 = AtomicArtifact("atomic1", ["atomic1"])
-        atomic2 = AtomicArtifact("atomic2", ["atomic2"])
+        atomic1 = AtomicArtifact("atomic1", ["atomic1"], [], [], [])
+        atomic2 = AtomicArtifact("atomic2", ["atomic2"], [], [], [])
         compound = CompoundArtifact("compound", [atomic1, atomic2])
-        topLevel = AtomicArtifact("topLevel", ["topLevel"], strongDependencies=[compound])
+        topLevel = AtomicArtifact("topLevel", ["topLevel"], [compound], [], [])
 
         self.fileExists.expect("topLevel").andReturn(True)
         self.getFileModificationTime.expect("topLevel").andReturn(42)
@@ -678,7 +676,7 @@ class GetBuildActionTestCase(unittest.TestCase):
         self.mocks.tearDown()
 
     def testAtomicArtifactWithoutDependenciesInCompoundArtifacts(self):
-        atomic = AtomicArtifact("atomic", ["foo/bar/baz"])
+        atomic = AtomicArtifact("atomic", ["foo/bar/baz"], [], [], [])
         innerCompound = CompoundArtifact("innerCompound", [atomic])
         outerCompound = CompoundArtifact("outerCompound", [innerCompound])
         memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
@@ -690,8 +688,8 @@ class GetBuildActionTestCase(unittest.TestCase):
         self.assertEqual(preview, ["mkdir foo/bar", "touch foo/bar/baz", "nop", "nop"])
 
     def testAtomicArtifactWithStrongDependencyNeedingProduction(self):
-        dependency = AtomicArtifact("dependency", ["toto/tutu"])
-        atomic = AtomicArtifact("atomic", ["foo/bar/baz"], strongDependencies=[dependency])
+        dependency = AtomicArtifact("dependency", ["toto/tutu"], [], [], [])
+        atomic = AtomicArtifact("atomic", ["foo/bar/baz"], [dependency], [], [])
         memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
 
         self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(True)
@@ -705,8 +703,8 @@ class GetBuildActionTestCase(unittest.TestCase):
         )
 
     def testAtomicArtifactWithStrongDependencyNotNeedingProduction(self):
-        dependency = AtomicArtifact("dependency", ["toto/tutu"])
-        atomic = AtomicArtifact("atomic", ["foo/bar/baz"], strongDependencies=[dependency])
+        dependency = AtomicArtifact("dependency", ["toto/tutu"], [], [], [])
+        atomic = AtomicArtifact("atomic", ["foo/bar/baz"], [dependency], [], [])
         memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
 
         self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(False)
@@ -715,9 +713,9 @@ class GetBuildActionTestCase(unittest.TestCase):
         self.assertEqual(preview, ["mkdir foo/bar", "touch foo/bar/baz"])
 
     def testDiamond(self):
-        dependency = AtomicArtifact("dependency", ["foo/dependency"])
-        atomic1 = AtomicArtifact("atomic1", ["foo/atomic1"], strongDependencies=[dependency])
-        atomic2 = AtomicArtifact("atomic2", ["foo/atomic2"], strongDependencies=[dependency])
+        dependency = AtomicArtifact("dependency", ["foo/dependency"], [], [], [])
+        atomic1 = AtomicArtifact("atomic1", ["foo/atomic1"], [dependency], [], [])
+        atomic2 = AtomicArtifact("atomic2", ["foo/atomic2"], [dependency], [], [])
         compound = CompoundArtifact("compound", [atomic1, atomic2])
         memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
 
@@ -733,8 +731,8 @@ class GetBuildActionTestCase(unittest.TestCase):
         )
 
     def testCompoundPartiallyBuilt(self):
-        atomic1 = AtomicArtifact("atomic1", ["foo/atomic1"])
-        atomic2 = AtomicArtifact("atomic2", ["foo/atomic2"])
+        atomic1 = AtomicArtifact("atomic1", ["foo/atomic1"], [], [], [])
+        atomic2 = AtomicArtifact("atomic2", ["foo/atomic2"], [], [], [])
         compound = CompoundArtifact("compound", [atomic1, atomic2])
         memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
 
