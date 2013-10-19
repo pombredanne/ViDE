@@ -3,6 +3,7 @@
 import unittest
 import textwrap
 import ActionTree.StockActions
+import MockMockMock
 
 import Artifacts
 
@@ -233,6 +234,27 @@ class ProjectLoadingTestCase(unittest.TestCase):
                 "tst/hello.ok",
             ]
         )
+
+
+class GetBuildActionTestCase(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.mocks = MockMockMock.Engine()
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.mocks.tearDown()
+
+    def testAtomicArtifactWithoutDependenciesInCompoundArtifact(self):
+        atomic = Artifacts.Artifacts.AtomicArtifact("atomic", ["foo/bar/baz"])
+        compound = Artifacts.Artifacts.CompoundArtifact("compound", [atomic])
+        project = ProjectDescription("project", [compound])
+
+        m = self.mocks.replace("atomic._mustBeProduced")
+        m.expect([], []).andReturn(True)
+        m.expect([], []).andReturn(True)
+        action = project.getTouchAction([], [])
+        self.assertEqual(action.getPreview(), ["mkdir foo/bar", "touch foo/bar/baz", "nop", "nop"])
 
 
 if __name__ == "__main__":
