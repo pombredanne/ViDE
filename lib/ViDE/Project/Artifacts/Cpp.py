@@ -43,17 +43,17 @@ class BuildTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()
+        self.check_output = self.mocks.replace("subprocess.check_output")
+        self.check_call = self.mocks.replace("subprocess.check_call")
 
     def tearDown(self):
         self.mocks.tearDown()
 
-    def testBuild(self):
+    def testBuildObjectFile(self):
         a = ObjectFile(Source("foo.cpp"))._createBaseBuildAction()
         self.assertEqual(a.label, "g++ -c foo.cpp")
-        co = self.mocks.replace("subprocess.check_output")
-        cc = self.mocks.replace("subprocess.check_call")
-        co.expect(["python-config", "--includes"]).andReturn("-I/bar -I/baz\n")
-        cc.expect(["g++", "-c", "foo.cpp", "-o", "obj/foo.cpp.o", "-fPIC", "-I/bar", "-I/baz"])
+        self.check_output.expect(["python-config", "--includes"]).andReturn("-I/bar -I/baz\n")
+        self.check_call.expect(["g++", "-c", "foo.cpp", "-o", "obj/foo.cpp.o", "-fPIC", "-I/bar", "-I/baz"])
         a.execute()
 
 
