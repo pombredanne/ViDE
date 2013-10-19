@@ -1,5 +1,4 @@
 import unittest
-import traceback
 import os.path
 import sys
 import ActionTree
@@ -285,13 +284,8 @@ class GraphTestCase(unittest.TestCase):
         )
         expectedEndOfDotString = '}'
 
-        for (_, _, functionName, _) in traceback.extract_stack():  # pragma no branch (but we don't care, it's test code)
-            if functionName.startswith("test"):
-                testName = self.__class__.__name__ + "." + functionName
-                break
-
         graph = getGraphOfArtifacts(self.artifacts)
-        fileName = os.path.join(os.path.dirname(__file__), testName + ".png")
+        fileName = os.path.join(os.path.dirname(__file__), self.__class__.__name__ + "." + self._testMethodName + ".png")
         graph.drawTo(fileName)
 
         dotString = graph.dotString()
