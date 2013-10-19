@@ -668,6 +668,40 @@ class GetBuildActionTestCase(unittest.TestCase):
         action = memo.getOrCreateActionForArtifact(outerCompound)
         self.assertEqual(action.getPreview(), ["mkdir foo/bar", "touch foo/bar/baz", "nop", "nop"])
 
+    def testAtomicArtifactWithStrongDependencyNeedingProduction(self):
+        dependency = AtomicArtifact("dependency", ["toto/tutu"])
+        atomic = AtomicArtifact("atomic", ["foo/bar/baz"], strongDependencies=[dependency])
+        memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
+
+        self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(True)
+
+        preview = memo.getOrCreateActionForArtifact(atomic).getPreview()
+        self.assertLess(preview.index("mkdir foo/bar"), preview.index("touch foo/bar/baz"))
+        self.assertLess(preview.index("mkdir toto"), preview.index("touch toto/tutu"))
+        self.assertLess(preview.index("touch toto/tutu"), preview.index("touch foo/bar/baz"))
+
+    def testAtomicArtifactWithStrongDependencyNotNeedingProduction(self):
+        dependency = AtomicArtifact("dependency", ["toto/tutu"])
+        atomic = AtomicArtifact("atomic", ["foo/bar/baz"], strongDependencies=[dependency])
+        memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
+
+        self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(False)
+
+        action = memo.getOrCreateActionForArtifact(atomic)
+        self.assertEqual(action.getPreview(), ["mkdir foo/bar", "touch foo/bar/baz"])
+
+    def testDiamond(self):
+        dependency = AtomicArtifact("dependency", ["foo/dependency"])
+        atomic1 = AtomicArtifact("atomic1", ["foo/atomic1"], strongDependencies=[dependency])
+        atomic2 = AtomicArtifact("atomic2", ["foo/atomic2"], strongDependencies=[dependency])
+        compound = CompoundArtifact("innerCompound", [atomic1, atomic2])
+        memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
+
+        self.mocks.replace("dependency._mustBeProduced").expect(memo).andReturn(False)
+
+        action = memo.getOrCreateActionForArtifact(compound)
+        self.assertEqual(action.getPreview(), ["mkdir foo", "touch foo/dependency", "touch foo/atomic1", "touch foo/atomic2", "nop"])
+
 
 if __name__ == "__main__":
     unittest.main()
