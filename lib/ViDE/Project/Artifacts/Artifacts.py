@@ -15,6 +15,7 @@ class _MemoForGetAction:
         self.__create = create
         self.__actionsForArtifact = dict()
         self.__actionsForDirectories = dict()
+        self.__mustBeProduced = dict()
 
     def getOrCreateActionForArtifact(self, artifact):
         artifactId = id(artifact)
@@ -28,7 +29,10 @@ class _MemoForGetAction:
         return self.__actionsForDirectories[directory]
 
     def mustBeProduced(self, artifact):
-        return artifact._mustBeProduced(self)
+        artifactId = id(artifact)
+        if artifactId not in self.__mustBeProduced:
+            self.__mustBeProduced[artifactId] = artifact._mustBeProduced(self)
+        return self.__mustBeProduced[artifactId]
 
     def createBaseAction(self, artifact):
         return self.__create(artifact)
@@ -659,7 +663,6 @@ class GetBuildActionTestCase(unittest.TestCase):
         memo = _MemoForGetAction([], [], lambda a: a._createBaseTouchAction())
 
         m = self.mocks.replace("atomic._mustBeProduced")
-        m.expect(memo).andReturn(True)
         m.expect(memo).andReturn(True)
 
         action = memo.getOrCreateActionForArtifact(outerCompound)
